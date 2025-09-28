@@ -1,0 +1,27 @@
+# Core dependencies for DNS Level Connection Interception, Analysis, and Maliciousness Scoring System
+scapy>=2.5.0          # Network packet capture and analysis
+dnspython>=2.4.0       # DNS toolkit for Python
+requests>=2.31.0       # HTTP library for API calls
+pandas>=2.0.0          # Data analysis and manipulation
+numpy>=1.24.0          # Numerical computing
+matplotlib>=3.7.0      # Plotting library
+seaborn>=0.12.0        # Statistical data visualization
+
+# Security and analysis
+cryptography>=41.0.0   # Cryptographic recipes and primitives
+ipaddress>=1.0.23      # IPv4/IPv6 manipulation library
+
+# Logging and configuration
+PyYAML>=6.0.0          # YAML parser and emitter
+python-dotenv>=1.0.0   # Load environment variables from .env file
+
+# Development dependencies
+pytest>=7.4.0          # Testing framework
+pytest-cov>=4.1.0      # Coverage plugin for pytest
+black>=23.7.0          # Code formatter
+flake8>=6.0.0          # Linting tool
+mypy>=1.5.0            # Static type checker
+
+# Optional: For advanced network analysis
+# wireshark>=0.1.0     # Wireshark integration (uncomment if needed)
+# netaddr>=0.8.0       # Network address manipulation (uncomment if needed)
