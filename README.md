@@ -1,6 +1,8 @@
-# VirusTotal Lookup Tool
+# Capstone - DNS Level Connection Interception, Analysis, and Maliciousness Scoring System
 
-A Python script that performs VirusTotal scans for domains and IP addresses.
+## VirusTotal Lookup Tool
+
+A Python script that performs VirusTotal scans for domains and IP addresses as part of the DNS analysis system.
 
 ## Features
 
