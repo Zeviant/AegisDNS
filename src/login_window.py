@@ -13,7 +13,7 @@ class LoginWindow(QMainWindow):
         self.ui.pushButton.clicked.connect(self.open_main)
 
     def open_main(self):
-        from .main_window import MainWindow   
+        from .main_window1 import MainWindow   
         self._main = MainWindow()
         self._main.show()
         self.close()  
