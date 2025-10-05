@@ -3,7 +3,8 @@ import os, sys, time, base64, requests
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
+    QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect,
+    QStackedWidget
 )
 from PySide6.QtGui import QRegularExpressionValidator, QFont
 from PySide6.QtCore import QRegularExpression, Qt, QThread, Signal
@@ -137,13 +138,20 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Main Window")
         self.resize(450, 450)
 
-        # --- layout & style (same fancy card as before) ---
-        central = QWidget(self)
-        self.setCentralWidget(central)
-        page = QVBoxLayout(central)
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+
+        self.setup_main_screen()
+        self.setup_score_screen()
+
+        self._worker = None
+
+    def setup_main_screen(self):
+        main_screen = QWidget()
+        page = QVBoxLayout(main_screen)
         page.setContentsMargins(40, 40, 40, 40)
 
-        central.setStyleSheet("""
+        main_screen.setStyleSheet("""
             QWidget {
                 background: qlineargradient(x1:0,y1:0, x2:0,y2:1,
                     stop:0 #0f172a, stop:1 #0b1220);
@@ -217,7 +225,50 @@ class MainWindow(QMainWindow):
         page.addWidget(card, 0, Qt.AlignHCenter)
         page.addStretch(1)
 
-        self._worker = None  
+        self.stacked_widget.addWidget(main_screen)
+
+    def setup_score_screen(self):
+        score_screen = QWidget()
+        score_screen.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0,y1:0, x2:0,y2:1,
+                    stop:0 #0f172a, stop:1 #0b1220);
+                color: #e5e7eb;
+                font-size: 14px;
+            }
+            QPushButton {
+                border: none; border-radius: 10px; padding: 10px 16px;
+                background: #1d4ed8; color: white; font-weight: 600;
+            }
+            QPushButton:hover { background: #2563eb; }
+            QPushButton:pressed { background: #1e40af; }
+        """)
+        layout = QVBoxLayout(score_screen)
+        layout.setContentsMargins(40, 40, 40, 40)
+        
+        self.score_label = QLabel("Score: 0")
+        font = QFont()
+        font.setPointSize(36)
+        font.setBold(True)
+        self.score_label.setFont(font)
+        self.score_label.setAlignment(Qt.AlignCenter)
+
+        self.continue_btn = QPushButton("Continue")
+        self.continue_btn.setFixedSize(100, 40)
+        self.continue_btn.clicked.connect(self.on_continue)
+
+        layout.addStretch(1)
+        layout.addWidget(self.score_label, 0, Qt.AlignCenter)
+        layout.addStretch(1)
+        
+        # Bottom right layout for the button
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addStretch(1)
+        bottom_layout.addWidget(self.continue_btn)
+        layout.addLayout(bottom_layout)
+
+        self.stacked_widget.addWidget(score_screen)
+
 
     def on_ok(self):
         api_key = os.environ.get("VIRUSTOTAL_API_KEY")
@@ -250,8 +301,20 @@ class MainWindow(QMainWindow):
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
 
-        # Styled result dialog
         show_vt_box(self, verdict, stats)
+
+        score = 0
+        score += stats.get("malicious", 0) * 20
+        score += stats.get("suspicious", 0) * 5
+        score += stats.get("undetected", 0) * 0.2
+
+        self.score_label.setText(f"Score: {score:.1f}")
+        self.stacked_widget.setCurrentIndex(1)
+
+
+    def on_continue(self):
+        self.url_edit.clear()
+        self.stacked_widget.setCurrentIndex(0)
 
 
 if __name__ == "__main__":
