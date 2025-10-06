@@ -21,8 +21,8 @@ except Exception:
 
 # Defining the variables
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CACHE_FILE = os.path.join(BASE_DIR, "vt_cache.json")
-HISTORY_FILE = os.path.join(BASE_DIR, "vt_history.jsonl")
+CACHE_FILE = os.path.join(BASE_DIR, "VT_Cache/vt_cache.json")
+HISTORY_FILE = os.path.join(BASE_DIR, "VT_Cache/vt_history.jsonl")
 VIRUSTOTAL_RATELIMIT = 15
 _STATE_MEMO = {"last_call": 0, "cache": {}}
 

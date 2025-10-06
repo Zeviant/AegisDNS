@@ -1,0 +1,4 @@
+{"ts": 1759427159.749286, "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "live"}
+{"ts": 1759427175.7700994, "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache"}
+{"ts": 1759427844.1388156, "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache"}
+{"ts": 1759427961.4473257, "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache"}
