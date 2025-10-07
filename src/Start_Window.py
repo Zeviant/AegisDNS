@@ -1,13 +1,17 @@
 # Qt Libraries
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox, QTableView
+from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
+# Other Libraries
 from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import select
 
 # Connection with other Windows
 from src.CreateAccount_Window import CreateAccount_Window
 from src.SQL_Alchemy.database import User, session
+from src.main_window import MainWindow
 
 class Start_Window(QWidget):
     def __init__(self):
@@ -70,16 +74,40 @@ class Start_Window(QWidget):
         self.root_layout.addLayout(full_layout)
         self.root_layout.addWidget(contentSquare, alignment=QtCore.Qt.AlignCenter)  # Attaching the layout to the widget with self
 
-    def connect_database(): 
-        pass
-
     def create_account(self):
         self.create_window = CreateAccount_Window()
         self.create_window.show()
-        window.hide()
+        
 
-    def login_account():
-        pass
+    def login_account(self):
+        # Getting username and password
+        username = self.name_line_edit.text()
+        passwordH = self.password_line_edit.text()
+
+        # Check if any field is empty
+        if(self.name_line_edit.text() == "" or self.password_line_edit.text() == ""): 
+            fieldsEmpty_box = QMessageBox()
+            fieldsEmpty_box.setWindowTitle("ERROR")
+            fieldsEmpty_box.setIcon(QMessageBox.Warning)
+            fieldsEmpty_box.setText("Some fields are empty!")
+            fieldsEmpty_box.exec()
+        
+        else: 
+            # Opening the database
+            db = QSqlDatabase.addDatabase("QSQLITE")
+            db.setDatabaseName("C:/Users/Nico/Desktop/Capstone/DNS Project/Capstone/src/SQL_Alchemy/UserInformation.db")
+
+            if not db.open(): 
+                print("Error: Could not open database connection.")
+
+            elif(session.query(User).filter_by(password=passwordH).where(User.user_name==username).first() ): 
+                self.MainWiwndow = MainWindow()
+                self.MainWiwndow.show()
+                self.close()
+            
+            else:
+                print("Username or password wrong") 
+            
     
     def centerOnScreen (self):
         screen = self.screen()  # get the QScreen the window is on

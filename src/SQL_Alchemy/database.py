@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
+from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from pathlib import Path
@@ -14,13 +14,17 @@ class User(Base):
 
     user_name = Column("UserName", String, primary_key = True) # Unique Value
     password = Column("Password", String)
+    first_name = Column("FirstName", String)
+    last_name = Column("LastName", String)
 
-    def __init__(self, username, passw): 
+    def __init__(self, username, passw, fname, lname): 
         self.user_name = username
         self.password = passw
+        self.first_name = fname
+        self.last_name = lname
     
     def __repr__(self): 
-        return f"({self.user_name} {self.password})"
+        return f"({self.user_name} {self.password} {self.first_name} {self.last_name})"
 
 class Addresses(Base):
     __tablename__ = "addresses"
@@ -49,10 +53,16 @@ Base.metadata.create_all(bind=engine) # This creates the tables inside the datab
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# Only added once
-if not session.query(User).first():
-    user = User("Nico", "asdf") # Creates user
+
+if not session.query(User).first(): # Retrieves the first element in the database
+    user = User("Nico", "asdf", "Francisco", "Vega") # Creates user
     session.add(user) # Adds user to the database
     session.commit() # Applies the changes to the database
+
+# print("asdfasdfasdf")
+# user = session.query(User).filter_by(user_name="Nico").first()
+# if user:
+#     print(user.user_name, user.password)
+
 
 

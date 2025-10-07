@@ -1,13 +1,19 @@
-# Qt Libraries
+# --- Qt Libraries ---
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox
 from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
+
+
+# --- Other Libraries
 from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import select
 
-# Connection to other modules
+# --- Connection to other modules ---
 from src.SQL_Alchemy.database import User, session
+
+# --- Class Creation ---
 class CreateAccount_Window(QWidget): 
     # Window SetUp
     def __init__(self):
@@ -89,30 +95,64 @@ class CreateAccount_Window(QWidget):
         password = self.password_line_edit.text()
         cpassword = self.confirmPass_line_edit.text()
 
+        # In case some of the filds are empty
+        if (self.firstName_line_edit.text() == "" or self.lastName_line_edit.text() == ""):
+            fieldsEmpty_box = QMessageBox()
+            fieldsEmpty_box.setWindowTitle("ERROR")
+            fieldsEmpty_box.setIcon(QMessageBox.Warning)
+            fieldsEmpty_box.setText("Some fields are empty!")
+            fieldsEmpty_box.exec()
+        
         # In case passwords does not match
-        if (password != cpassword): 
+        elif (password != cpassword): 
                 passwordMissmatch_box = QMessageBox()
+                passwordMissmatch_box.setWindowTitle("ERROR")
                 passwordMissmatch_box.setIcon(QMessageBox.Warning)
                 passwordMissmatch_box.setText("Passwords must match!")
                 passwordMissmatch_box.exec()
         
-        self.addNewUserToDatabase(userName, password)
+        # If everything ok so far
+        else: 
+            self.addNewUserToDatabase(userName, password, firstName, lastName)
 
-    def addNewUserToDatabase(self, user, password): 
+    def addNewUserToDatabase(self, userName, password, firstName, lastName): 
+        # Opening the database
         db = QSqlDatabase.addDatabase("QSQLITE")
         db.setDatabaseName("C:/Users/Nico/Desktop/Capstone/DNS Project/Capstone/src/SQL_Alchemy/UserInformation.db")
 
+        # Display error if something goes wrong
         if not db.open():
             print("Error: Could not open database connection.")
+
+        # Verify if the username already exits in the database
+        elif (session.query(User).filter_by(user_name=userName).first()): 
+            
+            # Display Warning Message
+            userNameAlreadyExists_box = QMessageBox()
+            userNameAlreadyExists_box.setWindowTitle("ERROR")
+            userNameAlreadyExists_box.setIcon(QMessageBox.Warning)
+            userNameAlreadyExists_box.setText("Username already taken!")
+            userNameAlreadyExists_box.exec()
+
+        # If username is not taken, add it to the database
         else:
-            print("Database connection established.")
-            print(f"Adding User {user}, with password {password}")
-            user1 = User(user,password)
-            session.add(user1)
+            userPlacement = User(userName, password, firstName, lastName)
+            session.add(userPlacement)
             session.commit()
 
+            successMessage_box = QMessageBox()
+            successMessage_box.setWindowTitle("Success!")
+            successMessage_box.setIcon(QMessageBox.Information)
+            successMessage_box.setText("User created successfully")
+            successMessage_box.exec()
+
+            db.close()
+            self.close()
+
     def close_window(self): 
-        exit()
+        self.close()
+        
+
 
     def centerOnScreen (self):
         screen = self.screen()  

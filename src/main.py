@@ -1,7 +1,7 @@
 # src/main.py
 import sys
 from PySide6.QtWidgets import QApplication
-from Start_Window import Start_Window
+from src.Start_Window import Start_Window
 
 def main():
     app = QApplication(sys.argv)
