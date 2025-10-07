@@ -101,7 +101,7 @@ class Start_Window(QWidget):
                 print("Error: Could not open database connection.")
 
             elif(session.query(User).filter_by(password=passwordH).where(User.user_name==username).first() ): 
-                self.MainWiwndow = MainWindow()
+                self.MainWiwndow = MainWindow(username, passwordH)
                 self.MainWiwndow.show()
                 self.close()
             

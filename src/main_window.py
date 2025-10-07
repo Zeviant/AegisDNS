@@ -1,16 +1,22 @@
-# --- Libreries and load_dotenv importation ---
-
-# Importando librerias importantes
-import os, sys, time, base64, requests, json, ipaddress, re
-
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
-)
-from PySide6.QtGui import QFont
+# --- Libraries ---
+# Qt Libraries
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QThread, Signal, QTimer
+from PySide6.QtGui import QFont
+from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 
-# Importando load_dotenv, it read the .env
+# Other Libraries
+import os, sys, time, base64, requests, json, ipaddress, re
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import select
+
+# Connection with other modules
+from src.SQL_Alchemy.database import User, Addresses, session
+
+# --- Importando load_dotenv, it read the .env ---
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -34,8 +40,13 @@ def _load_state() -> dict:
         with open(CACHE_FILE, "r", encoding="utf-8") as f:
             state = json.load(f)
             if isinstance(state, dict):
+                # Convert 'last_call' back to float if it was saved as a string (it shouldn't be)
+                # Ensure 'last_call' is present
                 state.setdefault("last_call", 0)
-                state.setdefault("cache", {})
+                # Convert 'ts' in cache entries back to datetime or just leave it as string for simplicity
+                for entry in state.get("cache", {}).values():
+                    # If we decide to keep 'ts' as string in cache, no need to convert back here.
+                    pass 
                 _STATE_MEMO = state
                 return state
     except Exception:
@@ -46,30 +57,58 @@ def _load_state() -> dict:
 
 def _save_state(state: dict) -> None:
     global _STATE_MEMO
+    # Create a deep copy to modify for saving without affecting the in-memory state
+    state_to_save = dict(state) 
+    state_to_save.setdefault("cache", {})
+    
+    # Convert datetime objects in cache entries to strings (ISO 8601 format)
+    for key, cached_entry in state_to_save["cache"].items():
+        if isinstance(cached_entry.get("ts"), datetime):
+            # Format: 'YYYY-MM-DDTHH:MM:SS.mmmmmm'
+            cached_entry["ts"] = cached_entry["ts"].isoformat()
+            
     tmp = CACHE_FILE + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(state, f)
+        json.dump(state_to_save, f) # Use state_to_save here
     os.replace(tmp, CACHE_FILE)
     _STATE_MEMO = state
 
 
-def append_history(kind: str, target: str, verdict: str, stats: dict, source: str) -> None:
+def append_history(kind: str, target: str, verdict: str, stats: dict, source: str, userName: str = "N/A") -> None:
+    # Get the timestamp as a datetime object
+    now = datetime.now() 
+    
     entry = {
-        "ts": time.time(),
+        # Convert datetime object to ISO format string for JSON serialization
+        "ts": now.isoformat(), 
         "kind": kind,
         "target": target,
         "verdict": verdict,
         "stats": stats,
-        "source": source,  # 'cache' or 'live'
+        "source": source,  
+        "user": userName,
     }
+
     try:
         with open(HISTORY_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
     except Exception:
         pass
 
-# --- Inputs (if URL, IP or Domain)
+    # Open database
+    db = QSqlDatabase.addDatabase("QSQLITE")
+    db.setDatabaseName("C:/Users/Nico/Desktop/Capstone/DNS Project/Capstone/src/SQL_Alchemy/UserInformation.db")
 
+    if not db.open(): 
+        print("Error: Could not open database connection.")
+            
+    else:
+        address = Addresses(target, datetime.now(), verdict, owner= userName)
+        session.add(address)
+        session.commit()
+
+
+# --- Inputs (if URL, IP or Domain)
 DOMAIN_RE = re.compile(
     r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)"
     r"(?:\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,63}\.?$"
@@ -160,11 +199,14 @@ def show_vt_box(parent, verdict: str, stats: dict):
 
 # Main Wiwndow (Where the user puts the input)
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, userName, password):
         super().__init__()
-        self.setWindowTitle("Main Window")
+        self.userName = userName 
+        self.password = password
+        
+        self.setWindowTitle(f"Main Window - User: {self.userName}")
         self.resize(450, 450)
-
+        
         # Timer
         self._cooldown_left = 0
         self._cooldown_timer = QTimer(self)
@@ -230,7 +272,7 @@ class MainWindow(QMainWindow):
         self.input_edit.setMinimumWidth(420)
 
         self.ok_btn = QPushButton("OK")
-        self.ok_btn.clicked.connect(self.on_ok)
+        self.ok_btn.clicked.connect(self.on_ok, userName)
         self.input_edit.returnPressed.connect(self.ok_btn.click)
 
         row.addWidget(self.input_edit, 1)
@@ -275,9 +317,11 @@ class MainWindow(QMainWindow):
             return
 
         # Enforce cooldown at UI level
+        # Enforce cooldown at UI level
         state = _load_state()
+        # Ensure last is treated as a float timestamp
         last = float(state.get("last_call", 0) or 0)
-        remaining = int(max(0, VIRUSTOTAL_RATELIMIT - (time.time() - last)))
+        remaining = int(max(0, VIRUSTOTAL_RATELIMIT - (time.time() - last))) # Keep time.time() here
         if remaining > 0:
             self.start_cooldown(remaining)
             return
@@ -291,7 +335,7 @@ class MainWindow(QMainWindow):
         self.ok_btn.setEnabled(False)
         self.ok_btn.setText("Preparing...")
 
-        self._worker = VTScanThread(kind, target, api_key, self)
+        self._worker = VTScanThread(kind, target, api_key, self.userName, self)
         # you can keep this; if UI gate passed, worker should tick 0 -> "Scanning..."
         self._worker.tick.connect(self.on_cooldown_tick)
         self._worker.result.connect(self.on_result)
@@ -315,15 +359,18 @@ class MainWindow(QMainWindow):
 
 # --- Sending the input to VT API ---
 
-class VTScanThread(QThread):
-    result = Signal(dict)      # {"ok": bool, "message": str, "stats": dict, "verdict": str}
-    tick = Signal(int)         # cooldown seconds remaining (0 => scanning)
 
-    def __init__(self, kind: str, target: str, api_key: str, parent=None):
+class VTScanThread(QThread):
+    result = Signal(dict)     
+    tick = Signal(int)         
+
+    
+    def __init__(self, kind: str, target: str, api_key: str, userName: str, parent=None):
         super().__init__(parent)
-        self.kind = kind          # 'url' | 'domain' | 'ip'
+        self.kind = kind         
         self.target = target
         self.api_key = api_key
+        self.userName = userName  
         self.base = "https://www.virustotal.com/api/v3"
         self.headers = {"x-apikey": self.api_key}
 
@@ -334,15 +381,17 @@ class VTScanThread(QThread):
 
     def _enforce_cooldown(self) -> float:
         state = _load_state()
+        # Use time.time() for numeric comparison
         last = float(state.get("last_call", 0) or 0)
         wait = int(max(0, VIRUSTOTAL_RATELIMIT - (time.time() - last)))
         while wait > 0:
             self.tick.emit(wait)
             time.sleep(1)
             wait -= 1
-        start_ts = time.time()              # mark just before hitting API
+            
+        start_ts = time.time()              # Mark just before hitting API
         state["last_call"] = start_ts
-        _save_state(state)                   # persist immediately
+        _save_state(state)                   # Persist immediately
         self.tick.emit(0)                    # 0 => scanning
         return start_ts
 
@@ -356,10 +405,13 @@ class VTScanThread(QThread):
             if cached:
                 stats = cached.get("stats", {}) or {}
                 verdict = cached.get("verdict", "UNKNOWN")
+                
                 # mark a “use” to enforce cooldown even for cache
-                state["last_call"] = time.time()
+                # Use time.time() for last_call, as decided in step 2.
+                state["last_call"] = time.time() 
                 _save_state(state)
-                append_history(self.kind, self.target, verdict, stats, source="cache")
+                
+                append_history(self.kind, self.target, verdict, stats, source="cache", userName=self.userName)
                 self.result.emit({"ok": True, "message": "cache", "stats": stats, "verdict": verdict})
                 return
 
@@ -422,11 +474,11 @@ class VTScanThread(QThread):
                 return
 
             # 3) Save to cache + history, then emit
-            state = _load_state()                    # <-- IMPORTANT
+            state = _load_state()                   
             state.setdefault("cache", {})
-            state["cache"][key] = {"stats": stats, "verdict": verdict, "ts": time.time()}
+            state["cache"][key] = {"stats": stats, "verdict": verdict, "ts": datetime.now().isoformat()}
             _save_state(state)
-            append_history(self.kind, self.target, verdict, stats, source="live")
+            append_history(self.kind, self.target, verdict, stats, source="live", userName=self.userName)
             self.result.emit({"ok": True, "message": "OK", "stats": stats, "verdict": verdict})
 
         except requests.RequestException as e:

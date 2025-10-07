@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine, select
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from pathlib import Path
@@ -29,16 +29,18 @@ class User(Base):
 class Addresses(Base):
     __tablename__ = "addresses"
     address = Column("Address", String, primary_key = True)
-    date = Column("Date", Integer) # Change integer for the proper date vairable type
+    date = Column("Date", DateTime) 
+    veredict = Column("Veredict", String) 
     owner = Column(String, ForeignKey("users.UserName")) # Here connects the user with the URL he searched
 
-    def __init__(self, addr, date, owner): 
+    def __init__(self, addr, date, veredict,owner): 
         self.address = addr
         self.date = date
+        self.veredict = veredict
         self.owner = owner
     
     def __repr__(self): 
-        return f"({self.address} {self.date} {self.owner})"
+        return f"({self.address} {self.date} {self.veredict} {self.owner})"
 
 # Creating the engine
 # Resolve base directory (this file is inside src/SQL_Alchemy)
@@ -58,6 +60,9 @@ if not session.query(User).first(): # Retrieves the first element in the databas
     user = User("Nico", "asdf", "Francisco", "Vega") # Creates user
     session.add(user) # Adds user to the database
     session.commit() # Applies the changes to the database
+
+# Drop table
+# Addresses.__table__.drop(engine)
 
 # print("asdfasdfasdf")
 # user = session.query(User).filter_by(user_name="Nico").first()
