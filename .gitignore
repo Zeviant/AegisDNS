@@ -28,6 +28,19 @@ wheels/
 # Cache files
 vt_cache.json
 vt_history.json
+# VT cache/history (project-local)
+src/VT_Cache/
+src/VT_Cache/*
+vt_cache.jsonl
+vt_history.jsonl
+
+# Local helper scripts (personal)
+run_app.ps1
+run_app.bat
+scripts/
+
+# Local sqlite DB (do not commit user DB)
+src/SQL_Alchemy/UserInformation.db
 
 # IDE
 .vscode/
