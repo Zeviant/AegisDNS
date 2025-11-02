@@ -118,7 +118,11 @@ class CreateAccount_Window(QWidget):
     def addNewUserToDatabase(self, userName, password, firstName, lastName): 
         # Opening the database
         db = QSqlDatabase.addDatabase("QSQLITE")
-        db.setDatabaseName("C:/Users/Nico/Desktop/Capstone/DNS Project/Capstone/src/SQL_Alchemy/UserInformation.db")
+        # Use relative path from the project structure
+        from pathlib import Path
+        project_root = Path(__file__).resolve().parent.parent
+        db_path = project_root / "src" / "SQL_Alchemy" / "UserInformation.db"
+        db.setDatabaseName(str(db_path))
 
         # Display error if something goes wrong
         if not db.open():

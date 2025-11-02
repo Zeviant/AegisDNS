@@ -97,14 +97,29 @@ def append_history(kind: str, target: str, verdict: str, stats: dict, source: st
 
     # Open database
     db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName("C:/Users/Nico/Desktop/Capstone/DNS Project/Capstone/src/SQL_Alchemy/UserInformation.db")
+    # Use relative path from the project structure
+    from pathlib import Path
+    project_root = Path(__file__).resolve().parent.parent
+    db_path = project_root / "src" / "SQL_Alchemy" / "UserInformation.db"
+    db.setDatabaseName(str(db_path))
 
     if not db.open(): 
         print("Error: Could not open database connection.")
             
     else:
-        address = Addresses(target, datetime.now(), verdict, owner= userName)
-        session.add(address)
+        # Check if address already exists
+        existing_address = session.query(Addresses).filter_by(address=target).first()
+        
+        if existing_address:
+            # Update existing record
+            existing_address.date = datetime.now()
+            existing_address.veredict = verdict
+            existing_address.owner = userName
+        else:
+            # Create new record
+            address = Addresses(target, datetime.now(), verdict, owner= userName)
+            session.add(address)
+        
         session.commit()
 
 

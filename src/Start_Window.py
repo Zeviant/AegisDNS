@@ -95,7 +95,12 @@ class Start_Window(QWidget):
         else: 
             # Opening the database
             db = QSqlDatabase.addDatabase("QSQLITE")
-            db.setDatabaseName("C:/Users/Nico/Desktop/Capstone/DNS Project/Capstone/src/SQL_Alchemy/UserInformation.db")
+            # Use relative path from the project structure
+            import os
+            from pathlib import Path
+            project_root = Path(__file__).resolve().parent.parent
+            db_path = project_root / "src" / "SQL_Alchemy" / "UserInformation.db"
+            db.setDatabaseName(str(db_path))
 
             if not db.open(): 
                 print("Error: Could not open database connection.")
