@@ -1,0 +1,131 @@
+# Qt Libraries
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox, QTableView
+from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
+# Other Libraries
+from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import select
+
+# Connection with other Windows
+from src.CreateAccount_Window import CreateAccount_Window
+from src.SQL_Alchemy.database import User, session
+from src.main_window import MainWindow
+
+class Start_Window(QWidget):
+    def __init__(self):
+        # Window SetUp
+        super().__init__()
+        self.setWindowTitle("Sign In")
+        self.setGeometry(600, 500, 600, 500)
+        self.centerOnScreen()
+
+        # Fixed Box Size
+        contentSquare = QWidget()
+        contentSquare.setFixedSize(300, 250) 
+
+        # --- Name and Password labels and line edits---
+        name_label = QLabel("Name")
+        password_label = QLabel("Password")
+
+        self.name_line_edit = QLineEdit()
+        self.password_line_edit = QLineEdit()
+        self.password_line_edit.setEchoMode(QLineEdit.Password) # Esto es para que salga como ****
+
+        # --- Buttons ---
+        login_button = QPushButton("Login")
+        signUp_button = QPushButton("Create Account")
+        login_button.clicked.connect(self.login_account) # Connecting the actions to the login_account function
+        signUp_button.clicked.connect(self.create_account) # Connecting the actions to the create_account function
+
+        # --- Layouts ---
+        # Layout for name and password
+        h_layout1 = QVBoxLayout()
+        h_layout1.setSpacing(5)
+
+        name_layout = QVBoxLayout()
+        name_layout.setSpacing(10)
+        name_layout.addWidget(name_label)
+        name_layout.addWidget(self.name_line_edit)
+        
+        pass_layout = QVBoxLayout()
+        pass_layout.setSpacing(10)
+        pass_layout.addWidget(password_label)
+        pass_layout.addWidget(self.password_line_edit)
+
+        h_layout1.addLayout(name_layout)
+        h_layout1.addLayout(pass_layout)
+
+        # Layout for buttons
+        h_layout2 = QVBoxLayout()
+        h_layout2.setSpacing(10)
+        h_layout2.addWidget(login_button)
+        h_layout2.addWidget(signUp_button)
+
+        # Layout for layouts xd
+        full_layout = QVBoxLayout(contentSquare) # Attaching full_layout ot the widget contentSquare    
+        full_layout.setSpacing(50)   
+        full_layout.addLayout(h_layout1)
+        full_layout.addLayout(h_layout2)
+                
+        # Layout to be attached to the main widget (self)
+        self.root_layout = QVBoxLayout(self)
+        self.root_layout.addLayout(full_layout)
+        self.root_layout.addWidget(contentSquare, alignment=QtCore.Qt.AlignCenter)  # Attaching the layout to the widget with self
+
+    def create_account(self):
+        self.create_window = CreateAccount_Window()
+        self.create_window.show()
+        
+
+    def login_account(self):
+        # Getting username and password
+        username = self.name_line_edit.text()
+        passwordH = self.password_line_edit.text()
+
+        # Check if any field is empty
+        if(self.name_line_edit.text() == "" or self.password_line_edit.text() == ""): 
+            fieldsEmpty_box = QMessageBox()
+            fieldsEmpty_box.setWindowTitle("ERROR")
+            fieldsEmpty_box.setIcon(QMessageBox.Warning)
+            fieldsEmpty_box.setText("Some fields are empty!")
+            fieldsEmpty_box.exec()
+        
+        else: 
+            # Opening the database
+            db = QSqlDatabase.addDatabase("QSQLITE")
+            # Use relative path from the project structure
+            import os
+            from pathlib import Path
+            project_root = Path(__file__).resolve().parent.parent
+            db_path = project_root / "src" / "SQL_Alchemy" / "UserInformation.db"
+            db.setDatabaseName(str(db_path))
+
+            if not db.open(): 
+                print("Error: Could not open database connection.")
+
+            elif(session.query(User).filter_by(password=passwordH).where(User.user_name==username).first() ): 
+                self.MainWiwndow = MainWindow(username, passwordH)
+                self.MainWiwndow.show()
+                self.close()
+            
+            else:
+                print("Username or password wrong") 
+            
+    
+    def centerOnScreen (self):
+        screen = self.screen()  # get the QScreen the window is on
+        if screen is None:
+            screen = QtGui.QGuiApplication.primaryScreen()
+        geometry = screen.availableGeometry()
+        x = (geometry.width() - self.width()) // 2
+        y = (geometry.height() - self.height()) // 2
+        self.move(x, y) 
+
+
+if __name__ == "__main__":
+    app = QApplication([])
+    window = Start_Window()
+    window.show()  
+    app.exec()
