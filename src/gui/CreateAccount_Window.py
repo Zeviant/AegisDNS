@@ -1,17 +1,10 @@
 # --- Qt Libraries ---
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox
-from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
-
-
-# --- Other Libraries
-from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import select
 
 # --- Connection to other modules ---
-from src.SQL_Alchemy.database import User, session
+from src.SQL_Alchemy.database_manager import DatabaseManager
+
 
 # --- Class Creation ---
 class CreateAccount_Window(QWidget): 
@@ -116,21 +109,10 @@ class CreateAccount_Window(QWidget):
             self.addNewUserToDatabase(userName, password, firstName, lastName)
 
     def addNewUserToDatabase(self, userName, password, firstName, lastName): 
-        # Opening the database
-        db = QSqlDatabase.addDatabase("QSQLITE")
-        # Use relative path from the project structure
-        from pathlib import Path
-        project_root = Path(__file__).resolve().parent.parent
-        db_path = project_root / "src" / "SQL_Alchemy" / "UserInformation.db"
-        db.setDatabaseName(str(db_path))
-
-        # Display error if something goes wrong
-        if not db.open():
-            print("Error: Could not open database connection.")
-
-        # Verify if the username already exits in the database
-        elif (session.query(User).filter_by(user_name=userName).first()): 
-            
+        # Logic is now delegated to DatabaseManager
+        result = DatabaseManager.create_new_user(userName, password, firstName, lastName)
+        
+        if result == "taken": 
             # Display Warning Message
             userNameAlreadyExists_box = QMessageBox()
             userNameAlreadyExists_box.setWindowTitle("ERROR")
@@ -139,25 +121,20 @@ class CreateAccount_Window(QWidget):
             userNameAlreadyExists_box.exec()
 
         # If username is not taken, add it to the database
-        else:
-            userPlacement = User(userName, password, firstName, lastName)
-            session.add(userPlacement)
-            session.commit()
-
+        elif result == "success":
             successMessage_box = QMessageBox()
             successMessage_box.setWindowTitle("Success!")
             successMessage_box.setIcon(QMessageBox.Information)
             successMessage_box.setText("User created successfully")
             successMessage_box.exec()
-
-            db.close()
             self.close()
+
+        elif result == "error":
+            QMessageBox.critical(self, "Database Error", "An unexpected error occurred while saving the user.")
 
     def close_window(self): 
         self.close()
         
-
-
     def centerOnScreen (self):
         screen = self.screen()  
         if screen is None:
@@ -165,4 +142,4 @@ class CreateAccount_Window(QWidget):
         geometry = screen.availableGeometry()
         x = (geometry.width() - self.width()) // 2
         y = (geometry.height() - self.height()) // 2
-        self.move(x, y) 
+        self.move(x, y)

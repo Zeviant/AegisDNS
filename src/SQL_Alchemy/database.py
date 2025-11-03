@@ -30,17 +30,17 @@ class Addresses(Base):
     __tablename__ = "addresses"
     address = Column("Address", String, primary_key = True)
     date = Column("Date", DateTime) 
-    veredict = Column("Veredict", String) 
+    verdict = Column("Verdict", String) 
     owner = Column(String, ForeignKey("users.UserName")) # Here connects the user with the URL he searched
 
-    def __init__(self, addr, date, veredict,owner): 
+    def __init__(self, addr, date, verdict,owner): 
         self.address = addr
         self.date = date
-        self.veredict = veredict
+        self.verdict = verdict
         self.owner = owner
     
     def __repr__(self): 
-        return f"({self.address} {self.date} {self.veredict} {self.owner})"
+        return f"({self.address} {self.date} {self.verdict} {self.owner})"
 
 # Creating the engine
 # Resolve base directory (this file is inside src/SQL_Alchemy)
@@ -50,11 +50,9 @@ DB_PATH = BASE_DIR / "UserInformation.db"
 engine = create_engine(f"sqlite+pysqlite:///{DB_PATH}", echo=True) # This creates the database's file
 Base.metadata.create_all(bind=engine) # This creates the tables inside the database 
 
-
 # Session allows to do all kind of things 
 Session = sessionmaker(bind=engine)
 session = Session()
-
 
 if not session.query(User).first(): # Retrieves the first element in the database
     user = User("Nico", "asdf", "Francisco", "Vega") # Creates user
@@ -68,6 +66,3 @@ if not session.query(User).first(): # Retrieves the first element in the databas
 # user = session.query(User).filter_by(user_name="Nico").first()
 # if user:
 #     print(user.user_name, user.password)
-
-
-

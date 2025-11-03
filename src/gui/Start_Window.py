@@ -1,17 +1,11 @@
 # Qt Libraries
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox, QTableView
-from PySide6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
-# Other Libraries
-from sqlalchemy import Column, Integer, String, ForeignKey, Sequence, CHAR, create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import select
 
 # Connection with other Windows
-from src.CreateAccount_Window import CreateAccount_Window
-from src.SQL_Alchemy.database import User, session
-from src.main_window import MainWindow
+from src.gui.CreateAccount_Window import CreateAccount_Window
+from src.gui.main_window import MainWindow 
+from src.SQL_Alchemy.database_manager import DatabaseManager
 
 class Start_Window(QWidget):
     def __init__(self):
@@ -20,6 +14,8 @@ class Start_Window(QWidget):
         self.setWindowTitle("Sign In")
         self.setGeometry(600, 500, 600, 500)
         self.centerOnScreen()
+        
+        # ... (rest of __init__ is unchanged) ...
 
         # Fixed Box Size
         contentSquare = QWidget()
@@ -93,25 +89,18 @@ class Start_Window(QWidget):
             fieldsEmpty_box.exec()
         
         else: 
-            # Opening the database
-            db = QSqlDatabase.addDatabase("QSQLITE")
-            # Use relative path from the project structure
-            import os
-            from pathlib import Path
-            project_root = Path(__file__).resolve().parent.parent
-            db_path = project_root / "src" / "SQL_Alchemy" / "UserInformation.db"
-            db.setDatabaseName(str(db_path))
-
-            if not db.open(): 
-                print("Error: Could not open database connection.")
-
-            elif(session.query(User).filter_by(password=passwordH).where(User.user_name==username).first() ): 
+            # Logic is now delegated to the DatabaseManager
+            if DatabaseManager.authenticate_user(username, passwordH): 
                 self.MainWiwndow = MainWindow(username, passwordH)
                 self.MainWiwndow.show()
                 self.close()
             
             else:
-                print("Username or password wrong") 
+                login_fail_box = QMessageBox()
+                login_fail_box.setWindowTitle("ERROR")
+                login_fail_box.setIcon(QMessageBox.Warning)
+                login_fail_box.setText("Username or password wrong")
+                login_fail_box.exec()
             
     
     def centerOnScreen (self):
