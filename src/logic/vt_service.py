@@ -116,6 +116,28 @@ def cache_key(kind: str, target: str) -> str:
         return f"url:{norm}"
     return f"{kind}:{target}"
 
+def get_sorted_history(user_name: str) -> list[dict]:
+    """ Used to filter and sort the JSON history log """
+    
+    entries = []
+    count = 0
+    try:
+        with open(HISTORY_FILE, "r", encoding = "utf-8") as f:
+            for line in f:
+                entry = json.loads(line)
+                # Filter entries by username
+                if entry.get("user") == user_name:
+                    entries.append(entry)
+                    count = count + 1
+    except Exception:
+        print("HISTORY_FILE_ERROR")
+        pass
+
+    # Reverse sorting because we want newest --> oldest :)
+    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
+    print(f"Entries found: {count}") # Debug - Can remove later
+    return entries
+
 # --- Sending the input to VT API (The Thread/Worker) ---
 class VTScanThread(QThread):
     result = Signal(dict)     
