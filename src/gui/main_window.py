@@ -60,7 +60,7 @@ def show_vt_box(parent, verdict: str, stats: dict):
     box.exec()
 
 # Main Wiwndow (Where the user puts the input)
-class MainWindow(QMainWindow):
+class Main_Window(QMainWindow):
     def __init__(self, userName, password):
         super().__init__()
         self.userName = userName 

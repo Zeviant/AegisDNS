@@ -1,0 +1,63 @@
+/* === GLOBAL WINDOW BACKGROUND === */
+QWidget {
+    background-color: #0f172a;      /* deep navy */
+    color: #e5e7eb;                /* soft white text */
+    font-family: "Segoe UI";
+    font-size: 14px;
+}
+
+/* === LABELS === */
+QLabel {
+    color: #e2e8f0;                /* light gray-white */
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* === LINE EDITS (inputs) === */
+QLineEdit {
+    background-color: #1e293b;      /* dark input box */
+    border: 1px solid #334155;      /* subtle outline */
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: #ffffff;
+    selection-background-color: #2563eb; /* blue highlight */
+    selection-color: white;
+}
+
+QLineEdit:focus {
+    border: 1px solid #3b82f6;      /* blue border when focused */
+    background-color: #273449;      /* slightly lighter background */
+}
+
+/* === BUTTONS === */
+QPushButton {
+    background-color: #2563eb;      /* primary blue */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+QPushButton:hover {
+    background-color: #1d4ed8;      /* brighter blue hover */
+}
+
+QPushButton:pressed {
+    background-color: #1e40af;      /* darker blue when clicked */
+}
+
+QPushButton:disabled {
+    background-color: #475569;
+    color: #cbd5e1;
+}
+
+/* === MAIN CONTENT CONTAINER === */
+QWidget#contentSquare {
+    background-color: #1e293b;      /* slightly lighter dark block */
+    border-radius: 16px;
+    border: 1px solid #334155;
+    padding: 24px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.4);
+}

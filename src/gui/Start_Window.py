@@ -4,26 +4,26 @@ from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushBut
 
 # Connection with other Windows
 from src.gui.CreateAccount_Window import CreateAccount_Window
-from src.gui.main_window import MainWindow 
 from src.SQL_Alchemy.database_manager import DatabaseManager
+from src.gui.sidebar import SideBarMainWindow
 
 class Start_Window(QWidget):
     def __init__(self):
         # Window SetUp
         super().__init__()
         self.setWindowTitle("Sign In")
-        self.setGeometry(600, 500, 600, 500)
+        self.resize(1024, 682)
         self.centerOnScreen()
-        
-        # ... (rest of __init__ is unchanged) ...
 
         # Fixed Box Size
         contentSquare = QWidget()
-        contentSquare.setFixedSize(300, 250) 
+        contentSquare.setFixedSize(420, 360) 
 
         # --- Name and Password labels and line edits---
         name_label = QLabel("Name")
+
         password_label = QLabel("Password")
+
 
         self.name_line_edit = QLineEdit()
         self.password_line_edit = QLineEdit()
@@ -89,10 +89,18 @@ class Start_Window(QWidget):
             fieldsEmpty_box.exec()
         
         else: 
-            # Logic is now delegated to the DatabaseManager
+            
             if DatabaseManager.authenticate_user(username, passwordH): 
-                self.MainWiwndow = MainWindow(username, passwordH)
-                self.MainWiwndow.show()
+                # Load Sheet Style
+                with open("src/gui/Style_Sheet/sidebar_Style.qss") as f: 
+                    style_str = f.read()
+
+                # Username and password are passed to the mainwindow
+                self.MainMenu = SideBarMainWindow(username, passwordH)
+                self.MainMenu.setStyleSheet(style_str)
+                self.MainMenu.show()
+                
+                # Close current window
                 self.close()
             
             else:
@@ -112,9 +120,9 @@ class Start_Window(QWidget):
         y = (geometry.height() - self.height()) // 2
         self.move(x, y) 
 
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = Start_Window()
-    window.show()  
-    app.exec()
+# Not necessary since it is executed from main
+# if __name__ == "__main__":
+#     app = QApplication([])
+#     window = Start_Window()
+#     window.show()  
+#     app.exec()
