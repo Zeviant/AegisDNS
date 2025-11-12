@@ -1,0 +1,115 @@
+/* === GENERAL COLORS ===
+   Background: dark gray-blue
+   Text: white
+   Accent: dark blue / light blue highlights
+*/
+
+#title_label {
+    font-size: 16px;
+    font-family: "Segoe UI Semibold";
+    color: #ffffff; /* white text */
+}
+
+#title_icon {
+    max-width: 35px;
+    max-height: 35px;
+}
+
+#sideMenuButton {
+    background: none;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+#sideMenuButton:hover,
+#sideMenuButton:pressed,
+#sideMenuButton:focus {
+    background: none;
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QPushButton {
+    background: none;
+    background-color: transparent;
+    border: none;
+    outline: none
+}
+
+QStackedWidget {
+    background-color: #0f172a; /* dark navy */
+    color: #ffffff;
+}
+
+QListWidget,
+#title_frame {
+    background-color: #1e293b; /* slightly lighter dark blue-gray */
+    color: #e5e7eb;            /* soft white text */
+}
+
+#stackedWidget,
+#title_frame {
+    border: 1px solid #334155; /* subtle border */
+}
+
+#stackedWidget {
+    border-left: none;
+}
+
+
+#title_frame {
+    border-bottom: none;
+}
+
+#listWidget {
+    font-size: 13px;
+    font-family: "Segoe UI Semibold";
+    color: #e2e8f0; /* light grayish white */
+}
+
+#listWidget::item,
+#listWidget_icon::item {
+    border: none;
+    padding: 5px 10px;
+    margin: 2px 0;
+    color: #e2e8f0;
+}
+
+#listWidget::item {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+#listWidget_icon::item {
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+#listWidget_icon::item {
+    padding-top: 0px;
+}
+
+#listWidget::item:hover,
+#listWidget_icon::item:hover {
+    background-color: #1d4ed8; /* dark blue hover */
+    color: #ffffff;
+}
+
+#listWidget::item:selected,
+#listWidget_icon::item:selected {
+    background-color: #2563eb; /* bright blue selected */
+    color: #ffffff;
+}
+
+#listWidget::icon {
+    width: 18px;
+    height: 18px;
+}
+
+#listWidget_icon::icon {
+    width: 23px;
+    height: 23px;
+}

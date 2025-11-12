@@ -110,10 +110,10 @@ class History_Window(QWidget):
         self.table.resizeColumnsToContents()
 
 
-if __name__ == "__main__":
-    import sys
-    from PySide6.QtWidgets import QApplication
-    app = QApplication(sys.argv)
-    window = History_Window("Ben")
-    window.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     import sys
+#     from PySide6.QtWidgets import QApplication
+#     app = QApplication(sys.argv)
+#     window = History_Window("Nico")
+#     window.show()
+#     sys.exit(app.exec())
