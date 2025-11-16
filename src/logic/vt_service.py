@@ -149,7 +149,6 @@ class VTScanThread(QThread):
         self.target = target
         self.userName = userName  
         
-        # API Key Retrieval moved to logic layer
         self.api_key = os.environ.get("VIRUSTOTAL_API_KEY") 
         
         self.base = "https://www.virustotal.com/api/v3"

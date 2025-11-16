@@ -7,6 +7,9 @@ from src.gui.CreateAccount_Window import CreateAccount_Window
 from src.SQL_Alchemy.database_manager import DatabaseManager
 from src.gui.sidebar import SideBarMainWindow
 
+# Server connection
+from src.logic.backend_server import set_current_user, start_server_if_needed
+
 class Start_Window(QWidget):
     def __init__(self):
         # Window SetUp
@@ -31,9 +34,14 @@ class Start_Window(QWidget):
 
         # --- Buttons ---
         login_button = QPushButton("Login")
+        login_button.setDefault(True)
         signUp_button = QPushButton("Create Account")
         login_button.clicked.connect(self.login_account) # Connecting the actions to the login_account function
         signUp_button.clicked.connect(self.create_account) # Connecting the actions to the create_account function
+       
+       # --- Enter Keybind for logging in ---
+        self.name_line_edit.returnPressed.connect(self.login_account)
+        self.password_line_edit.returnPressed.connect(self.login_account)
 
         # --- Layouts ---
         # Layout for name and password
@@ -99,6 +107,10 @@ class Start_Window(QWidget):
                 self.MainMenu = SideBarMainWindow(username, passwordH)
                 self.MainMenu.setStyleSheet(style_str)
                 self.MainMenu.show()
+
+                # Start local extension server
+                start_server_if_needed()
+                set_current_user(username)
                 
                 # Close current window
                 self.close()

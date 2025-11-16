@@ -95,7 +95,8 @@ class History_Window(QWidget):
             color = {
                 "BLOCK": "#e74c3c",
                 "CAUTIOUS": "#f18b0f",
-                "SAFE": "#2ecc71"
+                "SAFE": "#2ecc71",
+                "TEST": "#3667ab"
             }.get(verdict, "#7f8c8d")
 
             self.table.setItem(row, 0, QTableWidgetItem(formatted_ts))
@@ -109,12 +110,3 @@ class History_Window(QWidget):
             self.table.setItem(row, 3, verdict_item)
 
         self.table.resizeColumnsToContents()
-
-
-# if __name__ == "__main__":
-#     import sys
-#     from PySide6.QtWidgets import QApplication
-#     app = QApplication(sys.argv)
-#     window = History_Window("Nico")
-#     window.show()
-#     sys.exit(app.exec())
