@@ -135,7 +135,7 @@ def get_sorted_history(user_name: str) -> list[dict]:
 
     # Reverse sorting because we want newest --> oldest :)
     entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
-    print(f"Entries found: {count}") # Debug - Can remove later
+    print(f"(HISTORY_FILE) Entries found: {count}") # Debug - Can remove later
     return entries
 
 # --- Sending the input to VT API (The Thread/Worker) ---

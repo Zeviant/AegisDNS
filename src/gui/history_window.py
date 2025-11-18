@@ -7,9 +7,7 @@ from src.logic.vt_service import get_sorted_history
 ''' 
 TO BE ADDED:
  * SORTING
- * SIDEBAR CONNECTION
  * BLACKLIST/WHITELIST FUNCTIONALITY
- * FIX RESOLUTION
  * IMPROVE SELECTION APPEARANCE
  * AUTOMATIC CACHE DELETION (AFTER CERTAIN TIME)
  * MANUAL ENTRY DELETION
@@ -25,15 +23,13 @@ class History_Window(QWidget):
 
         layout = QVBoxLayout(self)
 
+        # Load Sheet Style
+        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+            self.setStyleSheet(f.read())
+
         # -- Title --
         title = QLabel(f"History Log")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("""
-            font-size: 22px;
-            font-weight: bold;
-            padding: 10px;
-            color: #ffffff;
-        """)
         layout.addWidget(title)
 
         # -- Table --
@@ -47,26 +43,11 @@ class History_Window(QWidget):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setWordWrap(True)
 
-        self.table.setStyleSheet("""
-        QTableWidget {
-            background-color: #2b2b2b;
-            alternate-background-color: #333333;
-            color: #f0f0f0;
-            gridline-color: #444444;
-            border: 1px solid #3a3a3a;
-            font-size: 14px;
-            selection-background-color: #555555;
-            selection-color: white;
-        }
-        QHeaderView::section {
-            background-color: #1f2937;
-            color: #e5e7eb;
-            padding: 6px;
-            border: none;
-            font-weight: bold;
-        }
-        """)
+        # Load table styling from QSS file
+        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+            self.table.setStyleSheet(f.read())
 
         # -- Load Table --
         self.load_history()
@@ -101,7 +82,10 @@ class History_Window(QWidget):
 
             self.table.setItem(row, 0, QTableWidgetItem(formatted_ts))
             self.table.setItem(row, 1, QTableWidgetItem(kind))
-            self.table.setItem(row, 2, QTableWidgetItem(target))
+            
+            target_item = QTableWidgetItem(target)
+            target_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            self.table.setItem(row, 2, target_item)
 
             verdict_item = QTableWidgetItem(verdict)
             verdict_item.setBackground(QtGui.QColor(color))
@@ -109,4 +93,7 @@ class History_Window(QWidget):
             verdict_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(row, 3, verdict_item)
 
+        # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
+        self.table.setColumnWidth(2, 400) # Target
+        self.table.resizeRowsToContents()
