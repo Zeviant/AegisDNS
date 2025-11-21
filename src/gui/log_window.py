@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView, QPushButton, QHeaderView
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtGui
 from datetime import datetime
 from src.logic.backend_server import get_sorted_logs
@@ -11,6 +11,11 @@ class Log_Window(QWidget):
         self.sidebar = sidebar_reference
         self.setWindowTitle(f"Navigation Logs - {self.user_name}")
         self.resize(1024, 682)
+
+        # Timer for live updates
+        self._refresh_timer = QTimer(self)
+        self._refresh_timer.setInterval(3000)
+        self._refresh_timer.timeout.connect(self.load_logs)
 
         layout = QVBoxLayout(self)
 
@@ -43,7 +48,13 @@ class Log_Window(QWidget):
         # -- Load Table --
         self.load_logs()
 
+        # Start periodic refresh
+        self._refresh_timer.start()
+
     def load_logs(self):
+        # Get current scroll position
+        scroll_pos = self.table.verticalScrollBar().value()
+
         entries = get_sorted_logs(self.user_name)
         self.table.setRowCount(0)
 
@@ -85,6 +96,10 @@ class Log_Window(QWidget):
         self.table.resizeColumnsToContents()
         self.table.setColumnWidth(1, 420)  # Target
         self.table.resizeRowsToContents()
+
+        # Restore scroll position
+        max_scroll = self.table.verticalScrollBar().maximum()
+        self.table.verticalScrollBar().setValue(min(scroll_pos, max_scroll))
 
     def scan_address(self, address: str):
         # Update sidebar menu

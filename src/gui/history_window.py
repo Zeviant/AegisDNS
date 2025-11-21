@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtGui
 from datetime import datetime
 from src.logic.vt_service import get_sorted_history
@@ -20,6 +20,11 @@ class History_Window(QWidget):
         self.user_name = user_name
         self.setWindowTitle(f"History Log - {self.user_name}")
         self.resize(1024, 682)
+
+        # Timer for live updates
+        self._refresh_timer = QTimer(self)
+        self._refresh_timer.setInterval(3000)
+        self._refresh_timer.timeout.connect(self.load_history)
 
         layout = QVBoxLayout(self)
 
@@ -52,7 +57,13 @@ class History_Window(QWidget):
         # -- Load Table --
         self.load_history()
 
+        # Start periodic refresh
+        self._refresh_timer.start()
+
     def load_history(self):
+        # Get current scroll position
+        scroll_pos = self.table.verticalScrollBar().value()
+
         entries = get_sorted_history(self.user_name)
         self.table.setRowCount(0)
 
@@ -97,3 +108,7 @@ class History_Window(QWidget):
         self.table.resizeColumnsToContents()
         self.table.setColumnWidth(2, 400) # Target
         self.table.resizeRowsToContents()
+
+        # Restore scroll position
+        max_scroll = self.table.verticalScrollBar().maximum()
+        self.table.verticalScrollBar().setValue(min(scroll_pos, max_scroll))

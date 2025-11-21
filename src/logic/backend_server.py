@@ -62,7 +62,6 @@ def get_sorted_logs(user_name: str) -> list[dict]:
         print("LOG_FILE_ERROR")
 
     entries.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
-    print(f"(LOG_FILE) Entries found: {len(entries)}")
     return entries
 
 # Server condition endpoint (used by the extension to see if server is up)
