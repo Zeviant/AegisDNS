@@ -52,8 +52,8 @@ class Log_Window(QWidget):
         self._refresh_timer.start()
 
     def load_logs(self):
-        # Get current scroll position
-        scroll_pos = self.table.verticalScrollBar().value()
+        vbar = self.table.verticalScrollBar()
+        previous_scroll = vbar.value()
 
         entries = get_sorted_logs(self.user_name)
         self.table.setRowCount(0)
@@ -97,9 +97,7 @@ class Log_Window(QWidget):
         self.table.setColumnWidth(1, 420)  # Target
         self.table.resizeRowsToContents()
 
-        # Restore scroll position
-        max_scroll = self.table.verticalScrollBar().maximum()
-        self.table.verticalScrollBar().setValue(min(scroll_pos, max_scroll))
+        QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))
 
     def scan_address(self, address: str):
         # Update sidebar menu
