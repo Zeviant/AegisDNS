@@ -44,52 +44,26 @@ def append_logging_entry(entry: dict):
         fp.write(json.dumps(entry) + "\n")
 
 def get_sorted_logs(user_name: str) -> list[dict]:
-    """ Used to filter and sort the unscanned logs"""
-    entries = []
-    
+    entries: list[dict] = []
+
     try:
         if not LOGGING_FILE.exists():
             return entries
-            
-        with open(LOGGING_FILE, "r", encoding = "utf-8") as f:
+
+        with LOGGING_FILE.open("r", encoding="utf-8") as f:
             for line in f:
-                if not line.strip():
+                line = line.strip()
+                if not line:
                     continue
                 entry = json.loads(line)
-                # Filter entries by username
                 if entry.get("username") == user_name:
                     entries.append(entry)
     except Exception:
         print("LOG_FILE_ERROR")
-        pass
 
-    entries.sort(key = lambda x: x.get('timestamp', 0), reverse = True)
+    entries.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+    print(f"(LOG_FILE) Entries found: {len(entries)}")
     return entries
-
-
-
-def get_sorted_history(user_name: str) -> list[dict]:
-    """ Used to filter and sort the JSON history log """
-    
-    entries = []
-    count = 0
-    try:
-        with open(HISTORY_FILE, "r", encoding = "utf-8") as f:
-            for line in f:
-                entry = json.loads(line)
-                # Filter entries by username
-                if entry.get("user") == user_name:
-                    entries.append(entry)
-                    count = count + 1
-    except Exception:
-        print("HISTORY_FILE_ERROR")
-        pass
-
-    # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
-    print(f"Entries found: {count}") # Debug - Can remove later
-    return entries
-
 
 # Server condition endpoint (used by the extension to see if server is up)
 @app.route("/health", methods=["GET"])
