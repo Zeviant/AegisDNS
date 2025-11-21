@@ -6,7 +6,7 @@ from PySide6.QtCore import QThread, Signal
 # Import the Database Manager for logging
 from src.SQL_Alchemy.database_manager import DatabaseManager
 
-# --- Importando load_dotenv, it read the .env ---
+# --- Importing load_dotenv, it read the .env ---
 try:
     from dotenv import load_dotenv
     load_dotenv()

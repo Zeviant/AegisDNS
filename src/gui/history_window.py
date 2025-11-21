@@ -109,4 +109,5 @@ class History_Window(QWidget):
         self.table.setColumnWidth(2, 400) # Target
         self.table.resizeRowsToContents()
 
+        # Singleshot applies value afetr Qt finishes resizing/reloading table
         QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))
