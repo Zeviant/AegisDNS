@@ -1,11 +1,12 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QListWidgetItem, QWidget, QGridLayout
+from PySide6.QtWidgets import QMainWindow, QLabel, QListWidgetItem, QWidget, QGridLayout, QSystemTrayIcon
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPixmap, QIcon, QFont 
 from src.gui.uiFiles.sidebar_ui import Ui_MainWindow
 
 # Import pages 
 from src.gui.history_window import History_Window
-from src.gui.main_window import Main_Window 
+from src.gui.main_window import Main_Window
+from src.gui.log_window import Log_Window 
 
 # Define MainWindow Class
 class SideBarMainWindow(QMainWindow):
@@ -16,6 +17,11 @@ class SideBarMainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.username = user_name
         self.password = password
+
+        # Create system tray icon
+        self.tray_icon = QSystemTrayIcon(QIcon("src\\images\\SideBar_icons\\logo.png"), self)
+        self.tray_icon.setToolTip("DNS Monitor")
+        self.tray_icon.show()
 
         # Initialize UI elements 
         self.title_label = self.ui.title_label
@@ -44,8 +50,13 @@ class SideBarMainWindow(QMainWindow):
 
         # List of menu items
         self.menuList = [
-            {"name": "Analyze Address", "icon": "src\\images\\SideBar_icons\\analyze_icon.png", "widget": Main_Window(self.username, self.password)}, 
+            {
+                "name": "Analyze Address",
+                "icon": "src\\images\\SideBar_icons\\analyze_icon.png",
+                "widget": Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification),
+            }, 
             {"name": "History File", "icon": "src\images\SideBar_icons\history_icon.png", "widget": History_Window(self.username)},
+            {"name": "Navigation Logs", "icon": "src\images\SideBar_icons\history_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
             {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": QWidget()},
             {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": QWidget()},
             {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": QWidget()},
@@ -55,6 +66,23 @@ class SideBarMainWindow(QMainWindow):
         self.listWidget()
         self.signalSlot()
         self.stackWidget()
+
+    def show_verdict_notification(self, verdict: str, target: str = ""):
+
+        if verdict == "BLOCK":
+            icon = QSystemTrayIcon.Critical
+        elif verdict == "CAUTION":
+            icon = QSystemTrayIcon.Warning
+        else:
+            icon = QSystemTrayIcon.Information
+
+        title = "Scan complete"
+        message = f"Verdict: {verdict}"
+        if target:
+            message = f"{message} for {target}"
+
+        # The last parameter is duration in ms
+        self.tray_icon.showMessage(title, message, icon, 5000)
     
     def signalSlot(self): 
         # If sideMenuButton is pressed
@@ -102,8 +130,9 @@ class SideBarMainWindow(QMainWindow):
             self.mainContent.removeWidget(widget)
 
         # Create instances of each page
-        self.StartWindowPage = Main_Window(self.username, self.password)
-        self.MainWindowPage = History_Window(self.username) 
+        self.StartWindowPage = Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
+        self.MainWindowPage = History_Window(self.username)
+        self.LogWindowPage = Log_Window(self.username, sidebar_reference=self)
         self.PacketsWindowPage = QWidget()
         self.WhiteBlackListPage = QWidget() 
         self.SettingsPage = QWidget() 
@@ -112,6 +141,7 @@ class SideBarMainWindow(QMainWindow):
         # Add them to stacked widget
         self.mainContent.addWidget(self.StartWindowPage)
         self.mainContent.addWidget(self.MainWindowPage)
+        self.mainContent.addWidget(self.LogWindowPage)
         self.mainContent.addWidget(self.PacketsWindowPage)
         self.mainContent.addWidget(self.WhiteBlackListPage)
         self.mainContent.addWidget(self.SettingsPage)
@@ -128,6 +158,3 @@ class SideBarMainWindow(QMainWindow):
             new_page = QWidget()
             new_page.setLayout(layout)
             self.mainContent.addWidget(menu["widget"])
-
-
-

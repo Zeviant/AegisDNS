@@ -59,12 +59,14 @@ def show_vt_box(parent, verdict: str, stats: dict):
 
     box.exec()
 
-# Main Wiwndow (Where the user puts the input)
+# Main Window (Where the user puts the input)
 class Main_Window(QMainWindow):
-    def __init__(self, userName, password):
+    def __init__(self, userName, password, notify_callback=None):
         super().__init__()
         self.userName = userName 
         self.password = password
+        self._notify_callback = notify_callback
+        self._last_submitted_text = ""
         
         self.setWindowTitle(f"Main Window - User: {self.userName}")
         self.resize(450, 450)
@@ -172,6 +174,9 @@ class Main_Window(QMainWindow):
         if not raw:
             QMessageBox.warning(self, "Empty input", "Please enter a URL, domain, or IP.")
             return
+
+        # Remember last submitted text so we can reference it in notifications
+        self._last_submitted_text = raw
         
         state = _load_state()
         last = float(state.get("last_call", 0) or 0)
@@ -210,4 +215,12 @@ class Main_Window(QMainWindow):
 
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
+
+        # Send system notification
+        if self._notify_callback:
+            try:
+                self._notify_callback(verdict, self._last_submitted_text)
+            except Exception:
+                pass
+
         show_vt_box(self, verdict, stats)

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>DNS Protect by NicoV and Zeviant</title>
+  <link rel="stylesheet" href="../styles/popup.css">
+</head>
+<body>
+  <header>
+    <img src="../images/icon-32.png" alt="Logo">
+    <div>
+      <h1>DNS Protect</h1>
+      <p id="statusLabel">Disconnected</p>
+    </div>
+  </header>
+  <section id="modePanel">
+    <p class="subtitle">Select mode</p>
+    <div class="mode-list">
+      <button data-mode="logging" class="mode">Logging Mode</button>
+      <button data-mode="silent" class="mode" disabled>Silent Mode</button>
+      <button data-mode="safe" class="mode" disabled>Safe Mode</button>
+    </div>
+    <p class="hint">Connections are being logged to the server. No scans are being performed.</p>
+  </section>
+
+  <script src="../scripts_/popup.js"></script>
+</body>
+</html>

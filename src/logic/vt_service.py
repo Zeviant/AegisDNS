@@ -6,7 +6,7 @@ from PySide6.QtCore import QThread, Signal
 # Import the Database Manager for logging
 from src.SQL_Alchemy.database_manager import DatabaseManager
 
-# --- Importando load_dotenv, it read the .env ---
+# --- Importing load_dotenv, it read the .env ---
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -135,7 +135,6 @@ def get_sorted_history(user_name: str) -> list[dict]:
 
     # Reverse sorting because we want newest --> oldest :)
     entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
-    print(f"Entries found: {count}") # Debug - Can remove later
     return entries
 
 # --- Sending the input to VT API (The Thread/Worker) ---
@@ -149,7 +148,6 @@ class VTScanThread(QThread):
         self.target = target
         self.userName = userName  
         
-        # API Key Retrieval moved to logic layer
         self.api_key = os.environ.get("VIRUSTOTAL_API_KEY") 
         
         self.base = "https://www.virustotal.com/api/v3"

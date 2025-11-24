@@ -25,9 +25,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Cache files
-vt_cache.json
-vt_history.json
 # VT cache/history (project-local)
 src/VT_Cache/
 src/VT_Cache/*
@@ -58,6 +55,6 @@ src/SQL_Alchemy/UserInformation.db
 ehthumbs.db
 Thumbs.db
 
-# API keys and secrets
+# API keys
 .env
 *.key

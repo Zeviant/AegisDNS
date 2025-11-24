@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtGui
 from datetime import datetime
 from src.logic.vt_service import get_sorted_history
@@ -7,9 +7,8 @@ from src.logic.vt_service import get_sorted_history
 ''' 
 TO BE ADDED:
  * SORTING
- * SIDEBAR CONNECTION
- * FIX RESOLUTION
- * MAKE SELECTION ACTUALLY LOOK NICE
+ * BLACKLIST/WHITELIST FUNCTIONALITY
+ * IMPROVE SELECTION APPEARANCE
  * AUTOMATIC CACHE DELETION (AFTER CERTAIN TIME)
  * MANUAL ENTRY DELETION
  * MAYBE BEING ABLE TO VIEW ADDITIONAL ENTRY INFO BY CLICKING ON AN ENTRY (e.g. detailed VT results)
@@ -22,17 +21,20 @@ class History_Window(QWidget):
         self.setWindowTitle(f"History Log - {self.user_name}")
         self.resize(1024, 682)
 
+        # Timer for live updates
+        self._refresh_timer = QTimer(self)
+        self._refresh_timer.setInterval(3000)
+        self._refresh_timer.timeout.connect(self.load_history)
+
         layout = QVBoxLayout(self)
+
+        # Load Sheet Style
+        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+            self.setStyleSheet(f.read())
 
         # -- Title --
         title = QLabel(f"History Log")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("""
-            font-size: 22px;
-            font-weight: bold;
-            padding: 10px;
-            color: #ffffff;
-        """)
         layout.addWidget(title)
 
         # -- Table --
@@ -46,31 +48,22 @@ class History_Window(QWidget):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setWordWrap(True)
 
-        self.table.setStyleSheet("""
-        QTableWidget {
-            background-color: #2b2b2b;
-            alternate-background-color: #333333;
-            color: #f0f0f0;
-            gridline-color: #444444;
-            border: 1px solid #3a3a3a;
-            font-size: 14px;
-            selection-background-color: #555555;
-            selection-color: white;
-        }
-        QHeaderView::section {
-            background-color: #1f2937;
-            color: #e5e7eb;
-            padding: 6px;
-            border: none;
-            font-weight: bold;
-        }
-        """)
+        # Load table styling from QSS file
+        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+            self.table.setStyleSheet(f.read())
 
         # -- Load Table --
         self.load_history()
 
+        # Start periodic refresh
+        self._refresh_timer.start()
+
     def load_history(self):
+        vbar = self.table.verticalScrollBar()
+        previous_scroll = vbar.value()
+
         entries = get_sorted_history(self.user_name)
         self.table.setRowCount(0)
 
@@ -94,12 +87,16 @@ class History_Window(QWidget):
             color = {
                 "BLOCK": "#e74c3c",
                 "CAUTIOUS": "#f18b0f",
-                "SAFE": "#2ecc71"
+                "SAFE": "#2ecc71",
+                "TEST": "#3667ab"
             }.get(verdict, "#7f8c8d")
 
             self.table.setItem(row, 0, QTableWidgetItem(formatted_ts))
             self.table.setItem(row, 1, QTableWidgetItem(kind))
-            self.table.setItem(row, 2, QTableWidgetItem(target))
+            
+            target_item = QTableWidgetItem(target)
+            target_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            self.table.setItem(row, 2, target_item)
 
             verdict_item = QTableWidgetItem(verdict)
             verdict_item.setBackground(QtGui.QColor(color))
@@ -107,13 +104,10 @@ class History_Window(QWidget):
             verdict_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(row, 3, verdict_item)
 
+        # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
+        self.table.setColumnWidth(2, 400) # Target
+        self.table.resizeRowsToContents()
 
-
-# if __name__ == "__main__":
-#     import sys
-#     from PySide6.QtWidgets import QApplication
-#     app = QApplication(sys.argv)
-#     window = History_Window("Nico")
-#     window.show()
-#     sys.exit(app.exec())
+        # Singleshot applies value afetr Qt finishes resizing/reloading table
+        QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))
