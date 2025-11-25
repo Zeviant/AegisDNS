@@ -1,7 +1,8 @@
 from PySide6.QtWidgets import QMainWindow, QLabel, QListWidgetItem, QWidget, QGridLayout, QSystemTrayIcon
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import QPixmap, QIcon, QFont 
 from src.gui.uiFiles.sidebar_ui import Ui_MainWindow
+from src.logic.vt_service import get_sorted_history
 
 # Import pages 
 from src.gui.history_window import History_Window
@@ -69,8 +70,57 @@ class SideBarMainWindow(QMainWindow):
         self.signalSlot()
         self.stackWidget()
 
-    def show_verdict_notification(self, verdict: str, target: str = ""):
+        # Periodically poll history to show notifications for any scans
+        self._last_notified_ts: str | None = None
+        self._notify_timer = QTimer(self)
+        self._notify_timer.setInterval(5000)  # 5 seconds
+        self._notify_timer.timeout.connect(self._check_new_scans_for_notifications)
+        self._notify_timer.start()
 
+    def _check_new_scans_for_notifications(self):
+        """
+        Polls the VT history log and shows notifications for new entries.
+        This makes it so that scans triggered outside the GUI (e.g. browser extension) can create a notification.
+        (Could maybe make a better implementation later, but trying to create a notification
+        from backend_server.py was causing issues)
+        """
+        entries = get_sorted_history(self.username)
+
+        if not entries:
+            return
+
+        # Avoid notifying old entries
+        if self._last_notified_ts is None:
+            self._last_notified_ts = entries[0].get("ts", "")
+            return
+
+        newest_ts = entries[0].get("ts", "")
+        if not newest_ts or newest_ts == self._last_notified_ts:
+            return
+
+        # Collect entries newer than last_notified_ts
+        new_entries = []
+        for entry in entries:
+            ts = entry.get("ts", "")
+            if ts == self._last_notified_ts:
+                break
+            new_entries.append(entry)
+
+        # Update ts even if no entries found
+        if not new_entries:
+            self._last_notified_ts = newest_ts
+            return
+
+        # Notify from oldest to newest
+        for entry in reversed(new_entries):
+            verdict = entry.get("verdict", "UNKNOWN").upper()
+            target = entry.get("target", "")
+            self.show_verdict_notification(verdict, target)
+
+        # Update ts to newest entry time
+        self._last_notified_ts = newest_ts
+
+    def show_verdict_notification(self, verdict: str, target: str = ""):
         if verdict == "BLOCK":
             icon = QSystemTrayIcon.Critical
         elif verdict == "CAUTION":
@@ -131,6 +181,7 @@ class SideBarMainWindow(QMainWindow):
         for widget in widgetList: 
             self.mainContent.removeWidget(widget)
 
+<<<<<<< HEAD
         # Create instances of each page
         self.StartWindowPage = Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
         self.MainWindowPage = History_Window(self.username)
@@ -159,4 +210,8 @@ class SideBarMainWindow(QMainWindow):
             layout.addWidget(label)
             new_page = QWidget()
             new_page.setLayout(layout)
+=======
+        # Add each menu widget to the stacked widget in order
+        for menu in self.menuList:
+>>>>>>> 28418fd3521218ff1f1bc848206d3ac9b11ce994
             self.mainContent.addWidget(menu["widget"])

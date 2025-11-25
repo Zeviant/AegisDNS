@@ -5,7 +5,7 @@
   <title>DNS Protect by NicoV and Zeviant</title>
   <link rel="stylesheet" href="../styles/popup.css">
 </head>
-<body>
+<body class="popup">
   <header>
     <img src="../images/icon-32.png" alt="Logo">
     <div>
@@ -16,11 +16,12 @@
   <section id="modePanel">
     <p class="subtitle">Select mode</p>
     <div class="mode-list">
-      <button data-mode="logging" class="mode">Logging Mode</button>
-      <button data-mode="silent" class="mode" disabled>Silent Mode</button>
-      <button data-mode="safe" class="mode" disabled>Safe Mode</button>
+      <button data-mode="none" class="mode">None</button>
+      <button data-mode="logging" class="mode">Logging</button>
+      <button data-mode="silent" class="mode">Silent</button>
+      <button data-mode="safe" class="mode">Safe</button>
     </div>
-    <p class="hint">Connections are being logged to the server. No scans are being performed.</p>
+    <p class="hint">MODE_ERROR.</p>
   </section>
 
   <script src="../scripts_/popup.js"></script>
