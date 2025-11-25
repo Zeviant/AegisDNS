@@ -1,7 +1,7 @@
 # Qt Libraries
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox, QTableView
-
+from PySide6.QtGui import QPixmap, QIcon, QFont 
 # Connection with other Windows
 from src.gui.CreateAccount_Window import CreateAccount_Window
 from src.SQL_Alchemy.database_manager import DatabaseManager
@@ -12,7 +12,7 @@ from src.logic.backend_server import set_current_user, start_server_if_needed
 
 class Start_Window(QWidget):
     def __init__(self):
-        # Window SetUp
+        # --- Window SetUp ---
         super().__init__()
         self.setWindowTitle("Sign In")
         self.resize(1024, 682)
@@ -20,13 +20,17 @@ class Start_Window(QWidget):
 
         # Fixed Box Size
         contentSquare = QWidget()
-        contentSquare.setFixedSize(420, 360) 
+        contentSquare.setFixedSize(400, 360)  # 420, 360
 
-        # --- Name and Password labels and line edits---
+        # --- User Icon ---
+        userIcon_label = QLabel("")
+        #userIcon_label.setIcon(QIcon("src\images\Login_icon\user_icon.png"))
+        userIcon_label.setScaledContents(True)
+
+
+        # --- Name and Password labels and line edits ---
         name_label = QLabel("Name")
-
         password_label = QLabel("Password")
-
 
         self.name_line_edit = QLineEdit()
         self.password_line_edit = QLineEdit()
@@ -44,12 +48,17 @@ class Start_Window(QWidget):
         self.password_line_edit.returnPressed.connect(self.login_account)
 
         # --- Layouts ---
+        # Layout for user icon
+        userIcon_layout = QVBoxLayout()
+        userIcon_layout.setSpacing(5)
+        userIcon_layout.addWidget(userIcon_label)
+
         # Layout for name and password
         h_layout1 = QVBoxLayout()
         h_layout1.setSpacing(5)
 
         name_layout = QVBoxLayout()
-        name_layout.setSpacing(10)
+        #name_layout.setSpacing(10)
         name_layout.addWidget(name_label)
         name_layout.addWidget(self.name_line_edit)
         
@@ -58,6 +67,7 @@ class Start_Window(QWidget):
         pass_layout.addWidget(password_label)
         pass_layout.addWidget(self.password_line_edit)
 
+        h_layout1.addLayout(userIcon_layout)
         h_layout1.addLayout(name_layout)
         h_layout1.addLayout(pass_layout)
 
