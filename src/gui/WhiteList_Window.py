@@ -3,36 +3,20 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtGui
 from PySide6.QtGui import QCursor
 from datetime import datetime
-from src.logic.vt_service import get_sorted_history, delete_history_entry, add_entry_to_whitelist, delete_whiteList_entry, delete_blackList_entry, add_entry_to_blacklist   
-from src.gui.WhiteList_Window import WhiteList_Window
-from src.gui.BlackList_Window import BlackList_Window
+from src.logic.vt_service import get_sorted_white_list, delete_whiteList_entry
 
-''' 
-TO BE ADDED:
- * SORTING
- * BLACKLIST/WHITELIST FUNCTIONALITY
- * IMPROVE SELECTION APPEARANCE
- * AUTOMATIC CACHE DELETION (AFTER CERTAIN TIME)
- * MANUAL ENTRY DELETION
- * MAYBE BEING ABLE TO VIEW ADDITIONAL ENTRY INFO BY CLICKING ON AN ENTRY (e.g. detailed VT results)
-'''
-
-class History_Window(QWidget):
+class WhiteList_Window(QWidget):
     def __init__(self, user_name: str):
         super().__init__()
         self.user_name = user_name
-        self.setWindowTitle(f"History Log - {self.user_name}")
+        self.setWindowTitle(f"White List - {self.user_name}")
         self.resize(1024, 682)
 
         # Timer for live updates
         self._refresh_timer = QTimer(self)
         self._refresh_timer.setInterval(3000)
-        self._refresh_timer.timeout.connect(self.load_history)
+        self._refresh_timer.timeout.connect(self.load_entry)
 
-        # Instace for whiteblacklist window
-        self.white_list_window = WhiteList_Window(user_name)
-        self.black_list_window = BlackList_Window(user_name)
-        
         layout = QVBoxLayout(self)
 
         # Load Sheet Style
@@ -40,7 +24,7 @@ class History_Window(QWidget):
             self.setStyleSheet(f.read())
 
         # -- Title --
-        title = QLabel(f"History Log")
+        title = QLabel(f"White List Log")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
@@ -62,7 +46,7 @@ class History_Window(QWidget):
             self.table.setStyleSheet(f.read())
 
         # -- Load Table --
-        self.load_history()
+        self.load_entry()
 
         # -- Options in the table --
         self.table.cellClicked.connect(self.show_options)
@@ -71,11 +55,11 @@ class History_Window(QWidget):
         self._refresh_timer.start()
 
     # -- Function to load rows in the table --
-    def load_history(self):
+    def load_entry(self):
         vbar = self.table.verticalScrollBar()
         previous_scroll = vbar.value()
 
-        entries = get_sorted_history(self.user_name)
+        entries = get_sorted_white_list(self.user_name)
         self.table.setRowCount(0)
 
         for entry in entries:
@@ -128,9 +112,24 @@ class History_Window(QWidget):
         # Singleshot applies value afetr Qt finishes resizing/reloading table
         QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))
 
+    # -- Add the item to the white list
+    def check_entry(self, entry):
+        target = entry["target"]
+        ts = entry["ts"]
+
+        # Loop through whitelist table rows
+        for row in range(self.table.rowCount()):
+            existing_ts = self.table.item(row, 0).data(Qt.UserRole)
+            existing_target = self.table.item(row, 2).text()
+
+            if existing_ts == ts and existing_target == target:
+                return True
+
+        return False
+        
     # -- Delete Item of the Table --
     def delete_item(self, row):
-        # Get raw timestamp from data so it matches the entry in the jsonl
+        # Get RAW timestamp from data so it matches the entry in the jsonl
         ts_item = self.table.item(row, 0)
         raw_ts = ts_item.data(Qt.UserRole)
 
@@ -138,76 +137,25 @@ class History_Window(QWidget):
         target = self.table.item(row, 2).text()
 
         # Remove entry from JSONL
-        delete_history_entry(self.user_name, raw_ts, target)
         delete_whiteList_entry(self.user_name, raw_ts, target)
-        delete_blackList_entry(self.user_name, raw_ts, target)
-
+        
         # Remove entry form UI
         self.table.removeRow(row)
-        self.white_list_window.delete_item(row)
-        self.black_list_window.delete_item(row)
-
-    # -- Add Item to the White List --
-    def get_entry_from_row(self, row):
-        ts_item = self.table.item(row, 0)
-        raw_ts = ts_item.data(Qt.UserRole)
-
-        entry = {
-            "ts": raw_ts,
-            "kind": self.table.item(row, 1).text(),
-            "target": self.table.item(row, 2).text(),
-            "verdict": self.table.item(row, 3).text(),
-            "user": self.user_name
-        }
-
-       
-        return entry
-    
-    def addWhiteList(self, row): 
-        entry = self.get_entry_from_row(row)
-        
-        # Check if entry is already in the json
-        if self.white_list_window.check_entry(entry):
-            print("Entry already in whitelist table, skipping.")
-            return
-        
-        add_entry_to_whitelist(entry)
-
-    def addBlackList(self, row): 
-            entry = self.get_entry_from_row(row)
-            
-            # Check if entry is already in the json
-            if self.black_list_window.check_entry(entry):
-                print("Entry already in whitelist table, skipping.")
-                return
-            
-            add_entry_to_blacklist(entry)
 
     # -- Menu of options --
-    def show_options(self, row, col): 
+    def show_options(self, row): 
         menu = QMenu(self.table)
         with open("src/gui/Style_Sheet/QMenu_Style.qss") as f: 
             style_str = f.read()
         
         menu.setStyleSheet(style_str)
 
-        menu.addAction("White List")
-        menu.addAction("Black List")
         menu.addAction("Delete")
 
         # Get mouse position
         cursor_pos = self.mapToGlobal(self.table.viewport().mapFromGlobal(QCursor.pos()))
         selected = menu.exec_(cursor_pos)
-        if selected is None:
-            return   
-
+        
         match selected.text(): 
-            case "White List": 
-                self.addWhiteList(row)
-                
-            case "Black List": 
-                self.addBlackList(row)
-
             case "Delete": 
                 self.delete_item(row)
-        

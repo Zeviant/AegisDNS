@@ -1,0 +1,165 @@
+/* -- GLOBAL COLORS / BACKGROUND -- */
+
+QWidget {
+    background-color: #0f3284ff;        
+    color: #e5e7eb;                   
+    font-family: "Segoe UI";
+    font-size: 13px;
+}
+
+/* -- TABLE WIDGET -- */
+
+QTableWidget, QTableView {
+    background-color: #1e293b;        /* dark blue-gray */
+    alternate-background-color: #24344c;
+    color: #e2e8f0;                   
+    gridline-color: #334155;         
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
+/* Selected row */
+QTableWidget::item:selected,
+QTableView::item:selected {
+    background-color: #2563eb;        /* bright blue */
+    color: #ffffff;
+}
+
+/* Hover row */
+QTableWidget::item:hover,
+QTableView::item:hover {
+    background-color: #1d4ed8;        /* dark blue hover */
+    color: #ffffff;
+}
+
+/* Table rows padding */
+QTableWidget::item,
+QTableView::item {
+    padding: 6px;
+}
+
+/* ============================
+   TABLE HEADERS
+   ============================ */
+
+QHeaderView::section {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 6px;
+    border: 1px solid #334155;
+    font-family: "Segoe UI Semibold";
+    font-size: 13px;
+}
+
+QHeaderView::section:hover {
+    background-color: #1d4ed8;
+}
+
+/* No border between header and table */
+QTableWidget QTableCornerButton::section {
+    background-color: #1e293b;
+    border: none;
+}
+
+/* ============================
+   SCROLLBARS (Dark Style)
+   ============================ */
+
+QScrollBar:vertical {
+    background: #0f172a;
+    width: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #334155;
+    min-height: 30px;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #475569;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* Horizontal scrollbar */
+QScrollBar:horizontal {
+    background: #0f172a;
+    height: 10px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #334155;
+    min-width: 30px;
+    border-radius: 4px;
+}
+
+/* ============================
+   QMENU (Right-click menu)
+   ============================ */
+
+QMenu {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 6px;
+}
+
+QMenu::item {
+    color: #e2e8f0;
+    padding: 6px 16px;
+    border-radius: 6px;
+    margin: 2px;
+}
+
+QMenu::item:selected {
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+QMenu::item:pressed {
+    background-color: #2563eb;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #334155;
+    margin: 5px 8px;
+}
+
+/* ============================
+   BUTTONS (Simple transparent)
+   ============================ */
+
+QPushButton {
+    background-color: transparent;
+    color: #e2e8f0;
+    font-family: "Segoe UI Semibold";
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+QPushButton:hover {
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+QPushButton:pressed {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+/* ============================
+   LABELS (Title)
+   ============================ */
+
+QLabel {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: "Segoe UI Semibold";
+}

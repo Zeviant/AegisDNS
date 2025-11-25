@@ -19,6 +19,8 @@ except Exception:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_cache.json")
 HISTORY_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_history.jsonl")
+WHITELIST_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_whiteList.jsonl")
+BLACKLIST_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_blackList.jsonl")
 VIRUSTOTAL_RATELIMIT = 15
 _STATE_MEMO = {"last_call": 0, "cache": {}}
 
@@ -76,7 +78,6 @@ def append_history(kind: str, target: str, verdict: str, stats: dict, source: st
         
     # 2. Log to SQLAlchemy DB (Delegated to DatabaseManager)
     DatabaseManager.log_address_scan(target, verdict, userName)
-
 
 # --- Inputs (if URL, IP or Domain) ---
 DOMAIN_RE = re.compile(
@@ -136,6 +137,142 @@ def get_sorted_history(user_name: str) -> list[dict]:
     # Reverse sorting because we want newest --> oldest :)
     entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
     return entries
+
+def add_entry_to_whitelist(entry):
+    """Append an entry to vt_whiteList.jsonl."""
+
+    file_path = WHITELIST_FILE
+
+    with open(file_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
+
+def add_entry_to_blacklist(entry):
+    """Append an entry to vt_whiteList.jsonl."""
+
+    file_path = BLACKLIST_FILE
+
+    with open(file_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
+
+def get_sorted_white_list(user_name: str) -> list[dict]:
+    """ Used to filter and sort the JSON history log """
+    
+    entries = []
+    count = 0
+    try:
+        with open(WHITELIST_FILE, "r", encoding = "utf-8") as f:
+            for line in f:
+                entry = json.loads(line)
+                # Filter entries by username
+                if entry.get("user") == user_name:
+                    entries.append(entry)
+                    count = count + 1
+    except Exception:
+        print("HISTORY_FILE_ERROR")
+        pass
+
+    # Reverse sorting because we want newest --> oldest :)
+    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
+    return entries
+
+def get_sorted_black_list(user_name: str) -> list[dict]:
+    """ Used to filter and sort the JSON history log """
+    
+    entries = []
+    count = 0
+    try:
+        with open(BLACKLIST_FILE, "r", encoding = "utf-8") as f:
+            for line in f:
+                entry = json.loads(line)
+                # Filter entries by username
+                if entry.get("user") == user_name:
+                    entries.append(entry)
+                    count = count + 1
+    except Exception:
+        print("HISTORY_FILE_ERROR")
+        pass
+
+    # Reverse sorting because we want newest --> oldest :)
+    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
+    return entries
+
+def delete_history_entry(user_name: str, ts: str, target: str):
+    """Delete a single history entry that matches timestamp + target."""
+
+    file_path = HISTORY_FILE
+
+    kept_lines = []
+
+    # Read all lines and keep only the ones we DON'T delete
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # skip corrupted lines
+
+            if entry.get("ts") == ts and entry.get("target") == target:
+                # Skip this entry (deleting)
+                continue
+
+            kept_lines.append(line)
+
+    # Rewrite JSONL file without the deleted entry
+    with open(file_path, "w", encoding="utf-8") as f:
+        for line in kept_lines:
+            f.write(line)
+
+def delete_whiteList_entry(user_name: str, ts: str, target: str):
+    """Delete a single history entry that matches timestamp + target."""
+
+    file_path = WHITELIST_FILE
+
+    kept_lines = []
+
+    # Read all lines and keep only the ones we DON'T delete
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # skip corrupted lines
+
+            if entry.get("ts") == ts and entry.get("target") == target:
+                # Skip this entry (deleting)
+                continue
+
+            kept_lines.append(line)
+
+    # Rewrite JSONL file without the deleted entry
+    with open(file_path, "w", encoding="utf-8") as f:
+        for line in kept_lines:
+            f.write(line)
+
+def delete_blackList_entry(user_name: str, ts: str, target: str):
+    """Delete a single history entry that matches timestamp + target."""
+
+    file_path = BLACKLIST_FILE
+
+    kept_lines = []
+
+    # Read all lines and keep only the ones we DON'T delete
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # skip corrupted lines
+
+            if entry.get("ts") == ts and entry.get("target") == target:
+                # Skip this entry (deleting)
+                continue
+
+            kept_lines.append(line)
+
+    # Rewrite JSONL file without the deleted entry
+    with open(file_path, "w", encoding="utf-8") as f:
+        for line in kept_lines:
+            f.write(line)
 
 # --- Sending the input to VT API (The Thread/Worker) ---
 class VTScanThread(QThread):

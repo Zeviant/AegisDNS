@@ -1,0 +1,37 @@
+QMenu {
+    background-color: #1e293b;        /* dark blue-gray (same as QListWidget + title_frame) */
+    color: #e5e7eb;                   /* soft white text */
+    border: 1px solid #334155;        /* subtle border */
+    padding: 4px;
+    font-size: 13px;
+    font-family: "Segoe UI Semibold";
+    border-radius: 12px; 
+}
+
+QMenu::item {
+    background-color: transparent;
+    color: #e2e8f0;                   /* slightly lighter white */
+    padding: 6px 18px;
+    border-radius: 6px;               /* soft rounded corners for smooth feel */
+    margin: 2px 4px;
+}
+
+QMenu::item:selected {
+    background-color: #1d4ed8;        /* dark blue hover (same as your list hover) */
+    color: #ffffff;                   
+}
+
+QMenu::item:pressed {
+    background-color: #2563eb;        /* bright blue pressed (same as your selected) */
+    color: #ffffff;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #334155;        /* subtle separator same as borders */
+    margin: 4px 8px;
+}
+
+QMenu::icon {
+    margin-right: 8px;
+}

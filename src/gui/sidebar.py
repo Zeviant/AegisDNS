@@ -7,6 +7,8 @@ from src.gui.uiFiles.sidebar_ui import Ui_MainWindow
 from src.gui.history_window import History_Window
 from src.gui.main_window import Main_Window
 from src.gui.log_window import Log_Window 
+from src.gui.WhiteBlackList_Window import WhiteBlackList_Window
+#from src.gui.WhiteList_Window import WhiteList_Window
 
 # Define MainWindow Class
 class SideBarMainWindow(QMainWindow):
@@ -57,7 +59,7 @@ class SideBarMainWindow(QMainWindow):
             }, 
             {"name": "History File", "icon": "src\images\SideBar_icons\history_icon.png", "widget": History_Window(self.username)},
             {"name": "Navigation Logs", "icon": "src\images\SideBar_icons\history_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
-            {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": QWidget()},
+            {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
             {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": QWidget()},
             {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": QWidget()},
         ]
@@ -134,7 +136,7 @@ class SideBarMainWindow(QMainWindow):
         self.MainWindowPage = History_Window(self.username)
         self.LogWindowPage = Log_Window(self.username, sidebar_reference=self)
         self.PacketsWindowPage = QWidget()
-        self.WhiteBlackListPage = QWidget() 
+        self.WhiteBlackListPage = WhiteBlackList_Window(self.username) 
         self.SettingsPage = QWidget() 
          
 
