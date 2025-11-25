@@ -30,8 +30,6 @@ def _load_state() -> dict:
             state = json.load(f)
             if isinstance(state, dict):
                 state.setdefault("last_call", 0)
-                for entry in state.get("cache", {}).values():
-                    pass 
                 _STATE_MEMO = state
                 return state
     except Exception:
@@ -190,12 +188,20 @@ class VTScanThread(QThread):
                 verdict = cached.get("verdict", "UNKNOWN")
                 
                 # mark a “use” to enforce cooldown even for cache
-                # Use time.time() for last_call, as decided in step 2.
                 state["last_call"] = time.time() 
                 _save_state(state)
                 
                 append_history(self.kind, self.target, verdict, stats, source="cache", userName=self.userName)
-                self.result.emit({"ok": True, "message": "cache", "stats": stats, "verdict": verdict})
+                self.result.emit(
+                    {
+                        "ok": True,
+                        "message": "cache",
+                        "stats": stats,
+                        "verdict": verdict,
+                        "kind": self.kind,
+                        "target": self.target,
+                    }
+                )
                 return
 
             # 1) Cooldown (UI stays responsive; main thread shows countdown via tick)
@@ -260,7 +266,16 @@ class VTScanThread(QThread):
             state["cache"][key] = {"stats": stats, "verdict": verdict, "ts": datetime.now().isoformat()}
             _save_state(state)
             append_history(self.kind, self.target, verdict, stats, source="live", userName=self.userName)
-            self.result.emit({"ok": True, "message": "OK", "stats": stats, "verdict": verdict})
+            self.result.emit(
+                {
+                    "ok": True,
+                    "message": "OK",
+                    "stats": stats,
+                    "verdict": verdict,
+                    "kind": self.kind,
+                    "target": self.target,
+                }
+            )
 
         except requests.RequestException as e:
             self.result.emit({"ok": False, "message": f"Network error: {e}"})

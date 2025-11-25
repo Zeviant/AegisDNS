@@ -1,9 +1,24 @@
 body {
     font-family: "Segoe UI", sans-serif;
-    width: 280px;
     margin: 0;
-    padding: 12px;
+    padding: 0;
     color: #0d1117;
+  }
+
+  body.popup {
+    width: 280px;
+    padding: 12px;
+  }
+
+  body.dark {
+    background: #020617;
+    color: #e5e7eb;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    box-sizing: border-box;
   }
   
   header {
@@ -33,6 +48,11 @@ body {
     border: 1px solid #d0d7de;
     border-radius: 8px;
     padding: 12px;
+  }
+
+  body.dark section {
+    border-color: #1f2937;
+    background: #0f172a;
   }
   
   .hidden {
@@ -66,6 +86,12 @@ body {
     color: #0d1117;
     border: 1px solid #d0d7de;
   }
+
+  .mode.active {
+    background: #0969da;
+    color: #ffffff;
+    border-color: #0969da;
+  }
   
   .subtitle {
     font-size: 13px;
@@ -77,4 +103,27 @@ body {
     font-size: 12px;
     color: #6c757d;
     margin-top: 8px;
+  }
+
+  body.dark .hint {
+    color: #9ca3af;
+  }
+
+  .interstitial {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    max-width: 480px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .interstitial-actions {
+    margin-top: 12px;
+  }
+
+  #targetLabel {
+    word-break: break-all;
+    white-space: normal;
   }

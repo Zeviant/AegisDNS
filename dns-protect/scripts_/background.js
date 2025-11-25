@@ -1,6 +1,22 @@
 const BACKEND_URL = "http://127.0.0.1:5005";
 let backendReachable = false;
 let healthTimer = null;
+let currentMode = "logging"; // 'logging' | 'silent' | 'safe' | 'none'
+const safeAllowOnce = new Set(); // keys: `${tabId}|${url}`
+
+// Load mode from storage on startup
+chrome.storage.local.get(["mode"]).then(({ mode }) => {
+  if (mode) {
+    currentMode = mode;
+  }
+}).catch(() => {});
+
+// Keep mode in sync with popup changes
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.mode) {
+    currentMode = changes.mode.newValue || "logging";
+  }
+});
 
 // Pings backend server to check status
 async function pingBackend() {
@@ -43,8 +59,9 @@ function scheduleHealthPolling() {
   }, intervalMs);
 }
 
-// Logs navigations to server
+// LOGGING MODE
 async function logNavigation(details) {
+  if (currentMode !== "logging") return;
   if (!isTopFrame(details)) return;
   if (!isAllowedTransition(details)) return;
   if (isSearchUrl(details.url)) return;
@@ -73,6 +90,101 @@ async function logNavigation(details) {
 chrome.webNavigation.onCompleted.addListener(logNavigation, {
   url: [{ schemes: ["http", "https"] }],
 });
+
+// SAFE MODE
+async function handleSafeModeNavigation(details) {
+  if (currentMode !== "safe") return;
+  if (!isTopFrame(details)) return;
+
+  const url = details.url;
+  const extBase = chrome.runtime.getURL("");
+
+  // Do not intercept w/ extension page or search URL's
+  if (url.startsWith(extBase)) return;
+  if (isSearchUrl(url) || isNoiseUrl(url)) return;
+
+  const allowKey = `${details.tabId}|${url}`;
+  if (safeAllowOnce.has(allowKey)) {
+    // Allows navigation once (change later w/ blacklist and whitelist)
+    safeAllowOnce.delete(allowKey);
+    return;
+  }
+
+  const interstitialUrl = `${chrome.runtime.getURL("html/safe_interstitial.html")}?target=${encodeURIComponent(url)}`;
+
+  try {
+    await chrome.tabs.update(details.tabId, { url: interstitialUrl });
+  } catch (e) {
+    console.warn("Failed to redirect to safe interstitial:", e);
+  }
+}
+
+
+// Intercept navigations and show interstitial
+chrome.webNavigation.onBeforeNavigate.addListener(handleSafeModeNavigation, {
+  url: [{ schemes: ["http", "https"] }],
+});
+
+// Handle messages from the safe interstitial page
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!message || !sender || !sender.tab) {
+    return;
+  }
+
+  const tabId = sender.tab.id;
+
+  if (message.type === "safe-allow") {
+    const targetUrl = message.targetUrl;
+    if (targetUrl) {
+      const allowKey = `${tabId}|${targetUrl}`;
+      safeAllowOnce.add(allowKey);
+      chrome.tabs.update(tabId, { url: targetUrl }, () => {
+        void chrome.runtime.lastError;
+      });
+    }
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+
+  if (message.type === "safe-scan") {
+    const targetUrl = message.targetUrl;
+    if (targetUrl) {
+      triggerScan(targetUrl).catch((e) => console.warn("Failed to trigger scan", e));
+    }
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+
+  if (message.type === "safe-deny") {
+    // If connection is rejected go back to previous site or close tab (if there is no previous site)
+    chrome.tabs.goBack(tabId, () => {
+      if (chrome.runtime.lastError) {
+        chrome.tabs.remove(tabId).catch?.(() => {});
+      }
+    });
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+});
+
+// Send scan request to app
+async function triggerScan(targetUrl) {
+  const ready = await ensureBackend();
+  if (!ready) return;
+
+  try {
+    await fetch(`${BACKEND_URL}/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: targetUrl,
+        timestamp: Date.now(),
+      }),
+    });
+  } catch (e) {
+    console.warn("Failed to send scan request:", e);
+  }
+}
 
 // Runs on service worker startup to start polling cycle
 pingBackend();

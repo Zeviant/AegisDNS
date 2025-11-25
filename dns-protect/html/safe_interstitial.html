@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>DNS Protect - Safe Mode</title>
+  <link rel="stylesheet" href="../styles/popup.css">
+</head>
+<body class="dark">
+  <header>
+    <img src="../images/icon-32.png" alt="Logo">
+    <div>
+      <h1>DNS Protect - Safe Mode</h1>
+      <p id="statusLabel">Review before continuing</p>
+    </div>
+  </header>
+
+  <section class="interstitial">
+    <p class="subtitle">This site is being opened in Safe Mode</p>
+    <p class="hint" id="targetLabel"></p>
+
+    <div class="mode-list interstitial-actions">
+      <button id="allowBtn">Allow</button>
+      <button id="scanBtn">Scan</button>
+      <button id="denyBtn">Deny</button>
+    </div>
+  </section>
+
+  <script src="../scripts_/safe_interstitial.js"></script>
+</body>
+</html>
+
+

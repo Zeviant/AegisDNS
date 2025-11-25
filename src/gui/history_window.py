@@ -28,10 +28,6 @@ class History_Window(QWidget):
 
         layout = QVBoxLayout(self)
 
-        # Load Sheet Style
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
-            self.setStyleSheet(f.read())
-
         # -- Title --
         title = QLabel(f"History Log")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
