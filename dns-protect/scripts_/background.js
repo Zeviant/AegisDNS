@@ -4,6 +4,7 @@ let healthTimer = null;
 let currentMode = "logging"; // 'logging' | 'silent' | 'safe' | 'none'
 const safeAllowOnce = new Set(); // keys: `${tabId}|${url}`
 
+
 // Load mode from storage on startup
 chrome.storage.local.get(["mode"]).then(({ mode }) => {
   if (mode) {
@@ -92,38 +93,119 @@ chrome.webNavigation.onCompleted.addListener(logNavigation, {
 });
 
 // SAFE MODE
+// -- Blacklist managment 
+async function checkBlacklist(details) {
+  const url = details.url;
+
+  // Don’t block internal extension pages 
+  const extBase = chrome.runtime.getURL("");
+  if (url.startsWith(extBase)) return false;
+  if (isSearchUrl(url) || isNoiseUrl(url)) return false;
+
+  // Ask backend if URL is blacklisted
+  try {
+    let response = await fetch(`${BACKEND_URL}/is_blacklisted`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    let data = await response.json();
+    return data.blacklisted === true;
+  } catch (e) {
+    console.warn("Blacklist check failed:", e);
+    return false;
+  }
+}
+
+chrome.webNavigation.onBeforeNavigate.addListener(handleSafeModeNavigation, {
+  url: [{ schemes: ["http", "https"] }],
+});
+
 async function handleSafeModeNavigation(details) {
+  console.log("SAFE MODE TRIGGERED:", details.url);
+
   if (currentMode !== "safe") return;
   if (!isTopFrame(details)) return;
 
   const url = details.url;
   const extBase = chrome.runtime.getURL("");
 
-  // Do not intercept w/ extension page or search URL's
+  // Ignore extension pages & noise
   if (url.startsWith(extBase)) return;
   if (isSearchUrl(url) || isNoiseUrl(url)) return;
 
   const allowKey = `${details.tabId}|${url}`;
   if (safeAllowOnce.has(allowKey)) {
-    // Allows navigation once (change later w/ blacklist and whitelist)
     safeAllowOnce.delete(allowKey);
+    console.log("Safe allow-once hit, letting navigation pass:", url);
     return;
   }
+  
+  try {
+    const resp = await fetch(`${BACKEND_URL}/is_blacklisted`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    });
+    const data = await resp.json();
+    if (data.blacklisted) {
+      console.log("URL is BLACKLISTED → showing RED warning page:", url);
 
-  const interstitialUrl = `${chrome.runtime.getURL("html/safe_interstitial.html")}?target=${encodeURIComponent(url)}`;
+      const warningUrl =
+        `${chrome.runtime.getURL("html/blacklist_interstitial.html")}` +
+        `?target=${encodeURIComponent(url)}`;
+
+      chrome.tabs.update(details.tabId, { url: warningUrl }, () => {
+        if (chrome.runtime.lastError) {
+          console.error("REDIRECT ERROR (blacklist):", chrome.runtime.lastError.message);
+        } else {
+          console.log("Redirected to blacklist interstitial:", warningUrl);
+        }
+      });
+
+      return;
+    }
+  } catch (e) {
+    console.warn("Blacklist check failed:", e);
+  }
+
+  
+  try {
+    const resp = await fetch(`${BACKEND_URL}/is_whitelisted`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    });
+    const data = await resp.json();
+    if (data.whitelisted) {
+      console.log("URL is WHITELISTED → letting it pass:", url);
+      return; 
+    }
+  } catch (e) {
+    console.warn("Whitelist check failed:", e);
+  }
+
+  
+  const interstitialUrl =
+    `${chrome.runtime.getURL("html/safe_interstitial.html")}` +
+    `?target=${encodeURIComponent(url)}`;
 
   try {
     await chrome.tabs.update(details.tabId, { url: interstitialUrl });
+    console.log("Redirected to SAFE interstitial:", interstitialUrl);
   } catch (e) {
     console.warn("Failed to redirect to safe interstitial:", e);
   }
 }
 
 
-// Intercept navigations and show interstitial
-chrome.webNavigation.onBeforeNavigate.addListener(handleSafeModeNavigation, {
-  url: [{ schemes: ["http", "https"] }],
-});
+// // Intercept navigations and show interstitial
+//     chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+//         return handleSafeModeNavigation(details);
+//     }, {
+//         url: [{ schemes: ["http", "https"] }],
+//     });
 
 // Handle messages from the safe interstitial page
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -165,6 +247,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse && sendResponse({ ok: true });
     return true;
   }
+
+  // Buttons of blacklist page warning
+  if (message.type === "blacklist-go-back") {
+    chrome.tabs.goBack(tabId, () => {
+      if (chrome.runtime.lastError) {
+        chrome.tabs.remove(tabId).catch?.(() => {});
+      }
+    });
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+
+  if (message.type === "blacklist-continue") {
+     const targetUrl = message.targetUrl;
+    if (targetUrl) {
+      const allowKey = `${tabId}|${targetUrl}`;
+      safeAllowOnce.add(allowKey);
+      chrome.tabs.update(tabId, { url: targetUrl }, () => {
+        void chrome.runtime.lastError;
+      });
+    }
+    sendResponse && sendResponse({ ok: true });
+    return true;
+  }
+
 });
 
 // Send scan request to app

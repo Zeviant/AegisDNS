@@ -9,7 +9,6 @@ from src.gui.history_window import History_Window
 from src.gui.main_window import Main_Window
 from src.gui.log_window import Log_Window 
 from src.gui.WhiteBlackList_Window import WhiteBlackList_Window
-#from src.gui.WhiteList_Window import WhiteList_Window
 
 # Define MainWindow Class
 class SideBarMainWindow(QMainWindow):
@@ -181,7 +180,6 @@ class SideBarMainWindow(QMainWindow):
         for widget in widgetList: 
             self.mainContent.removeWidget(widget)
 
-<<<<<<< HEAD
         # Create instances of each page
         self.StartWindowPage = Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
         self.MainWindowPage = History_Window(self.username)
@@ -210,8 +208,7 @@ class SideBarMainWindow(QMainWindow):
             layout.addWidget(label)
             new_page = QWidget()
             new_page.setLayout(layout)
-=======
+
         # Add each menu widget to the stacked widget in order
         for menu in self.menuList:
->>>>>>> 28418fd3521218ff1f1bc848206d3ac9b11ce994
             self.mainContent.addWidget(menu["widget"])

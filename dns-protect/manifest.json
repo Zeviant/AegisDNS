@@ -4,11 +4,11 @@
     "version": "1.0",
     "description": "Monitors connections for safety purposes.",
     "permissions": [
-        "activeTab",
-        "webNavigation",
-        "scripting",
-        "storage",
-        "alarms"
+      "webRequest",
+      "webRequestBlocking",
+      "webNavigation",
+      "tabs",
+      "storage"
     ],
     "icons": {
     "16": "images/icon-16.png",
@@ -30,5 +30,17 @@
     ],
     "background": {
     "service_worker": "scripts_/background.js"
+    },
+
+    "web_accessible_resources": [
+    {
+      "resources": [
+        "html/blacklist_interstitial.html",
+        "scripts_/blacklist_interstitial.js",
+        "html/safe_interstitial.html",
+        "scripts_/safe_interstitial.js"
+      ],
+      "matches": ["<all_urls>"]
     }
+  ]
 }

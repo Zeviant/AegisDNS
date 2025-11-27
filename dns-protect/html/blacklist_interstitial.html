@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blocked Website</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #7f1d1d; /* dark red */
+    color: white;
+    font-family: "Segoe UI", sans-serif;
+    text-align: center;
+    padding-top: 80px;
+  }
+
+  .card {
+    background: #b91c1c;
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 480px;
+    margin: auto;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.4);
+  }
+
+  h1 {
+    font-size: 26px;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 16px;
+    opacity: 0.9;
+  }
+
+  .buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  button {
+    padding: 12px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  #goBackBtn {
+    background: #991b1b;
+    color: white;
+  }
+
+  #goBackBtn:hover {
+    background: #7f1d1d;
+  }
+
+  #continueBtn {
+    background: #fbbf24;
+    color: black;
+  }
+
+  #continueBtn:hover {
+    background: #f59e0b;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>Blocked Website</h1>
+  <p>This website is in your <b>Blacklist</b>.</p>
+  <p id="url"></p>
+
+  <div class="buttons">
+    <button id="goBackBtn">Go Back</button>
+    <button id="continueBtn">Continue Anyway</button>
+  </div>
+</div>
+
+<script src="../scripts_/blacklist_interstitial.js"></script>
+
+</body>
+</html>

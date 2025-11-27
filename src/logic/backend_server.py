@@ -9,6 +9,9 @@ from PySide6.QtCore import QThread
 
 from src.logic.vt_service import classify_kind, VTScanThread
 
+from urllib.parse import urlparse
+import re
+
 BASE_DIR = Path(__file__).resolve().parent
 CACHE_DIR = (BASE_DIR / ".." / "VT_Cache").resolve()
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -41,8 +44,9 @@ def start_server_if_needed():
 
 class BackendServer(QThread):
     def run(self):
+        print("🔥 BACKEND SERVER STARTING...")
         app.run(host="127.0.0.1", port=SERVER_PORT, threaded=True, use_reloader=False)
-
+        print("❌ BACKEND SERVER STOPPED (this should never print)")
 def append_logging_entry(entry: dict):
     if not LOGGING_FILE.exists():
         LOGGING_FILE.write_text("", encoding="utf-8")
@@ -124,6 +128,7 @@ def scan_event():
     ts = data.get("timestamp")
 
     try:
+        
         append_scan_request(FLASK_USERNAME, raw_url, ts)
     except Exception:
         pass
@@ -137,8 +142,143 @@ def scan_event():
         worker = VTScanThread(kind, target, FLASK_USERNAME)
         SCAN_THREADS.append(worker)
         worker.start()
+
     except Exception as e:
         print("SCAN_THREAD_ERROR", e)
         return jsonify({"ok": False, "reason": "failed to start scan"}), 500
 
     return jsonify({"ok": True})
+
+# -- Whitelist exeption --
+def core_domain(host: str) -> str:
+    host = (host or "").lower().strip()
+    if not host:
+        return ""
+
+    parts = host.split(".")
+    if len(parts) >= 2:
+        # Second level domain 
+        sld = parts[-2]
+    else:
+        sld = parts[0]
+
+    # Keep only letters
+    return re.sub(r"[^a-z]", "", sld)
+
+
+ALIASES = {
+    "youtu": "youtube",
+    "yt": "youtube",
+    "x": "twitter",
+    "fb": "facebook",
+}
+
+def normalize_core(name: str) -> str:
+    return ALIASES.get(name, name)
+
+def domains_equivalent(a: str, b: str) -> bool:
+    core_a = normalize_core(core_domain(a))
+    core_b = normalize_core(core_domain(b))
+    return core_a != "" and core_a == core_b
+
+def normalize_url(url: str) -> str:
+    parsed = urlparse(url)
+    scheme = parsed.scheme.lower()
+
+    hostname = (parsed.hostname or "").lower()
+
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+
+    path = parsed.path or "/"
+    if path != "/" and path.endswith("/"):
+        path = path[:-1]
+
+    return f"{scheme}://{hostname}{path}"
+
+
+def get_base_domain(host: str) -> str:
+    if not host:
+        return ""
+    parts = host.split(".")
+    if len(parts) <= 2:
+        return host
+    return ".".join(parts[-2:])
+
+@app.route("/is_whitelisted", methods=["POST"])
+def is_whitelisted():
+    data = request.get_json(force=True, silent=True) or {}
+    url = data.get("url", "")
+
+    url_norm = normalize_url(url)
+    parsed = urlparse(url)
+    url_host = parsed.hostname or ""
+    url_base = get_base_domain(url_host.lower()) 
+
+    whitelist_path = CACHE_DIR / "vt_whiteList.jsonl"
+    if not whitelist_path.exists():
+        return jsonify({"whitelisted": False})
+
+    with open(whitelist_path, "r", encoding="utf-8") as f:
+        for line in f:
+            entry = json.loads(line)
+            target = entry.get("target", "").strip()
+            if not target:
+                continue
+
+            target_norm = normalize_url(target)
+            t_parsed = urlparse(target)
+            t_host = t_parsed.hostname or ""
+            t_base = get_base_domain(t_host.lower())
+
+            print("CHECK:", repr(target_norm), "vs", repr(url_norm))
+
+            # Normalized the f*****g URL
+            if target_norm == url_norm:
+                print("MATCH: exact normalized URL")
+                return jsonify({"whitelisted": True})
+
+            # Core domain (like youtube = youtu.be)
+            if domains_equivalent(url_host, t_host):
+                print("MATCH: core-domain equivalence", url_host, t_host)
+                return jsonify({"whitelisted": True})
+
+            # plain base domain equality
+            if url_base == t_base:
+                print("MATCH: base-domain equality", url_base, t_base)
+                return jsonify({"whitelisted": True})
+
+    return jsonify({"whitelisted": False})
+
+# -- Blacklist Implementation --
+@app.route("/is_blacklisted", methods=["POST"])
+def is_blacklisted():
+    data = request.get_json(force=True, silent=True) or {}
+    url = data.get("url", "")
+
+    url_norm = normalize_url(url)
+    parsed = urlparse(url)
+    url_host = parsed.hostname or ""
+
+    blacklist_path = CACHE_DIR / "vt_blackList.jsonl"
+    if not blacklist_path.exists():
+        return jsonify({"blacklisted": False})
+
+    with open(blacklist_path, "r", encoding="utf-8") as f:
+        for line in f:
+            entry = json.loads(line)
+            target = entry.get("target", "").strip()
+            if not target:
+                continue
+
+            target_norm = normalize_url(target)
+            t_parsed = urlparse(target)
+            t_host = t_parsed.hostname or ""
+
+            if target_norm == url_norm:
+                return jsonify({"blacklisted": True})
+
+            if domains_equivalent(url_host, t_host):
+                return jsonify({"blacklisted": True})
+
+    return jsonify({"blacklisted": False})
