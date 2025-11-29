@@ -47,6 +47,7 @@ class BackendServer(QThread):
         print("🔥 BACKEND SERVER STARTING...")
         app.run(host="127.0.0.1", port=SERVER_PORT, threaded=True, use_reloader=False)
         print("❌ BACKEND SERVER STOPPED (this should never print)")
+
 def append_logging_entry(entry: dict):
     if not LOGGING_FILE.exists():
         LOGGING_FILE.write_text("", encoding="utf-8")
@@ -105,9 +106,11 @@ def log_event():
     if not url:
         return jsonify({"accepted": False, "reason": "url required"}), 400
 
+    mode = data.get("mode") or CURRENT_MODE
+
     entry = {
         "username": FLASK_USERNAME,
-        "mode": CURRENT_MODE,
+        "mode": mode,
         "indicator": url,
         "timestamp": data.get("timestamp"),
         "verdict": "pending",
@@ -128,7 +131,6 @@ def scan_event():
     ts = data.get("timestamp")
 
     try:
-        
         append_scan_request(FLASK_USERNAME, raw_url, ts)
     except Exception:
         pass

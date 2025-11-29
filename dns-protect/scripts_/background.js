@@ -199,7 +199,6 @@ async function handleSafeModeNavigation(details) {
   }
 }
 
-
 // // Intercept navigations and show interstitial
 //     chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 //         return handleSafeModeNavigation(details);
@@ -220,6 +219,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (targetUrl) {
       const allowKey = `${tabId}|${targetUrl}`;
       safeAllowOnce.add(allowKey);
+
+      // Log safe mode navigation just like in logging mode
+      logSafeAllow(targetUrl).catch((e) =>
+        console.warn("Failed to log safe-allow navigation:", e)
+      );
+
       chrome.tabs.update(tabId, { url: targetUrl }, () => {
         void chrome.runtime.lastError;
       });
@@ -273,6 +278,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
 });
+
+// Safe mode logging function (uses same /log endpoint)
+async function logSafeAllow(targetUrl) {
+  const ready = await ensureBackend();
+  if (!ready) return;
+
+  const payload = {
+    url: targetUrl,
+    timestamp: Date.now(),
+    mode: "safe",
+  };
+
+  try {
+    await fetch(`${BACKEND_URL}/log`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.warn("Failed to log safe-allow navigation:", err);
+  }
+}
 
 // Send scan request to app
 async function triggerScan(targetUrl) {
