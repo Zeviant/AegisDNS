@@ -4,7 +4,6 @@ let healthTimer = null;
 let currentMode = "logging"; // 'logging' | 'silent' | 'safe' | 'none'
 const safeAllowOnce = new Set(); // keys: `${tabId}|${url}`
 
-
 // Load mode from storage on startup
 chrome.storage.local.get(["mode"]).then(({ mode }) => {
   if (mode) {
@@ -60,9 +59,9 @@ function scheduleHealthPolling() {
   }, intervalMs);
 }
 
-// LOGGING MODE
+// LOGGING & SILENT MODES
 async function logNavigation(details) {
-  if (currentMode !== "logging") return;
+  if (currentMode !== "logging" && currentMode !== "silent") return;
   if (!isTopFrame(details)) return;
   if (!isAllowedTransition(details)) return;
   if (isSearchUrl(details.url)) return;
@@ -70,10 +69,12 @@ async function logNavigation(details) {
   const ready = await ensureBackend();
   if (!ready) return;
 
+  const payloadMode = currentMode === "silent" ? "silent" : "logging";
+
   const payload = {
     url: details.url,
     timestamp: Date.now(),
-    mode: "logging",
+    mode: payloadMode,
   };
 
   try {
@@ -84,6 +85,15 @@ async function logNavigation(details) {
     });
   } catch (err) {
     console.warn("Failed to log navigation:", err);
+  }
+
+  // In silent mode, also trigger a background VT scan for this navigation.
+  if (currentMode === "silent") {
+    try {
+      await triggerScan(details.url);
+    } catch (e) {
+      console.warn("Failed to trigger silent-mode scan:", e);
+    }
   }
 }
 

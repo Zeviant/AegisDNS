@@ -22,17 +22,17 @@ function applyModeUI(mode) {
 
   switch (mode) {
     case "logging":
-      hint.textContent = "Logging: navigations are recorded to the desktop app. No blocking or scans.";
+      hint.textContent = "Logging: Navigations are recorded to the app. No blocking or automatic scans.";
       break;
     case "silent":
-      hint.textContent = "Silent: no logging and no blocking. Extension is effectively passive.";
+      hint.textContent = "Silent: Navigations are being recorded and scanned automatically.";
       break;
     case "safe":
-      hint.textContent = "Safe: navigations are intercepted with an allow / scan / deny screen.";
+      hint.textContent = "Safe: Navigations are being intercepted. User must manually allow or deny each connection.";
       break;
     case "none":
     default:
-      hint.textContent = "None: extension is disabled (no logging, no blocking, no scans).";
+      hint.textContent = "None: Extension is disabled.";
       break;
   }
 }

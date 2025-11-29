@@ -81,7 +81,7 @@ class WhiteList_Window(QWidget):
 
             color = {
                 "BLOCK": "#e74c3c",
-                "CAUTIOUS": "#f18b0f",
+                "CAUTION": "#f18b0f",
                 "SAFE": "#2ecc71",
                 "TEST": "#3667ab"
             }.get(verdict, "#7f8c8d")
