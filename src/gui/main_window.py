@@ -215,12 +215,5 @@ class Main_Window(QMainWindow):
 
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
-
-        # Send system notification
-        if self._notify_callback:
-            try:
-                self._notify_callback(verdict, self._last_submitted_text)
-            except Exception:
-                pass
-
+        
         show_vt_box(self, verdict, stats)

@@ -23,6 +23,9 @@ WHITELIST_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_whiteList.jsonl")
 BLACKLIST_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_blackList.jsonl")
 VIRUSTOTAL_RATELIMIT = 15
 _STATE_MEMO = {"last_call": 0, "cache": {}}
+_HISTORY_FILE_NOT_FOUND_WARNED = False
+_WHITELIST_FILE_NOT_FOUND_WARNED = False
+_BLACKLIST_FILE_NOT_FOUND_WARNED = False
 
 # Saving the data in the chache
 def _load_state() -> dict:
@@ -117,23 +120,27 @@ def cache_key(kind: str, target: str) -> str:
 
 def get_sorted_history(user_name: str) -> list[dict]:
     """ Used to filter and sort the JSON history log """
-    
-    entries = []
+    global _HISTORY_FILE_NOT_FOUND_WARNED
+
+    entries: list[dict] = []
     count = 0
     try:
-        with open(HISTORY_FILE, "r", encoding = "utf-8") as f:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 entry = json.loads(line)
                 # Filter entries by username
                 if entry.get("user") == user_name:
                     entries.append(entry)
                     count = count + 1
+    except FileNotFoundError:
+        if not _HISTORY_FILE_NOT_FOUND_WARNED:
+            print("HISTORY_FILE_NOT_FOUND")
+            _HISTORY_FILE_NOT_FOUND_WARNED = True
     except Exception:
         print("HISTORY_FILE_ERROR")
-        pass
 
     # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
+    entries.sort(key=lambda x: x.get("ts", ""), reverse=True)
     return entries
 
 def add_entry_to_whitelist(entry):
@@ -153,45 +160,53 @@ def add_entry_to_blacklist(entry):
         f.write(json.dumps(entry) + "\n")
 
 def get_sorted_white_list(user_name: str) -> list[dict]:
-    """ Used to filter and sort the JSON history log """
-    
-    entries = []
+    """ Used to filter and sort the JSON whitelist log """
+    global _WHITELIST_FILE_NOT_FOUND_WARNED
+
+    entries: list[dict] = []
     count = 0
     try:
-        with open(WHITELIST_FILE, "r", encoding = "utf-8") as f:
+        with open(WHITELIST_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 entry = json.loads(line)
                 # Filter entries by username
                 if entry.get("user") == user_name:
                     entries.append(entry)
                     count = count + 1
+    except FileNotFoundError:
+        if not _WHITELIST_FILE_NOT_FOUND_WARNED:
+            print("WHITELIST_FILE_NOT_FOUND")
+            _WHITELIST_FILE_NOT_FOUND_WARNED = True
     except Exception:
-        print("HISTORY_FILE_ERROR")
-        pass
+        print("WHITELIST_FILE_ERROR")
 
     # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
+    entries.sort(key=lambda x: x.get("ts", ""), reverse=True)
     return entries
 
 def get_sorted_black_list(user_name: str) -> list[dict]:
-    """ Used to filter and sort the JSON history log """
-    
-    entries = []
+    """ Used to filter and sort the JSON blacklist log """
+    global _BLACKLIST_FILE_NOT_FOUND_WARNED
+
+    entries: list[dict] = []
     count = 0
     try:
-        with open(BLACKLIST_FILE, "r", encoding = "utf-8") as f:
+        with open(BLACKLIST_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 entry = json.loads(line)
                 # Filter entries by username
                 if entry.get("user") == user_name:
                     entries.append(entry)
                     count = count + 1
+    except FileNotFoundError:
+        if not _BLACKLIST_FILE_NOT_FOUND_WARNED:
+            print("BLACKLIST_FILE_NOT_FOUND")
+            _BLACKLIST_FILE_NOT_FOUND_WARNED = True
     except Exception:
-        print("HISTORY_FILE_ERROR")
-        pass
+        print("BLACKLIST_FILE_ERROR")
 
     # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key = lambda x: x.get('ts', ''), reverse = True)
+    entries.sort(key=lambda x: x.get("ts", ""), reverse=True)
     return entries
 
 def delete_history_entry(user_name: str, ts: str, target: str):
