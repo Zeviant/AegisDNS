@@ -1,50 +1,163 @@
-/* Table Window Title Styling */
+/* Table Window Title Styling - Enhanced */
 QLabel {
     font-size: 22px;
-    font-weight: bold;
-    padding: 10px;
+    font-weight: 700;
+    padding: 12px 10px;
     color: #ffffff;
+    background-color: #1c2839;
+    border-radius: 4px;
+    margin: 2px;
+    border-bottom: 2px solid #2d4a6e;
 }
 
-/* Table Widget Styling */
+/* Table Widget Styling - Prussian Blue Theme */
 QTableWidget {
-    background-color: #2b2b2b;
-    alternate-background-color: #333333;
-    color: #f0f0f0;
-    gridline-color: #444444;
-    border: 1px solid #3a3a3a;
+    background-color: #2a3a52; /* Prussian blue medium-dark */
+    alternate-background-color: #324564; /* Slightly lighter Prussian blue */
+    color: #f0f5ff; /* Blue-tinted white */
+    gridline-color: #3d5275; /* Prussian blue grid lines */
+    border: 1px solid #35486b;
+    border-radius: 6px;
     font-size: 14px;
-    selection-background-color: #555555;
-    selection-color: white;
+    font-family: 'Segoe UI', 'Inter', sans-serif;
+    selection-background-color: #4a6fa5; /* Complementary blue selection */
+    selection-color: #ffffff;
+    outline: 0;
 }
 
-/* Table Header Styling */
+/* Fix for empty table background */
+QTableWidget QTableCornerButton::section {
+    background-color: #1e2c44; /* Match header color */
+    border: 1px solid #2d3f5e;
+}
+
+QTableWidget:empty, 
+QTableWidget:no-data {
+    background-color: #2a3a52; /* Ensure background shows when empty */
+}
+
+/* Additional fix for the corner section */
+QHeaderView {
+    background-color: #1e2c44; /* Ensure header background extends */
+}
+
+/* Ensure the viewport (where rows appear) has consistent background */
+QTableView QWidget {
+    background-color: #2a3a52;
+}
+
+/* Alternative: Style the viewport directly */
+QTableWidget::viewport {
+    background-color: #2a3a52;
+}
+
+/* Header Styling - Prussian Blue (unchanged but included for context) */
 QHeaderView::section {
-    background-color: #1f2937;
-    color: #e5e7eb;
-    padding: 6px;
+    background-color: #1e2c44; /* Deep Prussian blue */
+    color: #e6edff;
+    padding: 8px 6px;
     border: none;
-    font-weight: bold;
+    border-right: 1px solid #2d3f5e;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: 1px solid #2d4a6e;
 }
 
-/* SCAN Button Styling (for log_window) */
+QHeaderView::section:last {
+    border-right: none;
+}
+
+/* SCAN Button Styling - Prussian Blue Accent */
 QPushButton {
-    background-color: #1d4ed8;
+    background-color: #2d4a6e; /* Darker Prussian blue */
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 4px 16px;
-    font-weight: 600;
-    font-size: 12px;
-    min-width: 60px;
-    max-width: 60px;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 70px;
+    max-width: 70px;
+    border-bottom: 2px solid #3d5a80;
 }
 
 QPushButton:hover {
-    background-color: #2563eb;
+    background-color: #3d5a80; /* Original Prussian blue */
+    border-bottom: 2px solid #4a6fa5;
 }
 
 QPushButton:pressed {
-    background-color: #1e40af;
+    background-color: #1e3a5e; /* Even darker for pressed state */
+    border-bottom: 1px solid #2d4a6e;
+    padding-top: 7px;
+    padding-bottom: 5px;
 }
 
+QPushButton:disabled {
+    background-color: #2a3a52;
+    color: #a0b0d0;
+    border-bottom: 2px solid #3a4a62;
+}
+
+/* Scrollbar Styling - Prussian Blue */
+QScrollBar:vertical {
+    background-color: #24344d;
+    width: 12px;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #3d5275;
+    border-radius: 6px;
+    min-height: 30px;
+    border: 1px solid #4a6288;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #4a6288;
+    border-color: #5a72a0;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    height: 0px;
+}
+
+/* Corner area fix */
+QTableCornerButton::section {
+    background-color: #1e2c44;
+    border: none;
+    border-right: 1px solid #2d3f5e;
+    border-bottom: 1px solid #2d3f5e;
+}
+
+/* Selection Polish */
+QTableWidget::item:selected {
+    background-color: #4a6fa5;
+    color: #ffffff;
+}
+
+/* Header hover effect */
+QHeaderView::section:hover {
+    background-color: #24344d;
+}
+
+/* Focus polish */
+QTableWidget:focus, QHeaderView:focus, QPushButton:focus {
+    outline: none;
+}
+
+/* Text contrast enhancement for readability */
+QTableWidget QLabel {
+    color: #f0f5ff;
+}
+
+/* Alternative hover effects using padding adjustments */
+QPushButton:hover {
+    margin-top: -1px; /* Simulates lift effect */
+}
+
+QPushButton:pressed {
+    margin-top: 0px; /* Resets lift when pressed */
+}

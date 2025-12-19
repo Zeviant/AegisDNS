@@ -19,6 +19,10 @@ class Log_Window(QWidget):
 
         layout = QVBoxLayout(self)
 
+        # Load table styling from QSS file
+        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+            self.setStyleSheet(f.read())
+
         # -- Title --
         title = QLabel(f"Navigation Logs")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -36,10 +40,6 @@ class Log_Window(QWidget):
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(True)
-
-        # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
-            self.table.setStyleSheet(f.read())
 
         # -- Load Table --
         self.load_logs()

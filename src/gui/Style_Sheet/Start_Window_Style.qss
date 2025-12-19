@@ -1,6 +1,6 @@
 /* === GLOBAL WINDOW BACKGROUND === */
 QWidget {
-    background-color: #0f172a;      /* deep navy */
+    background-color: #101e29;      /* deep navy */
     color: #e5e7eb;                /* soft white text */
     font-family: "Segoe UI";
     font-size: 14px;

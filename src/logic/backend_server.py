@@ -44,7 +44,6 @@ def start_server_if_needed():
 
 class BackendServer(QThread):
     def run(self):
-        print("🔥 BACKEND SERVER STARTING...")
         app.run(host="127.0.0.1", port=SERVER_PORT, threaded=True, use_reloader=False)
         print("❌ BACKEND SERVER STOPPED (this should never print)")
 def append_logging_entry(entry: dict):

@@ -35,6 +35,10 @@ class History_Window(QWidget):
         
         layout = QVBoxLayout(self)
 
+        # Load table styling from QSS file
+        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+            self.setStyleSheet(f.read())
+
         # -- Title --
         title = QLabel(f"History Log")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -53,9 +57,7 @@ class History_Window(QWidget):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(True)
 
-        # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
-            self.table.setStyleSheet(f.read())
+
 
         # -- Load Table --
         self.load_history()
@@ -119,6 +121,7 @@ class History_Window(QWidget):
         # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
         self.table.setColumnWidth(2, 400) # Target
+        self.table.setColumnWidth(3, 80)
         self.table.resizeRowsToContents()
 
         # Singleshot applies value afetr Qt finishes resizing/reloading table

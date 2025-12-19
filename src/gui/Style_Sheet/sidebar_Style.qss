@@ -1,9 +1,3 @@
-/* === GENERAL COLORS ===
-   Background: dark gray-blue
-   Text: white
-   Accent: dark blue / light blue highlights
-*/
-
 #title_label {
     font-size: 16px;
     font-family: "Segoe UI Semibold";
@@ -40,7 +34,7 @@ QPushButton {
 }
 
 QStackedWidget {
-    background-color: #0f172a; /* dark navy */
+    background-color: "#101e29"; /* dark navy */
     color: #ffffff;
 }
 
