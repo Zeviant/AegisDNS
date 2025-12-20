@@ -8,8 +8,9 @@ QWidget {
 
 /* === LABELS === */
 QLabel {
-    color: #e2e8f0;                /* light gray-white */
-    font-weight: 600;
+    color: #ffffffff;                /* light gray-white */
+    font-weight: bold;
+    font-size:16px;
     letter-spacing: 0.5px;
 }
 
@@ -36,7 +37,8 @@ QPushButton {
     border: none;
     border-radius: 8px;
     padding: 10px 16px;
-    font-weight: 600;
+    font-weight: bold;
+    font-size:16px;
     letter-spacing: 0.3px;
 }
 

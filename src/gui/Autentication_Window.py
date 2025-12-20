@@ -92,6 +92,9 @@ class Start_Window(QWidget):
 
     def create_account(self):
         self.create_window = CreateAccount_Window()
+        with open("src/gui/Style_Sheet/Start_Window_Style.qss") as f: 
+            style_str = f.read()
+        self.create_window.setStyleSheet(style_str)       
         self.create_window.show()
         
 

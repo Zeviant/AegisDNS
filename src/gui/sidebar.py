@@ -131,12 +131,6 @@ class SideBarMainWindow(QMainWindow):
 
 
     def _check_new_scans_for_notifications(self):
-        """
-        Polls the VT history log and shows notifications for new entries.
-        This makes it so that scans triggered outside the GUI (e.g. browser extension) can create a notification.
-        (Could maybe make a better implementation later, but trying to create a notification
-        from backend_server.py was causing issues)
-        """
         entries = get_sorted_history(self.username)
 
         if not entries:

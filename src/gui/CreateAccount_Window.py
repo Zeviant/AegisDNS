@@ -12,12 +12,12 @@ class CreateAccount_Window(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Create Account Window")
-        self.setGeometry(600, 500, 600, 500)
+        self.resize(400, 600)
         self.centerOnScreen()
 
         # Fixed Box Size
         contentSquare = QWidget()
-        contentSquare.setFixedSize(300, 300) 
+        contentSquare.setFixedSize(300, 450) 
 
         # First name and Last name labels and line edits
         firstName_label = QLabel("First Name")
@@ -73,8 +73,10 @@ class CreateAccount_Window(QWidget):
         h_layout2.addWidget(cancel_button)
 
         full_layout = QVBoxLayout()
+        
         full_layout.addLayout(h_layout1)
         full_layout.addLayout(h_layout2)
+        full_layout.setSpacing(10)
         contentSquare.setLayout(full_layout)
 
         # --- Root layout ---
