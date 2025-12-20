@@ -4,6 +4,12 @@ let healthTimer = null;
 let currentMode = "logging"; // 'logging' | 'silent' | 'safe' | 'none'
 const safeAllowOnce = new Set(); // keys: `${tabId}|${url}`
 
+// Start ps
+let packetSnifferWS = null;
+let packetSnifferActive = false;
+const SNIFFER_WS_PORT = 8765;
+// End ps
+
 // Load mode from storage on startup
 chrome.storage.local.get(["mode"]).then(({ mode }) => {
   if (mode) {
@@ -376,3 +382,261 @@ function isNoiseUrl(raw) {
   } catch (_) {}
   return false;
 }
+
+// Start ps
+function handlePacketSnifferMessage(data) {
+  // Store packet in storage for popup to access
+  chrome.storage.local.get(['packetLogs'], (result) => {
+    const logs = result.packetLogs || [];
+    logs.push({
+      ...data,
+      timestamp: Date.now()
+    });
+    
+    // Keep only last 1000 packets
+    if (logs.length > 1000) {
+      logs.splice(0, logs.length - 1000);
+    }
+    
+    chrome.storage.local.set({ packetLogs: logs });
+    
+    // Notify popup if it's open
+    chrome.runtime.sendMessage({
+      type: 'packetUpdate',
+      packet: data
+    }).catch(() => {}); // Ignore if no popup is open
+  });
+}
+
+// Add this function to start packet sniffer
+async function startPacketSniffer(interface = null) {
+  if (packetSnifferActive) {
+    return { status: 'already_running' };
+  }
+  
+  try {
+    // Start via Flask API
+    const response = await fetch(`${BACKEND_URL}/sniffer/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interface })
+    });
+    
+    const data = await response.json();
+    
+    if (data.status === 'started') {
+      // Connect to WebSocket for real-time updates
+      connectToPacketSnifferWS();
+      packetSnifferActive = true;
+      
+      // Update badge to show sniffer is active
+      chrome.action.setBadgeText({ text: '📡' });
+      chrome.action.setBadgeBackgroundColor({ color: '#4CAF50' });
+    }
+    
+    return data;
+  } catch (error) {
+    console.warn('Failed to start packet sniffer:', error);
+    return { status: 'error', message: error.message };
+  }
+}
+
+// Add this function to stop packet sniffer
+async function stopPacketSniffer() {
+  if (!packetSnifferActive) {
+    return { status: 'not_running' };
+  }
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/sniffer/stop`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const data = await response.json();
+    
+    if (data.status === 'stopped') {
+      packetSnifferActive = false;
+      
+      // Disconnect WebSocket
+      if (packetSnifferWS) {
+        packetSnifferWS.close();
+        packetSnifferWS = null;
+      }
+      
+      // Clear badge
+      chrome.action.setBadgeText({ text: '' });
+    }
+    
+    return data;
+  } catch (error) {
+    console.warn('Failed to stop packet sniffer:', error);
+    return { status: 'error', message: error.message };
+  }
+}
+
+// Add this function to connect to WebSocket
+function connectToPacketSnifferWS() {
+  if (packetSnifferWS) {
+    packetSnifferWS.close();
+  }
+  
+  packetSnifferWS = new WebSocket(`ws://localhost:${SNIFFER_WS_PORT}`);
+  
+  packetSnifferWS.onopen = () => {
+    console.log('Packet sniffer WebSocket connected');
+  };
+  
+  packetSnifferWS.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'packet') {
+        handlePacketSnifferMessage(data.data);
+      }
+    } catch (error) {
+      console.warn('Failed to parse packet message:', error);
+    }
+  };
+  
+  packetSnifferWS.onclose = () => {
+    console.log('Packet sniffer WebSocket disconnected');
+    packetSnifferWS = null;
+    
+    // Try to reconnect if still supposed to be active
+    if (packetSnifferActive) {
+      setTimeout(() => connectToPacketSnifferWS(), 3000);
+    }
+  };
+  
+  packetSnifferWS.onerror = (error) => {
+    console.warn('Packet sniffer WebSocket error:', error);
+  };
+}
+
+// Add this function to get sniffer status
+async function getSnifferStatus() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/sniffer/status`);
+    return await response.json();
+  } catch (error) {
+    return { running: false, error: error.message };
+  }
+}
+
+// Add this function to get interfaces
+async function getSnifferInterfaces() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/sniffer/interfaces`);
+    return await response.json();
+  } catch (error) {
+    return { interfaces: [] };
+  }
+}
+
+// Add this function to get captured packets
+async function getSnifferPackets() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/sniffer/packets`);
+    return await response.json();
+  } catch (error) {
+    return { packets: [] };
+  }
+}
+
+// Update pingBackend to check sniffer status
+async function pingBackend() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/health`, { cache: "no-store" });
+    backendReachable = res.ok;
+    const data = backendReachable ? await res.json() : null;
+    
+    // Check sniffer status if backend is reachable
+    if (backendReachable && data.sniffer_running) {
+      packetSnifferActive = data.sniffer_running;
+      if (!packetSnifferWS) {
+        connectToPacketSnifferWS();
+      }
+    }
+    
+    await chrome.storage.session.set({ 
+      backendReachable, 
+      health: data,
+      packetSnifferActive 
+    });
+  } catch (e) {
+    console.warn("Application backend unreachable:", e);
+    backendReachable = false;
+    packetSnifferActive = false;
+    await chrome.storage.session.set({ 
+      backendReachable, 
+      health: null,
+      packetSnifferActive: false 
+    });
+  }
+  scheduleHealthPolling();
+  return backendReachable;
+}
+
+// Add message listener for packet sniffer commands
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // ... (your existing message handlers)
+  
+  // Add packet sniffer handlers
+  if (message.type === 'startSniffer') {
+    startPacketSniffer(message.interface)
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ status: 'error', message: error.message }));
+    return true;
+  }
+  
+  if (message.type === 'stopSniffer') {
+    stopPacketSniffer()
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ status: 'error', message: error.message }));
+    return true;
+  }
+  
+  if (message.type === 'getSnifferStatus') {
+    getSnifferStatus()
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ running: false, error: error.message }));
+    return true;
+  }
+  
+  if (message.type === 'getSnifferInterfaces') {
+    getSnifferInterfaces()
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ interfaces: [] }));
+    return true;
+  }
+  
+  if (message.type === 'getSnifferPackets') {
+    getSnifferPackets()
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ packets: [] }));
+    return true;
+  }
+  
+  // Handle packet updates from popup
+  if (message.type === 'packetUpdate') {
+    handlePacketSnifferMessage(message.packet);
+    sendResponse({ ok: true });
+    return true;
+  }
+});
+
+// Add cleanup on extension unload
+chrome.runtime.onSuspend.addListener(() => {
+  if (packetSnifferWS) {
+    packetSnifferWS.close();
+  }
+  
+  if (packetSnifferActive) {
+    // Try to stop sniffer gracefully
+    fetch(`${BACKEND_URL}/sniffer/stop`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(() => {}); // Ignore errors during shutdown
+  }
+});
+// End ps

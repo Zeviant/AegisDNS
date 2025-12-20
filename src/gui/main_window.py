@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QThread, Signal, QTimer
 from PySide6.QtGui import QFont
-import os, sys, time
+import time
 
 # Connection with service layer
 from src.logic.vt_service import (
@@ -69,7 +69,7 @@ class Main_Window(QMainWindow):
         self._last_submitted_text = ""
         
         self.setWindowTitle(f"Main Window - User: {self.userName}")
-        self.resize(450, 450)
+        self.resize(400, 600)
         
         # Timer (UI state)
         self._cooldown_left = 0
@@ -83,36 +83,12 @@ class Main_Window(QMainWindow):
         page = QVBoxLayout(central)
         page.setContentsMargins(40, 40, 40, 40)
 
-        central.setStyleSheet("""
-            QWidget {
-                background: qlineargradient(x1:0,y1:0, x2:0,y2:1,
-                    stop:0 #0f172a, stop:1 #0b1220);
-                color: #e5e7eb;
-                font-size: 14px;
-            }
-        """)
+        # Load table styling from QSS file
+        with open("src/gui/Style_Sheet/MainWindow_Style.qss", "r") as f:
+            self.setStyleSheet(f.read())
 
         card = QFrame()
         card.setObjectName("card")
-        card.setStyleSheet("""
-            QFrame#card { background: #101e29; border-radius: 16px; }
-            QLineEdit {
-                background: rgba(255,255,255,0.06);
-                border: 1px solid rgba(255,255,255,0.12);
-                border-radius: 10px;
-                padding: 10px 12px;
-                color: #e5e7eb;
-                selection-background-color: #1e40af;
-            }
-            QLineEdit:focus { border: 1px solid #60a5fa; background: rgba(255,255,255,0.09); }
-            QPushButton {
-                border: none; border-radius: 10px; padding: 10px 16px;
-                background: #1d4ed8; color: white; font-weight: 600;
-            }
-            QPushButton:hover { background: #2563eb; }
-            QPushButton:disabled { background: #334155; color: #cbd5e1; }
-            QPushButton:pressed { background: #1e40af; }
-        """)
         shadow = QGraphicsDropShadowEffect(blurRadius=40, xOffset=0, yOffset=12)
         shadow.setColor(Qt.black)
         card.setGraphicsEffect(shadow)

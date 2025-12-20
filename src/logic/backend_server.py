@@ -23,6 +23,7 @@ FLASK_USERNAME = "UNAUTHENTICATED"
 SERVER_THREAD: Optional["BackendServer"] = None
 SERVER_PORT = 5005
 
+
 # Pending scan requests list
 SCAN_THREADS: list[VTScanThread] = []
 
@@ -283,3 +284,4 @@ def is_blacklisted():
                 return jsonify({"blacklisted": True})
 
     return jsonify({"blacklisted": False})
+

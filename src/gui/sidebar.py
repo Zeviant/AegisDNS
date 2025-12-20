@@ -9,8 +9,18 @@ from src.gui.history_window import History_Window
 from src.gui.main_window import Main_Window
 from src.gui.log_window import Log_Window 
 from src.gui.WhiteBlackList_Window import WhiteBlackList_Window
-from src.gui.animated_chart import LiveChart
+from PySide6.QtCore import QThread
 
+# Start ps
+from sniffer_test.sniffer_worker import SnifferWorker
+from sniffer_test.aggregator import RollingAggregator
+from threading import Thread
+from sniffer_test.packet_sniffer import start_sniffing
+# end ps
+
+# from Capstone.src.gui.packet_sniffer_widget import LiveChart
+
+from src.gui.packet_sniffer_widget import PacketSnifferWidget
 # Define MainWindow Class
 class SideBarMainWindow(QMainWindow):
     def __init__(self,  user_name: str, password: str):
@@ -50,8 +60,28 @@ class SideBarMainWindow(QMainWindow):
         self.sideMenuButton.setIconSize(QSize(30, 30))
         self.sideMenuButton.setCheckable(True)
         self.sideMenuButton.setChecked(False)
-
         self.mainContent = self.ui.stackedWidget
+
+        # Start ps
+        self.aggregator = RollingAggregator(window_seconds=30)
+        self.sniffer_thread_native = Thread(
+            target=start_sniffing,
+            args=(self.aggregator,),
+            daemon=True
+        )
+        self.sniffer_thread_native.start()
+
+        self.sniffer_thread = QThread()
+        self.sniffer_worker = SnifferWorker(self.aggregator)
+
+        self.sniffer_worker.moveToThread(self.sniffer_thread)
+
+        self.sniffer_thread.started.connect(self.sniffer_worker.start)
+        self.sniffer_worker.data_ready.connect(self.handle_sniffer_data)
+
+        self.sniffer_thread.start()
+
+        # end ps
 
         # List of menu items
         self.menuList = [
@@ -63,7 +93,7 @@ class SideBarMainWindow(QMainWindow):
             {"name": "History File", "icon": "src\images\SideBar_icons\history_icon.png", "widget": History_Window(self.username)},
             {"name": "Navigation Logs", "icon": "src\images\SideBar_icons\history_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
             {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
-            {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": LiveChart()},
+            {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": PacketSnifferWidget()},
             {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": QWidget()},
         ]
 
@@ -78,6 +108,27 @@ class SideBarMainWindow(QMainWindow):
         self._notify_timer.setInterval(5000)  # 5 seconds
         self._notify_timer.timeout.connect(self._check_new_scans_for_notifications)
         self._notify_timer.start()
+
+
+    def closeEvent(self, event):
+        # Stop sniffer worker
+        if hasattr(self, "sniffer_worker"):
+            self.sniffer_worker.stop()
+
+        if hasattr(self, "sniffer_thread"):
+            self.sniffer_thread.quit()
+            self.sniffer_thread.wait()
+
+        event.accept()
+
+    def handle_sniffer_data(self, snapshot):
+        if not snapshot:
+            return
+
+        # Forward data to PacketSnifferWidget
+        if hasattr(self, "PacketsWindowPage"):
+            self.PacketsWindowPage.update_data(snapshot)
+
 
     def _check_new_scans_for_notifications(self):
         """
@@ -187,7 +238,7 @@ class SideBarMainWindow(QMainWindow):
         self.StartWindowPage = Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
         self.MainWindowPage = History_Window(self.username)
         self.LogWindowPage = Log_Window(self.username, sidebar_reference=self)
-        self.PacketsWindowPage = LiveChart()
+        self.PacketsWindowPage = PacketSnifferWidget()
         self.WhiteBlackListPage = WhiteBlackList_Window(self.username) 
         self.SettingsPage = QWidget() 
          
