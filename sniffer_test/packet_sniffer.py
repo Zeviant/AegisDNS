@@ -20,10 +20,15 @@ def packet_handler(packet, aggregator):
             "dns_response": None,
         }
 
+        # Here recognizes the protocol
+        if TCP in packet and packet[TCP].dport == 80:
+                print("TCP port 80 detected:", ip_layer.dst)
         if TCP in packet:
             metadata["protocol"] = "TCP"
             metadata["src_port"] = packet[TCP].sport
             metadata["dst_port"] = packet[TCP].dport
+
+
         elif UDP in packet:
             metadata["protocol"] = "UDP"
             metadata["src_port"] = packet[UDP].sport
@@ -31,7 +36,6 @@ def packet_handler(packet, aggregator):
 
         if DNS in packet:
             dns_layer = packet[DNS]
-
             # DNS Query
             if dns_layer.qr == 0 and dns_layer.qd:
                 try:

@@ -14,7 +14,7 @@ class SnifferWorker(QObject):
         while self.running:
             snapshot = self.aggregator.get_snapshot()
             self.data_ready.emit(snapshot)
-            time.sleep(1)  # 1-second update rate
+            time.sleep(1)  
 
     def stop(self):
         self.running = False

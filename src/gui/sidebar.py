@@ -16,6 +16,7 @@ from sniffer_test.sniffer_worker import SnifferWorker
 from sniffer_test.aggregator import RollingAggregator
 from threading import Thread
 from sniffer_test.packet_sniffer import start_sniffing
+
 # end ps
 
 # from Capstone.src.gui.packet_sniffer_widget import LiveChart
@@ -109,6 +110,34 @@ class SideBarMainWindow(QMainWindow):
         self._notify_timer.timeout.connect(self._check_new_scans_for_notifications)
         self._notify_timer.start()
 
+    def whichProtocol(self, snapshot):
+        latest = snapshot[-1]
+
+        tcp = latest["tcp_packets"]
+        udp = latest["udp_packets"]
+        dns = latest["dns_packets"]
+
+        if tcp > udp:
+            dominant = "TCP"
+        elif udp > tcp:
+            dominant = "UDP"
+        else:
+            dominant = "Mixed"
+
+        extras = []
+        if dns > 0:
+            extras.append("DNS")
+        if udp > 0 and dominant == "TCP":
+            extras.append("background UDP")
+        if tcp > 0 and dominant == "UDP":
+            extras.append("background TCP")
+
+        if extras:
+            print(f"{dominant} ({', '.join(extras)})")
+        else:
+            print(dominant)
+
+
 
     def closeEvent(self, event):
         # Stop sniffer worker
@@ -125,8 +154,9 @@ class SideBarMainWindow(QMainWindow):
         if not snapshot:
             return
 
-        # Forward data to PacketSnifferWidget
         if hasattr(self, "PacketsWindowPage"):
+            
+            self.whichProtocol(snapshot)
             self.PacketsWindowPage.update_data(snapshot)
 
 

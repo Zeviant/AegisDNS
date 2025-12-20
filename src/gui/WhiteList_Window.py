@@ -20,7 +20,7 @@ class WhiteList_Window(QWidget):
         layout = QVBoxLayout(self)
 
         # Load Sheet Style
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+        with open("src\gui\Style_Sheet\WhiteList&BlackList_Style.qss", "r") as f:
             self.setStyleSheet(f.read())
 
         # -- Title --

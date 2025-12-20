@@ -12,6 +12,8 @@ class PacketSnifferWidget(QWidget):
         # --- Chart title ---
         self.setMinimumHeight(350)
 
+        self.setStyleSheet("QWidget { background-color: #2a3a52; }")
+
         # --- Data series ---
         self.series = QLineSeries()
         self.series.setName("Network Activity Level")
