@@ -9,7 +9,10 @@ from src.gui.history_window import History_Window
 from src.gui.main_window import Main_Window
 from src.gui.log_window import Log_Window 
 from src.gui.WhiteBlackList_Window import WhiteBlackList_Window
+from src.gui.settings_window import Settings_Window
 from PySide6.QtCore import QThread
+import os
+import json
 
 # Start ps
 from sniffer_test.sniffer_worker import SnifferWorker
@@ -38,6 +41,10 @@ class SideBarMainWindow(QMainWindow):
         self.tray_icon = QSystemTrayIcon(QIcon("src\\images\\SideBar_icons\\logo.png"), self)
         self.tray_icon.setToolTip("DNS Monitor")
         self.tray_icon.show()
+
+        # Settings file path for mute notifications
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        self.SETTINGS_FILE = os.path.join(BASE_DIR, "..", "VT_Cache", "settings.json")
 
         # Initialize UI elements 
         self.title_label = self.ui.title_label
@@ -95,7 +102,7 @@ class SideBarMainWindow(QMainWindow):
             {"name": "Navigation Logs", "icon": "src\images\SideBar_icons\history_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
             {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
             {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": PacketSnifferWidget()},
-            {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": QWidget()},
+            {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": Settings_Window(self.username, sidebar_reference=self)},
         ]
 
         # Call the functions
@@ -197,7 +204,20 @@ class SideBarMainWindow(QMainWindow):
         # Update ts to newest entry time
         self._last_notified_ts = newest_ts
 
+    def is_notifications_muted(self) -> bool:
+        try:
+            if os.path.exists(self.SETTINGS_FILE):
+                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
+                    settings = json.load(f)
+                    return settings.get("mute_notifications", False)
+        except Exception:
+            pass
+        return False
+
     def show_verdict_notification(self, verdict: str, target: str = ""):
+        if self.is_notifications_muted():
+            return  # Don't show notification if muted
+
         if verdict == "BLOCK":
             icon = QSystemTrayIcon.Critical
         elif verdict == "CAUTION":
@@ -264,7 +284,7 @@ class SideBarMainWindow(QMainWindow):
         self.LogWindowPage = Log_Window(self.username, sidebar_reference=self)
         self.PacketsWindowPage = PacketSnifferWidget()
         self.WhiteBlackListPage = WhiteBlackList_Window(self.username) 
-        self.SettingsPage = QWidget() 
+        self.SettingsPage = Settings_Window(self.username, sidebar_reference=self) 
          
 
         # Add them to stacked widget
