@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis, QAreaSeries
 
 from PySide6.QtCore import Qt
@@ -9,10 +9,51 @@ class PacketSnifferWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setStyleSheet("""
+        QLabel {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 12px 10px;
+            color: #ffffff;
+            background-color: #1c2839;
+            border-radius: 4px;
+            margin: 2px;
+            border-bottom: 2px solid #2d4a6e;
+        }
+
+        QLabel#protocolLabel {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 6px 10px 8px 10px;
+            color: #ffffff;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid #2d4a6e;
+        }
+
+        QWidget {
+            background-color: #1c2839;
+            color: #e5e7eb;
+            font-family: Segoe UI;
+        }
+        """)
+
+        # --- Title ---
+        # --- Main layout ---
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+
+        # --- Title ---
+        title = QLabel("Packet Sniffer")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+        layout.addStretch()
+
         # --- Chart title ---
         self.setMinimumHeight(350)
 
-        self.setStyleSheet("QWidget { background-color: #2a3a52; }")
+        # self.setStyleSheet("QWidget { background-color: #2a3a52; }")
 
         # --- Data series ---
         self.series = QLineSeries()
@@ -70,8 +111,8 @@ class PacketSnifferWidget(QWidget):
         self.chart_view = QChartView(self.chart)
         self.chart_view.setRenderHint(QPainter.Antialiasing)
 
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.chart_view)
+        
+        layout.addWidget(self.chart_view, stretch=1)
 
         # --- Data state ---
         self.max_points = 60

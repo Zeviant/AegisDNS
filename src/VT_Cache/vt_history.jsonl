@@ -79,3 +79,5 @@
 {"ts": "2025-12-21T11:07:52.147855", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"malicious": 13, "suspicious": 1, "undetected": 29, "harmless": 52, "timeout": 0}, "source": "cache", "user": "Ben"}
 {"ts": "2025-12-21T11:08:08.233967", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"malicious": 13, "suspicious": 1, "undetected": 29, "harmless": 52, "timeout": 0}, "source": "cache", "user": "Ben"}
 {"ts": "2025-12-21T11:09:35.493419", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"malicious": 13, "suspicious": 1, "undetected": 29, "harmless": 52, "timeout": 0}, "source": "cache", "user": "Ben"}
+{"ts": "2025-12-22T02:31:40.727539", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache", "user": "Nico"}
+{"ts": "2025-12-22T02:31:55.541075", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache", "user": "Nico"}
