@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QLabel, QListWidgetItem, QWidget, QGridLayout, QSystemTrayIcon
-from PySide6.QtCore import Qt, QSize, QTimer
+from PySide6.QtCore import Qt, QSize, QTimer, QThread
 from PySide6.QtGui import QPixmap, QIcon, QFont 
 from src.gui.uiFiles.sidebar_ui import Ui_MainWindow
 from src.logic.vt_service import get_sorted_history
@@ -9,17 +9,15 @@ from src.gui.history_window import History_Window
 from src.gui.main_window import Main_Window
 from src.gui.log_window import Log_Window 
 from src.gui.WhiteBlackList_Window import WhiteBlackList_Window
-from PySide6.QtCore import QThread
+from src.gui.SnifferContainer_Window import SnifferContainer_Window
+from src.gui.packet_sniffer_widget import PacketSnifferWidget
 
 # Start ps
 from sniffer_test.sniffer_worker import SnifferWorker
 from sniffer_test.aggregator import RollingAggregator
 from threading import Thread
 from sniffer_test.packet_sniffer import start_sniffing
-
 # end ps
-
-# from Capstone.src.gui.packet_sniffer_widget import LiveChart
 
 from src.gui.packet_sniffer_widget import PacketSnifferWidget
 # Define MainWindow Class
@@ -94,7 +92,7 @@ class SideBarMainWindow(QMainWindow):
             {"name": "History File", "icon": "src\images\SideBar_icons\history_icon.png", "widget": History_Window(self.username)},
             {"name": "Navigation Logs", "icon": "src\images\SideBar_icons\history_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
             {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
-            {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": PacketSnifferWidget()},
+            {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": SnifferContainer_Window()},
             {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": QWidget()},
         ]
 
@@ -137,10 +135,7 @@ class SideBarMainWindow(QMainWindow):
         else:
             print(dominant)
 
-
-
     def closeEvent(self, event):
-        # Stop sniffer worker
         if hasattr(self, "sniffer_worker"):
             self.sniffer_worker.stop()
 
@@ -155,9 +150,8 @@ class SideBarMainWindow(QMainWindow):
             return
 
         if hasattr(self, "PacketsWindowPage"):
-            
             self.whichProtocol(snapshot)
-            self.PacketsWindowPage.update_data(snapshot)
+            self.PacketsWindowPage.update_sniffer_data(snapshot)
 
 
     def _check_new_scans_for_notifications(self):
@@ -235,7 +229,6 @@ class SideBarMainWindow(QMainWindow):
         else: 
             self.sideMenuButton.setIcon(QIcon("src\images\SideBar_icons\menu-bar.png"))
 
-
     def listWidget(self): 
         self.sideMenu.clear()
         self.sideMenuIcon.clear()
@@ -262,9 +255,11 @@ class SideBarMainWindow(QMainWindow):
         self.StartWindowPage = Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
         self.MainWindowPage = History_Window(self.username)
         self.LogWindowPage = Log_Window(self.username, sidebar_reference=self)
-        self.PacketsWindowPage = PacketSnifferWidget()
+        self.PacketsWindowPage = SnifferContainer_Window()
         self.WhiteBlackListPage = WhiteBlackList_Window(self.username) 
         self.SettingsPage = QWidget() 
+
+        # self.PacketSnifferData = PacketSnifferWidget()
          
 
         # Add them to stacked widget
