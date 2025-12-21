@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPainter, QColor
 import os
 import json
 from src.gui.change_password_window import ChangePasswordWindow
@@ -61,8 +61,8 @@ class Settings_Window(QWidget):
                 font-size: 11pt;
             }
             QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
+                width: 20px;
+                height: 20px;
                 border: 2px solid #334155;
                 border-radius: 4px;
                 background-color: #1e293b;
@@ -73,6 +73,10 @@ class Settings_Window(QWidget):
             }
             QCheckBox::indicator:hover {
                 border-color: #3b82f6;
+            }
+            QCheckBox::indicator:checked:hover {
+                background-color: #1d4ed8;
+                border-color: #1d4ed8;
             }
         """)
 
@@ -89,8 +93,29 @@ class Settings_Window(QWidget):
         card_layout.setContentsMargins(48, 48, 48, 48)
         card_layout.setSpacing(24)
 
-        # Mute notifications checkbox
-        self.mute_notifications_checkbox = QCheckBox("Mute notifications (disable system popups and sounds)")
+        # Mute notifications checkbox with custom checkmark
+        class CheckBoxWithCheckmark(QCheckBox):
+            def paintEvent(self, event):
+                super().paintEvent(event)
+                if self.isChecked():
+                    opt = QStyleOptionButton()
+                    self.initStyleOption(opt)
+                    rect = self.style().subElementRect(QStyle.SubElement.SE_CheckBoxIndicator, opt, self)
+                    painter = QPainter(self)
+                    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                    painter.setPen(QColor(255, 255, 255))
+                    font = QFont("Segoe UI", 12, QFont.Weight.Bold)
+                    painter.setFont(font)
+                    metrics = painter.fontMetrics()
+                    check_text = "✓"
+                    text_width = metrics.horizontalAdvance(check_text)
+                    text_height = metrics.height()
+                    # Center the checkmark both horizontally and vertically
+                    check_x = rect.x() + (rect.width() - text_width) // 2
+                    check_y = rect.y() + (rect.height() + text_height) // 2 - metrics.descent()
+                    painter.drawText(check_x, check_y, check_text)
+        
+        self.mute_notifications_checkbox = CheckBoxWithCheckmark("Mute notifications (disable system popups and sounds)")
         self.mute_notifications_checkbox.setFont(QFont("Segoe UI", 11))
         
         # Load saved setting
