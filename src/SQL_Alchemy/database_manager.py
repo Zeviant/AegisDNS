@@ -37,6 +37,30 @@ class DatabaseManager:
             return "error"
             
     @staticmethod
+    def update_password(username: str, current_password: str, new_password: str) -> str:
+        """
+        Updates a user's password after verifying the current password.
+        Returns:
+            "success": if password was updated successfully.
+            "wrong_password": if current password is incorrect.
+            "error": on an unexpected database error.
+        """
+        try:
+            user = session.query(User).filter_by(user_name=username).first()
+            if not user:
+                return "error"
+            
+            if user.password != current_password:
+                return "wrong_password"
+            
+            user.password = new_password
+            session.commit()
+            return "success"
+        except Exception:
+            session.rollback()
+            return "error"
+            
+    @staticmethod
     def log_address_scan(target: str, verdict: str, userName: str) -> None:
         """
         Logs a completed scan result to the 'addresses' table.
