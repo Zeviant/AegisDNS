@@ -21,6 +21,7 @@ class RollingAggregator:
                     "tcp_packets": 0,
                     "udp_packets": 0,
                     "dns_packets": 0,
+                    "src_ips": set(),
                 })
 
             bucket = self.buckets[-1]
@@ -39,6 +40,9 @@ class RollingAggregator:
 
             if metadata["dns_query"] or metadata["dns_response"]:
                 bucket["dns_packets"] += 1
+
+            # Track unique senders in this second
+            bucket["src_ips"].add(metadata["src_ip"])
 
             self._trim_old()
 

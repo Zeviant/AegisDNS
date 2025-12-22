@@ -14,6 +14,7 @@ from src.gui.SnifferContainer_Window import SnifferContainer_Window
 from src.gui.packet_sniffer_widget import PacketSnifferWidget
 import os
 import json
+import time
 
 # Start ps
 from sniffer_test.sniffer_worker import SnifferWorker
@@ -115,12 +116,21 @@ class SideBarMainWindow(QMainWindow):
         self._notify_timer.timeout.connect(self._check_new_scans_for_notifications)
         self._notify_timer.start()
 
+        # Log packet counts to terminal every 10 seconds
+        self._packet_log_timer = QTimer(self)
+        self._packet_log_timer.setInterval(10_000)
+        self._packet_log_timer.timeout.connect(self._log_packet_counts)
+        self._packet_log_timer.start()
+
     def whichProtocol(self, snapshot):
+        if not snapshot:
+            return
+
         latest = snapshot[-1]
 
-        tcp = latest["tcp_packets"]
-        udp = latest["udp_packets"]
-        dns = latest["dns_packets"]
+        tcp = latest.get("tcp_packets", 0)
+        udp = latest.get("udp_packets", 0)
+        dns = latest.get("dns_packets", 0)
 
         if tcp > udp:
             dominant = "TCP"
@@ -142,6 +152,27 @@ class SideBarMainWindow(QMainWindow):
         else:
             print(dominant)
 
+    def _log_packet_counts(self):
+        snapshot = self.aggregator.get_snapshot()
+        if not snapshot:
+            print("[Sniffer] last 10s: no data")
+            return
+
+        now = int(time.time())
+        cutoff = now - 10
+        tcp = udp = 0
+        unique_senders = set()
+        for bucket in snapshot:
+            if bucket.get("timestamp", 0) >= cutoff:
+                tcp += bucket.get("tcp_packets", 0)
+                udp += bucket.get("udp_packets", 0)
+                srcs = bucket.get("src_ips", set())
+                unique_senders.update(srcs)
+
+        total = tcp + udp
+        unique_count = len(unique_senders)
+        print(f"[Sniffer] last 10s: TCP={tcp} UDP={udp} total={total} unique_senders={unique_count}")
+
     def closeEvent(self, event):
         if hasattr(self, "sniffer_worker"):
             self.sniffer_worker.stop()
@@ -157,7 +188,6 @@ class SideBarMainWindow(QMainWindow):
             return
 
         if hasattr(self, "PacketsWindowPage"):
-            self.whichProtocol(snapshot)
             self.PacketsWindowPage.update_sniffer_data(snapshot)
 
 
