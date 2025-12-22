@@ -4,7 +4,6 @@ from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis, QAreaS
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QColor, QPen, QBrush
 
-
 class PacketSnifferWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -137,8 +136,12 @@ class PacketSnifferWidget(QWidget):
             self.axis_x.setRange(self.x_index - self.max_points, self.x_index)
 
         # --- y-axis: it has now adaptive scaling ---
-        values = [p.y() for p in self.series.pointsVector()]
-        max_value = max(values) if values else 1
+        points = self.series.pointsVector()
+
+        # Only consider the visible window
+        window_points = points[-self.max_points:] if len(points) > self.max_points else points
+
+        max_value = max((p.y() for p in window_points), default=1)
 
         step = max(100, int(max_value) // 5)
         scale_max = ((int(max_value) // step) + 1) * step
