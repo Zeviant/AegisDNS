@@ -21,8 +21,6 @@ def packet_handler(packet, aggregator):
         }
 
         # Here recognizes the protocol
-        if TCP in packet and packet[TCP].dport == 80:
-                print("TCP port 80 detected:", ip_layer.dst)
         if TCP in packet:
             metadata["protocol"] = "TCP"
             metadata["src_port"] = packet[TCP].sport
@@ -52,7 +50,8 @@ def packet_handler(packet, aggregator):
                 except Exception:
                     metadata["dns_response"] = None
 
-            aggregator.add_packet(metadata)
+        # Count every packet (not only DNS)
+        aggregator.add_packet(metadata)
     
     except Exception as e:
         print("[Sniffer error]", e)
