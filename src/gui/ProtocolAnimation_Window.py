@@ -1,84 +1,7 @@
-from PySide6.QtWidgets import QWidget, QApplication, QGraphicsOpacityEffect,  QLabel, QVBoxLayout
-from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve, QSequentialAnimationGroup, QParallelAnimationGroup,QSize, QPauseAnimation, Qt, QRectF, QPointF
+from PySide6.QtWidgets import QWidget, QApplication, QGraphicsOpacityEffect,  QLabel, QVBoxLayout, QSizePolicy
+from PySide6.QtCore import QPropertyAnimation, QPoint, QTimer, QEasingCurve, QSequentialAnimationGroup, QParallelAnimationGroup,QSize, QPauseAnimation, Qt, QRectF, QPointF, Property, QAbstractAnimation
 from PySide6.QtGui import QPainter, QPainterPath, QPolygonF, QPen, QColor, QBrush, QFont, QFontMetrics
-import sys
-import math
-
-
-class ArrowWidget(QWidget):
-    def __init__(self, angle, parent=None):
-        super().__init__(parent)
-
-        # ---- Arrow settings ----
-        self.angle = angle                  # Direction in degrees
-        self.arrow_color = QColor(255, 0, 0)
-        self.line_length = 45               # Total arrow length
-        self.arrow_head_size = 12           # Triangle head size
-        self.body_width = 6                # Body with
-
-        self.setAttribute(Qt.WA_TranslucentBackground)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(self.arrow_color))
-
-        # ---- Center of widget ----
-        cx = self.width() / 2
-        cy = self.height() / 2
-
-        # ---- Direction vector ----
-        angle_rad = math.radians(self.angle)
-        dx = math.cos(angle_rad)
-        dy = math.sin(angle_rad)
-
-        # ---- Shaft (rounded rectangle) ----
-        shaft_length = self.line_length - self.arrow_head_size
-        body_width = self.body_width
-
-        shaft_cx = cx + (shaft_length / 2) * dx
-        shaft_cy = cy + (shaft_length / 2) * dy
-
-        painter.save()
-        painter.translate(shaft_cx, shaft_cy)
-        painter.rotate(self.angle)
-
-        painter.drawRoundedRect(
-            -shaft_length / 2,
-            -body_width / 2,
-            shaft_length,
-            body_width,
-            body_width / 2,
-            body_width / 2
-        )
-
-        painter.restore()
-
-        # ---- Arrow head (triangle) ----
-        tip_x = cx + self.line_length * dx
-        tip_y = cy + self.line_length * dy
-        tip = QPointF(tip_x, tip_y)
-
-        base_x = tip_x - self.arrow_head_size * dx
-        base_y = tip_y - self.arrow_head_size * dy
-
-        perp_dx = -dy
-        perp_dy = dx
-        half_width = self.arrow_head_size * 0.6
-
-        left = QPointF(
-            base_x + perp_dx * half_width,
-            base_y + perp_dy * half_width
-        )
-        right = QPointF(
-            base_x - perp_dx * half_width,
-            base_y - perp_dy * half_width
-        )
-
-        arrow_head = QPolygonF([tip, left, right])
-        painter.drawPolygon(arrow_head)
+import sys, random
 
 class TitleWidget(QWidget):
     """Aesthetic title widget with dark blue background"""
@@ -102,11 +25,13 @@ class TitleWidget(QWidget):
         
         layout.addWidget(self.title_label)
         
-        # Set background color (dark blue)
+        # Set background color 
         self.setStyleSheet("""
             QWidget {
                 background-color: #2563eb;
                 border-radius: 8px;
+                font: 13px;
+                font-weight: bold;
             }
         """)
         
@@ -120,41 +45,75 @@ class ProtocolAnimation_Window(QWidget):
         super().__init__()
         # --- Window's Settings ---
         self.resize(600, 600)
-        self.setStyleSheet("QWidget {background-color: #101e29; color: #e5e7eb; font-family: Segoe UI; font-size: 14px}")
+        self.setStyleSheet("""
+        QLabel {
+            font-size: 22px;
+            font-weight: 700;
+            padding: 12px 10px;
+            color: #ffffff;
+            background-color: #1c2839;
+            border-radius: 4px;
+            margin: 2px;
+            border-bottom: 2px solid #2d4a6e;
+        }
 
-        # --- Define protocol ---
-        protocol = "TCP" # later change to receive this from the sidebar
-        if protocol == "TCP": 
-            self.animationTCP()
-        elif protocol == "UDP":
-            self.animationUDP()
-        else:
-            print("Unknown protocol")
+        QLabel#protocolLabel {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 6px 10px 8px 10px;
+            color: #ffffff;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid #2d4a6e;
+        }
 
-    def animationTCP(self):
-        # --- Creation of Models ---
-        # Arrow Packet Sender Model 
-        self.packetSenderModel = ArrowWidget(30, self)
-        self.packetSenderModel.setGeometry(215, 240, 80, 80) 
+        QWidget {
+            background-color: #1c2839;
+            color: #e5e7eb;
+            font-family: Segoe UI;
+        }
+        """)
+
+        # --- Main layout ---
+        layout = QVBoxLayout(self)
+
+        # --- Title ---
+        title = QLabel("Protocol Animation")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
         
-        # Arrow Packet Receiver Model
-        self.packetReceiverModel = ArrowWidget(150, self)
-        self.packetReceiverModel.setGeometry(460, 310, 80, 80) 
-        self.packetReceiverModel.hide()
+        # --- Protocol variable ---
+        protocol = "UDP"
 
-        # Arrow Packet Sender Model
-        self.packetSender2Model = ArrowWidget(30, self)
-        self.packetSender2Model.setGeometry(215, 380, 80, 80) 
+        # --- Protocol label ---
+        protocol_label = QLabel(f"Protocol: {protocol}")
+        protocol_label.setObjectName("protocolLabel")
+        protocol_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        
+        protocol_label.adjustSize() 
+        protocol_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        layout.addWidget(protocol_label)
 
+        layout.addStretch()
+        # --- Creation of Variables ---
+        self.displacement = 70
+        self.vertical_drop = 70
+
+        self.startPositionXSender = 255
+        self.startPositionXReceiver = 480
+
+        self.startPostionY = 200
+
+        # --- Creation of Line ---
         # Left Line Model
         self.lineLModel = QWidget(self)
         self.lineLModel.setStyleSheet("background-color:white; border-radius:3px;")
-        self.lineLModel.setGeometry(250, 200, 6, 400)
+        self.lineLModel.setGeometry(250, 160, 6, 400)
 
         # Right Line Model
         self.lineRModel = QWidget(self)
         self.lineRModel.setStyleSheet("background-color:white; border-radius:3px;")
-        self.lineRModel.setGeometry(500, 200, 6, 400)
+        self.lineRModel.setGeometry(500, 160, 6, 400)
         
         # --- Create Title Widgets ---
         # Sender title 
@@ -168,71 +127,118 @@ class ProtocolAnimation_Window(QWidget):
         receiver_x = 500 - (title_width - 6) // 2 
         self.receiver_title.setGeometry(receiver_x, 100, title_width, 40)
 
+        # --- Creation of Packets ---
+
+        # lane, direction
+        self.packet_specs = [
+            (0, "LR"),  # SYN
+            (1, "RL"),  # SYN-ACK
+            (2, "LR"),  # ACK
+        ]
+
+        self.packets = []
+        for lane, direction in self.packet_specs:
+            packet = QWidget(self)
+            packet.setStyleSheet("background-color:#2563eb;border-radius:3.7px;")
+            packet.resize(20, 20)
+            packet.hide()
+            self.packets.append((packet, lane, direction))
+
+        # --- Define protocol ---
+        protocol = "UDP" # later change to receive this from the sidebar
+        if protocol == "TCP": 
+            self.animationTCP()
+        elif protocol == "UDP":
+            self.animationUDP()
+        else:
+            print("Unknown protocol")
+
+    def lane_y(self, lane):
+        return self.startPostionY + lane * self.displacement
+
+    def start_x(self, direction):
+        return self.startPositionXSender if direction == "LR" else self.startPositionXReceiver
+
+    def end_x(self, direction):
+        return self.startPositionXReceiver if direction == "LR" else self.startPositionXSender
+    
+    def animationTCP(self):
         # --- Animation ---
-        # Animation Packet Sender
-        self.packetAnimation = QPropertyAnimation(self.packetSenderModel, b"pos")
-        self.packetAnimation.setEasingCurve(QEasingCurve.OutCubic)
-        self.packetAnimation.setStartValue(QPoint(215, 240))
-        self.packetAnimation.setEndValue(QPoint(425, 290))
-        self.packetAnimation.setDuration(1200)
-
-        # Animation Packet Receiver
-        self.packetAnimation2 = QPropertyAnimation(self.packetReceiverModel, b"pos")
-        self.packetAnimation2.setEasingCurve(QEasingCurve.InOutCubic)
-        self.packetAnimation2.setStartValue(QPoint(460, 310))
-        self.packetAnimation2.setEndValue(QPoint(250, 360))
-        self.packetAnimation2.setDuration(1200)
-
-        # Animation Packet Sender 2
-        self.packetAnimation3 = QPropertyAnimation(self.packetSender2Model, b"pos")
-        self.packetAnimation3.setEasingCurve(QEasingCurve.OutCubic)
-        self.packetAnimation3.setStartValue(QPoint(250, 380))
-        self.packetAnimation3.setEndValue(QPoint(425, 430))
-        self.packetAnimation3.setDuration(1200)
-
-        # Animation group
-        self.packetSenderModel.show()
-        self.packetReceiverModel.hide()
-        self.packetSender2Model.hide()
-        self.packetAnimation.finished.connect(self._on_sender_finished)
-        self.packetAnimation2.finished.connect(self._on_receiver_finished)
         self.anim_group = QSequentialAnimationGroup()
-       
-        self.anim_group.addAnimation(QPauseAnimation(500))  # Delay
-        self.anim_group.addAnimation(self.packetAnimation)
-        
-        self.anim_group.addAnimation(QPauseAnimation(500))  # Delay
-        self.anim_group.addAnimation(self.packetAnimation2)
+        for packet, lane, direction in self.packets:
+            y = self.lane_y(lane)
+            packet.move(self.start_x(direction), y)
 
-        self.anim_group.addAnimation(QPauseAnimation(500))  # Delay
-        self.anim_group.addAnimation(self.packetAnimation3)
+            anim = QPropertyAnimation(packet, b"pos")
+            anim.stateChanged.connect(
+                lambda newState, oldState, p=packet:
+                    p.show() if newState == QAbstractAnimation.Running else None
+            )
+            anim.setDuration(1200)
+            anim.setEasingCurve(QEasingCurve.OutCubic)
+            anim.setStartValue(QPoint(self.start_x(direction), y))
+            anim.setEndValue(QPoint(self.end_x(direction), y + self.vertical_drop))
+            anim.finished.connect(packet.hide)
+            self.anim_group.addAnimation(anim)
 
-        self.anim_group.setLoopCount(-1) # Loop
+        self.anim_group.setLoopCount(-1)
         self.anim_group.currentLoopChanged.connect(self._on_loop_restart)
         self.anim_group.start()
 
     def animationUDP(self):
-        pass
+         # --- Animation ---
+        self.anim_group = QSequentialAnimationGroup()
 
-    def _on_sender_finished(self):
-        self.packetReceiverModel.show()
+        # Build 6 UDP packets per loop
+        udp_sequence = []
 
-    def _on_receiver_finished(self):
-        self.packetSender2Model.show()
+        for i in range(6):
+            packet, lane, _ = random.choice(self.packets)
+
+            # Mostly LR, sometimes RL
+            direction = "LR" if random.random() < 0.7 else "RL"
+
+            udp_sequence.append((packet, lane, direction))
+
+        # Randomize order
+        random.shuffle(udp_sequence)
+
+        for packet, lane, direction in udp_sequence:
+            y = self.lane_y(lane)
+
+            packet.move(self.start_x(direction), y)
+
+            anim = QPropertyAnimation(packet, b"pos")
+            anim.stateChanged.connect(
+                lambda newState, oldState, p=packet:
+                    p.show() if newState == QAbstractAnimation.Running else None
+            )
+
+            anim.setDuration(random.randint(500, 1200))  # irregular timing
+            anim.setEasingCurve(QEasingCurve.OutQuad)
+
+            anim.setStartValue(QPoint(self.start_x(direction), y))
+            anim.setEndValue(QPoint(self.end_x(direction), y))
+
+            anim.finished.connect(packet.hide)
+
+            self.anim_group.addAnimation(QPauseAnimation(random.randint(100, 400)))
+            self.anim_group.addAnimation(anim)
+
+        self.anim_group.setLoopCount(1) 
+        self.anim_group.finished.connect(
+            lambda: QTimer.singleShot(0, self.animationUDP)
+        )
+        self.anim_group.start()
+
 
     def _on_loop_restart(self, loop):
-        # Hide everything first
-        self.packetSenderModel.hide()
-        self.packetReceiverModel.hide()
-        self.packetSender2Model.hide()
+        for packet, lane, direction in self.packets:
+            packet.hide()
+            packet.move(self.start_x(direction), self.lane_y(lane))
 
-        # Reset positions
-        self.packetSenderModel.move(215, 240)
-        self.packetReceiverModel.move(460, 310)
-        self.packetSender2Model.move(215, 380)
-
-        # Show sender to start next loop
-        self.packetSenderModel.show()
+        # show first packet again
+        self.packets[0][0].show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
