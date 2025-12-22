@@ -61,6 +61,9 @@ class SnifferContainer_Window(QWidget):
     def update_sniffer_data(self, snapshot):
         self.graph_widget.update_data(snapshot)
 
+    def sent_dominant_animation(self, dominant, receivePacketRate):
+        self.animation_widget.receiveProtocol(dominant, receivePacketRate)
+
     def show_sniffer_graph(self):
         self.stacked.setCurrentIndex(0)
 

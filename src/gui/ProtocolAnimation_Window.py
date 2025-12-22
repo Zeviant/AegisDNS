@@ -83,16 +83,22 @@ class ProtocolAnimation_Window(QWidget):
         layout.addWidget(title)
         
         # --- Protocol variable ---
-        protocol = "UDP"
-
+        self.protocol = "nose"
+        self.packetRate = 1
+        self._applied_packet_rate = self.packetRate
+        self.MIN_DURATION = 300    
+        self.MAX_DURATION = 1800   
+        self.BASE_RATE = 50 
+        self.current_duration = self.MAX_DURATION
+    
         # --- Protocol label ---
-        protocol_label = QLabel(f"Protocol: {protocol}")
-        protocol_label.setObjectName("protocolLabel")
-        protocol_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.protocol_label = QLabel(f"Protocol: {self.protocol}")
+        self.protocol_label.setObjectName("protocolLabel")
+        self.protocol_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         
-        protocol_label.adjustSize() 
-        protocol_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        layout.addWidget(protocol_label)
+        self.protocol_label.adjustSize() 
+        self.protocol_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        layout.addWidget(self.protocol_label)
 
         layout.addStretch()
         # --- Creation of Variables ---
@@ -145,14 +151,60 @@ class ProtocolAnimation_Window(QWidget):
             self.packets.append((packet, lane, direction))
 
         # --- Define protocol ---
-        protocol = "UDP" # later change to receive this from the sidebar
-        if protocol == "TCP": 
+        if self.protocol == "TCP": 
             self.animationTCP()
-        elif protocol == "UDP":
+        elif self.protocol == "UDP":
             self.animationUDP()
         else:
             print("Unknown protocol")
 
+    def receiveProtocol(self, identifier, packetRateReceive):
+        old_rate = self.packetRate
+
+        normalized_rate = packetRateReceive / self.BASE_RATE
+
+        raw_duration = self.MAX_DURATION / (1.0 + normalized_rate)
+
+        # Clamp for safety
+        duration = max(self.MIN_DURATION, min(self.MAX_DURATION, raw_duration))
+
+        self.current_duration = duration
+
+
+        self.current_duration = duration
+
+
+        print(f"Duration was {1200 * old_rate}")
+        print(f"Now Duration is {1200 * self.packetRate}")
+
+        # Detect meaningful rate change
+        rate_changed = abs(self.packetRate - self._applied_packet_rate) > 0.2
+
+        protocol_changed = identifier != self.protocol
+
+        if not protocol_changed and not rate_changed:
+            return
+
+        self.protocol = identifier
+        self._applied_packet_rate = self.packetRate
+
+        # --- Update label ---
+        self.protocol_label.setText(f"Protocol: {self.protocol}")
+        self.protocol_label.adjustSize()
+
+        # --- Stop previous animation safely ---
+        if hasattr(self, "anim_group"):
+            self.anim_group.stop()
+            self.anim_group.deleteLater()
+            for packet, _, _ in self.packets:
+                packet.hide()
+
+        # --- Restart correct animation ---
+        if self.protocol == "TCP":
+            self.animationTCP()
+        elif self.protocol == "UDP":
+            self.animationUDP()
+            
     def lane_y(self, lane):
         return self.startPostionY + lane * self.displacement
 
@@ -174,7 +226,9 @@ class ProtocolAnimation_Window(QWidget):
                 lambda newState, oldState, p=packet:
                     p.show() if newState == QAbstractAnimation.Running else None
             )
-            anim.setDuration(1200)
+            duration = int(self.current_duration)
+            print(f"The durationis now {duration}")
+            anim.setDuration(duration)
             anim.setEasingCurve(QEasingCurve.OutCubic)
             anim.setStartValue(QPoint(self.start_x(direction), y))
             anim.setEndValue(QPoint(self.end_x(direction), y + self.vertical_drop))
@@ -213,8 +267,8 @@ class ProtocolAnimation_Window(QWidget):
                 lambda newState, oldState, p=packet:
                     p.show() if newState == QAbstractAnimation.Running else None
             )
-
-            anim.setDuration(random.randint(500, 1200))  # irregular timing
+            duration = int(self.current_duration)
+            anim.setDuration(duration)  
             anim.setEasingCurve(QEasingCurve.OutQuad)
 
             anim.setStartValue(QPoint(self.start_x(direction), y))
@@ -230,7 +284,6 @@ class ProtocolAnimation_Window(QWidget):
             lambda: QTimer.singleShot(0, self.animationUDP)
         )
         self.anim_group.start()
-
 
     def _on_loop_restart(self, loop):
         for packet, lane, direction in self.packets:
