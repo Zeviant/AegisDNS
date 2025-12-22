@@ -3,6 +3,7 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QThread, Signal, QTimer
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QProgressBar
 import time
 
 # Connection with service layer
@@ -111,22 +112,58 @@ class Main_Window(QMainWindow):
         self.input_edit.setPlaceholderText("Example: https://example.com  |  example.com  |  8.8.8.8")
         self.input_edit.setMinimumWidth(420)
 
+        # Create the fake progress bar
+        self.progress = QProgressBar()
+        self.progress.setRange(0, 100)
+        self.progress.setValue(0)
+        self.progress.setVisible(False)
+        self.progress.setTextVisible(False)
+        self.progress.setFixedHeight(6)
+        self.progress.setObjectName("scanProgress")
+        self._progress_accum = 0.0
+
         self.ok_btn = QPushButton("OK")
         self.ok_btn.clicked.connect(self.on_ok)
         self.input_edit.returnPressed.connect(self.ok_btn.click)
 
         row.addWidget(self.input_edit, 1)
         row.addWidget(self.ok_btn)
-
+        
         card_wrap.addWidget(title)
         card_wrap.addWidget(prompt)
         card_wrap.addLayout(row)
+        card_wrap.addWidget(self.progress)
 
         page.addStretch(1)
         page.addWidget(card, 0, Qt.AlignHCenter)
         page.addStretch(1)
 
+        self._progress_timer = QTimer(self)
+        self._progress_timer.setInterval(80)  # smooth animation
+        self._progress_timer.timeout.connect(self._advance_progress)
         self._worker = None  
+
+    def _advance_progress(self):
+        value = self.progress.value()
+
+        if value >= 95:
+            return
+
+        inc = 0.0
+        if value < 30:
+            inc = 2.0
+        elif value < 50:
+            inc = 1.0
+        elif value < 70:
+            inc = 0.6
+        elif value < 95:
+            inc = 0.3
+
+        self._progress_accum += inc
+        whole = int(self._progress_accum)
+        if whole > 0:
+            self._progress_accum -= whole
+            self.progress.setValue(min(95, value + whole))
 
     # Cooldown Functions (UI Logic)
     def start_cooldown(self, seconds: int):
@@ -171,6 +208,11 @@ class Main_Window(QMainWindow):
         self.ok_btn.setEnabled(False)
         self.ok_btn.setText("Preparing...")
 
+        self.progress.setValue(0)
+        self.progress.setVisible(True)
+        self._progress_accum = 0.0
+        self._progress_timer.start()
+
         # Delegation of work to the imported service layer thread
         self._worker = VTScanThread(kind, target, self.userName, self)
         self._worker.tick.connect(self.on_cooldown_tick)
@@ -183,6 +225,13 @@ class Main_Window(QMainWindow):
     def on_result(self, payload: dict):
         self.ok_btn.setEnabled(True)
         self.ok_btn.setText("OK")
+        self._progress_timer.stop()
+        self.progress.setValue(100)
+
+        QTimer.singleShot(300, lambda: (
+            self.progress.setVisible(False),
+            self.progress.setValue(0)
+        ))
 
         if not payload.get("ok"):
             # The API key error message now comes from the logic layer
@@ -191,5 +240,6 @@ class Main_Window(QMainWindow):
 
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
-        
-        show_vt_box(self, verdict, stats)
+
+        # Small delay so user can see bar getting filled up (CAN REMOVE LATER MAYBE) @NicoVegaPortaluppi
+        QTimer.singleShot(200, lambda: show_vt_box(self, verdict, stats))
