@@ -2,7 +2,7 @@
 # Qt Libraries
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt, QThread, Signal, QTimer
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtWidgets import QProgressBar
 import time
 
@@ -134,12 +134,23 @@ class Main_Window(QMainWindow):
         card_wrap.addLayout(row)
         card_wrap.addWidget(self.progress)
 
+        # Logo (VirusTotal)
+        logo = QLabel()
+        logo.setStyleSheet("background: transparent;")
+        logo_pix = QPixmap("src/images/Other_icons/VirusTotal_logo.svg.png")
+        if not logo_pix.isNull():
+            logo.setPixmap(logo_pix.scaledToWidth(350, Qt.SmoothTransformation))
+        logo.setAlignment(Qt.AlignHCenter)
+
+        page.addSpacing(56)
+        page.addWidget(logo, 0, Qt.AlignHCenter)
+        page.addSpacing(24)
         page.addStretch(1)
         page.addWidget(card, 0, Qt.AlignHCenter)
-        page.addStretch(1)
+        page.addStretch(2)
 
         self._progress_timer = QTimer(self)
-        self._progress_timer.setInterval(80)  # smooth animation
+        self._progress_timer.setInterval(80)
         self._progress_timer.timeout.connect(self._advance_progress)
         self._worker = None  
 
