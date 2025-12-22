@@ -151,6 +151,8 @@ class SideBarMainWindow(QMainWindow):
             print(f"{dominant} ({', '.join(extras)})")
         else:
             print(dominant)
+        
+        self.PacketsWindowPage.sent_dominant_animation(dominant, tcp)
 
     def _log_packet_counts(self):
         snapshot = self.aggregator.get_snapshot()
@@ -172,6 +174,7 @@ class SideBarMainWindow(QMainWindow):
         total = tcp + udp
         unique_count = len(unique_senders)
         print(f"[Sniffer] last 10s: TCP={tcp} UDP={udp} total={total} unique_senders={unique_count}")
+        self.whichProtocol(snapshot)
 
     def closeEvent(self, event):
         if hasattr(self, "sniffer_worker"):
