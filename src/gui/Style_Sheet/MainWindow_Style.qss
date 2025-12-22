@@ -22,3 +22,13 @@ QPushButton {
 QPushButton:hover { background: #2563eb; }
 QPushButton:disabled { background: #334155; color: #cbd5e1; }
 QPushButton:pressed { background: #1e40af; }
+
+QProgressBar#scanProgress {
+    background: #1c2839;
+    border-radius: 3px;
+}
+
+QProgressBar#scanProgress::chunk {
+    background: #5f5cf6ff; /* purple */
+    border-radius: 3px;
+}
