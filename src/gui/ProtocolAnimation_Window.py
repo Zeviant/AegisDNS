@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QApplication, QGraphicsOpacityEffect,  QLabel, QVBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QWidget, QApplication, QGraphicsOpacityEffect,  QLabel, QVBoxLayout, QHBoxLayout, QSizePolicy
 from PySide6.QtCore import QPropertyAnimation, QPoint, QTimer, QEasingCurve, QSequentialAnimationGroup, QParallelAnimationGroup,QSize, QPauseAnimation, Qt, QRectF, QPointF, Property, QAbstractAnimation
 from PySide6.QtGui import QPainter, QPainterPath, QPolygonF, QPen, QColor, QBrush, QFont, QFontMetrics
 import sys, random
@@ -76,65 +76,123 @@ class ProtocolAnimation_Window(QWidget):
 
         # --- Main layout ---
         layout = QVBoxLayout(self)
+        layout_Animations = QHBoxLayout()
+        
+        layout_TCP = QVBoxLayout()
+        layout_UDP = QVBoxLayout()
+
+        layout_Animations.addLayout(layout_TCP)
+        layout_Animations.addLayout(layout_UDP)
 
         # --- Title ---
         title = QLabel("Protocol Animation")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
         
-        # --- Protocol variable ---
-        self.protocol = "nose"
-        self.packetRate = 1
-        self._applied_packet_rate = self.packetRate
+        # --- Protocol General Variables ---
+        # Protocol Variables
+        self.protocol_tcp = "TCP"
+        self.protocol_udp = "UDP"
+        self.dominantState = ""
+        # Packet Rates Variables
+        self.packetRateDominant = 1
+        self._applied_packet_rateDominant = self.packetRateDominant
+
+        self.packetRateSubservient = 1
+        self._applied_packet_rateSubservient = self.packetRateSubservient
+
+        self.duration_tcp = 1200
+        self.duration_udp = 1200
+        # Duration Variables
         self.MIN_DURATION = 300    
         self.MAX_DURATION = 1800   
         self.BASE_RATE = 50 
         self.current_duration = self.MAX_DURATION
     
         # --- Protocol label ---
-        self.protocol_label = QLabel(f"Protocol: {self.protocol}")
-        self.protocol_label.setObjectName("protocolLabel")
-        self.protocol_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        
-        self.protocol_label.adjustSize() 
-        self.protocol_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        layout.addWidget(self.protocol_label)
+        self.protocol_label_TCP = QLabel(f"Protocol: {self.protocol_tcp}")
+        self.protocol_label_TCP.setObjectName("protocolLabel")
+        self.protocol_label_TCP.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.protocol_label_TCP.adjustSize() 
+        self.protocol_label_TCP.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        layout.addStretch()
+        self.protocol_label_UDP = QLabel(f"Protocol: {self.protocol_udp}")
+        self.protocol_label_UDP.setObjectName("protocolLabel")
+        self.protocol_label_UDP.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.protocol_label_UDP.adjustSize() 
+        self.protocol_label_UDP.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        layout_TCP.addWidget(self.protocol_label_TCP, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout_UDP.addWidget(self.protocol_label_UDP, alignment=Qt.AlignmentFlag.AlignCenter)
+
+
+        
         # --- Creation of Variables ---
         self.displacement = 70
         self.vertical_drop = 70
 
-        self.startPositionXSender = 255
-        self.startPositionXReceiver = 480
+        self.startPositionXSender = 105
+        self.startPositionXReceiver = 260
 
-        self.startPostionY = 200
+        self.startPostionY = 120
 
         # --- Creation of Line ---
+        self.tcp_container = QWidget()
+        self.udp_container = QWidget()
+
+        self.tcp_container.setMinimumSize(300, 450)
+        self.udp_container.setMinimumSize(300, 450)
+
+        layout_TCP.addWidget(self.tcp_container)
+        layout_UDP.addWidget(self.udp_container)
+
+        # --- TCP Lines ---
         # Left Line Model
-        self.lineLModel = QWidget(self)
-        self.lineLModel.setStyleSheet("background-color:white; border-radius:3px;")
-        self.lineLModel.setGeometry(250, 160, 6, 400)
+        self.lineLModel_TCP = QWidget(self.tcp_container)
+        self.lineLModel_TCP.setStyleSheet("background-color:white; border-radius:3px;")
+        self.lineLModel_TCP.setGeometry(100, 80, 6, 350)
 
         # Right Line Model
-        self.lineRModel = QWidget(self)
-        self.lineRModel.setStyleSheet("background-color:white; border-radius:3px;")
-        self.lineRModel.setGeometry(500, 160, 6, 400)
+        self.lineRModel_TCP = QWidget(self.tcp_container)
+        self.lineRModel_TCP.setStyleSheet("background-color:white; border-radius:3px;")
+        self.lineRModel_TCP.setGeometry(280, 80, 6, 350)
+
+        # --- UDP Lines ---
+        self.lineLModel_UDP = QWidget(self.udp_container)
+        self.lineLModel_UDP.setStyleSheet("background-color:white; border-radius:3px;")
+        self.lineLModel_UDP.setGeometry(100, 80, 6, 350)
+
+        # Right Line Model
+        self.lineRModel_UDP = QWidget(self.udp_container)
+        self.lineRModel_UDP.setStyleSheet("background-color:white; border-radius:3px;")
+        self.lineRModel_UDP.setGeometry(280, 80, 6, 350)
         
         # --- Create Title Widgets ---
+        # --- TCP ---
         # Sender title 
-        self.sender_title = TitleWidget("Sender", self)
-        title_width = 100
-        sender_x = 250 - (title_width - 6) // 2 
-        self.sender_title.setGeometry(sender_x, 100, title_width, 40)
+        self.sender_title_tcp = TitleWidget("Sender", self.tcp_container)
+        title_width_tcp = 100
+        sender_x_tcp = 100 - (title_width_tcp - 6) // 2 
+        self.sender_title_tcp.setGeometry(sender_x_tcp, 20, title_width_tcp, 40)
         
         # Receiver title 
-        self.receiver_title = TitleWidget("Receiver", self)
-        receiver_x = 500 - (title_width - 6) // 2 
-        self.receiver_title.setGeometry(receiver_x, 100, title_width, 40)
+        self.receiver_title_tcp = TitleWidget("Receiver", self.tcp_container)
+        receiver_x_tcp = 280 - (title_width_tcp - 6) // 2 
+        self.receiver_title_tcp.setGeometry(receiver_x_tcp, 20, title_width_tcp, 40)
+
+        # --- UDP ---
+        # Sender title 
+        self.sender_title_udp = TitleWidget("Sender", self.udp_container)
+        title_width_udp = 100
+        sender_x_udp = 100 - (title_width_udp - 6) // 2 
+        self.sender_title_udp.setGeometry(sender_x_udp, 20, title_width_udp, 40)
+        
+        # Receiver title 
+        self.receiver_title = TitleWidget("Receiver", self.udp_container)
+        receiver_x = 280 - (title_width_udp - 6) // 2 
+        self.receiver_title.setGeometry(receiver_x, 20, title_width_udp, 40)
 
         # --- Creation of Packets ---
-
         # lane, direction
         self.packet_specs = [
             (0, "LR"),  # SYN
@@ -142,68 +200,83 @@ class ProtocolAnimation_Window(QWidget):
             (2, "LR"),  # ACK
         ]
 
-        self.packets = []
+        self.packets_tcp = []
         for lane, direction in self.packet_specs:
-            packet = QWidget(self)
+            packet = QWidget(self.tcp_container)
             packet.setStyleSheet("background-color:#2563eb;border-radius:3.7px;")
             packet.resize(20, 20)
             packet.hide()
-            self.packets.append((packet, lane, direction))
+            self.packets_tcp.append((packet, lane, direction))
 
-        # --- Define protocol ---
-        if self.protocol == "TCP": 
-            self.animationTCP()
-        elif self.protocol == "UDP":
-            self.animationUDP()
+        self.packets_udp = []
+        for lane, direction in self.packet_specs:
+            packet = QWidget(self.udp_container)
+            packet.setStyleSheet("background-color:#2563eb;border-radius:3.7px;")
+            packet.resize(20, 20)
+            packet.hide()
+            self.packets_udp.append((packet, lane, direction))
+
+        layout.addLayout(layout_Animations)
+        layout.addStretch()
+
+        self.animationUDP()
+        self.animationTCP()
+
+
+    def receiveProtocol(self, dominant, packetRateDominant, subservient, packetRateSubservient):
+
+        # Update stored rates 
+        self.packetRateDominant = packetRateDominant
+        self.packetRateSubservient = packetRateSubservient
+
+        # Normalize
+        normalized_rateDominant = packetRateDominant / self.BASE_RATE
+        normalized_rateSubservient = packetRateSubservient / self.BASE_RATE
+
+        raw_durationDominant = self.MAX_DURATION / (1.0 + normalized_rateDominant)
+        raw_durationSubservient = self.MAX_DURATION / (1.0 + normalized_rateSubservient)
+
+        durationDominant = max(self.MIN_DURATION, min(self.MAX_DURATION, raw_durationDominant))
+        durationSubservient = max(self.MIN_DURATION, min(self.MAX_DURATION, raw_durationSubservient))
+
+        if dominant == "TCP":
+            self.duration_tcp = durationDominant
+            self.duration_udp = durationSubservient
+        elif dominant == "UDP":
+            self.duration_udp = durationDominant
+            self.duration_tcp = durationSubservient
+        elif dominant == "Mixed":
+            self.duration_udp = durationDominant
+            self.duration_tcp = durationSubservient
         else:
-            print("Unknown protocol")
-
-    def receiveProtocol(self, identifier, packetRateReceive):
-        old_rate = self.packetRate
-
-        normalized_rate = packetRateReceive / self.BASE_RATE
-
-        raw_duration = self.MAX_DURATION / (1.0 + normalized_rate)
-
-        # Clamp for safety
-        duration = max(self.MIN_DURATION, min(self.MAX_DURATION, raw_duration))
-
-        self.current_duration = duration
-
-
-        self.current_duration = duration
-
-
-        print(f"Duration was {1200 * old_rate}")
-        print(f"Now Duration is {1200 * self.packetRate}")
-
-        # Detect meaningful rate change
-        rate_changed = abs(self.packetRate - self._applied_packet_rate) > 0.2
-
-        protocol_changed = identifier != self.protocol
-
-        if not protocol_changed and not rate_changed:
             return
 
-        self.protocol = identifier
-        self._applied_packet_rate = self.packetRate
+        rate_changedDominant = abs(self.packetRateDominant - self._applied_packet_rateDominant) > 0.2
+        rate_changedSubservient = abs(self.packetRateSubservient - self._applied_packet_rateSubservient) > 0.2
+        dominant_changed = dominant != self.dominantState
 
-        # --- Update label ---
-        self.protocol_label.setText(f"Protocol: {self.protocol}")
-        self.protocol_label.adjustSize()
+        if not (dominant_changed or rate_changedDominant or rate_changedSubservient):
+            return
 
-        # --- Stop previous animation safely ---
-        if hasattr(self, "anim_group"):
-            self.anim_group.stop()
-            self.anim_group.deleteLater()
-            for packet, _, _ in self.packets:
-                packet.hide()
+        self.dominantState = dominant
+        self._applied_packet_rateDominant = self.packetRateDominant
+        self._applied_packet_rateSubservient = self.packetRateSubservient
 
-        # --- Restart correct animation ---
-        if self.protocol == "TCP":
-            self.animationTCP()
-        elif self.protocol == "UDP":
-            self.animationUDP()
+        # Update labels
+        if dominant == "TCP":
+            self.protocol_label_TCP.setText("Protocol: TCP (Dominant)")
+            self.protocol_label_UDP.setText("Protocol: UDP (Background)")
+        elif dominant == "UDP":
+            self.protocol_label_TCP.setText("Protocol: TCP (Background)")
+            self.protocol_label_UDP.setText("Protocol: UDP (Dominant)")
+        else:
+            self.protocol_label_TCP.setText("Protocol: TCP")
+            self.protocol_label_UDP.setText("Protocol: UDP")
+
+        self.protocol_label_TCP.adjustSize()
+        self.protocol_label_UDP.adjustSize()
+
+
             
     def lane_y(self, lane):
         return self.startPostionY + lane * self.displacement
@@ -216,8 +289,8 @@ class ProtocolAnimation_Window(QWidget):
     
     def animationTCP(self):
         # --- Animation ---
-        self.anim_group = QSequentialAnimationGroup()
-        for packet, lane, direction in self.packets:
+        self.anim_group_tcp = QSequentialAnimationGroup()
+        for packet, lane, direction in self.packets_tcp:
             y = self.lane_y(lane)
             packet.move(self.start_x(direction), y)
 
@@ -226,28 +299,28 @@ class ProtocolAnimation_Window(QWidget):
                 lambda newState, oldState, p=packet:
                     p.show() if newState == QAbstractAnimation.Running else None
             )
-            duration = int(self.current_duration)
+            duration = int(self.duration_tcp)
             print(f"The durationis now {duration}")
             anim.setDuration(duration)
             anim.setEasingCurve(QEasingCurve.OutCubic)
             anim.setStartValue(QPoint(self.start_x(direction), y))
             anim.setEndValue(QPoint(self.end_x(direction), y + self.vertical_drop))
             anim.finished.connect(packet.hide)
-            self.anim_group.addAnimation(anim)
+            self.anim_group_tcp.addAnimation(anim)
 
-        self.anim_group.setLoopCount(-1)
-        self.anim_group.currentLoopChanged.connect(self._on_loop_restart)
-        self.anim_group.start()
+        self.anim_group_tcp.setLoopCount(-1)
+        self.anim_group_tcp.currentLoopChanged.connect(self._on_loop_restart_tcp)
+        self.anim_group_tcp.start()
 
     def animationUDP(self):
          # --- Animation ---
-        self.anim_group = QSequentialAnimationGroup()
+        self.anim_group_udp = QSequentialAnimationGroup()
 
         # Build 6 UDP packets per loop
         udp_sequence = []
 
         for i in range(6):
-            packet, lane, _ = random.choice(self.packets)
+            packet, lane, _ = random.choice(self.packets_udp)
 
             # Mostly LR, sometimes RL
             direction = "LR" if random.random() < 0.7 else "RL"
@@ -267,7 +340,7 @@ class ProtocolAnimation_Window(QWidget):
                 lambda newState, oldState, p=packet:
                     p.show() if newState == QAbstractAnimation.Running else None
             )
-            duration = int(self.current_duration)
+            duration = int(self.duration_udp)
             anim.setDuration(duration)  
             anim.setEasingCurve(QEasingCurve.OutQuad)
 
@@ -276,22 +349,23 @@ class ProtocolAnimation_Window(QWidget):
 
             anim.finished.connect(packet.hide)
 
-            self.anim_group.addAnimation(QPauseAnimation(random.randint(100, 400)))
-            self.anim_group.addAnimation(anim)
+            self.anim_group_udp.addAnimation(QPauseAnimation(random.randint(100, 400)))
+            self.anim_group_udp.addAnimation(anim)
 
-        self.anim_group.setLoopCount(1) 
-        self.anim_group.finished.connect(
+        self.anim_group_udp.setLoopCount(1) 
+        self.anim_group_udp.finished.connect(
             lambda: QTimer.singleShot(0, self.animationUDP)
         )
-        self.anim_group.start()
+        self.anim_group_udp.start()
 
-    def _on_loop_restart(self, loop):
-        for packet, lane, direction in self.packets:
+    def _on_loop_restart_tcp(self, loop):
+        for packet, lane, direction in self.packets_tcp:
             packet.hide()
             packet.move(self.start_x(direction), self.lane_y(lane))
-
         # show first packet again
-        self.packets[0][0].show()
+        self.packets_tcp[0][0].show()
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

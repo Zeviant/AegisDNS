@@ -134,8 +134,10 @@ class SideBarMainWindow(QMainWindow):
 
         if tcp > udp:
             dominant = "TCP"
+            subservient = "UDP"
         elif udp > tcp:
             dominant = "UDP"
+            subservient = "TCP"
         else:
             dominant = "Mixed"
 
@@ -152,7 +154,12 @@ class SideBarMainWindow(QMainWindow):
         else:
             print(dominant)
         
-        self.PacketsWindowPage.sent_dominant_animation(dominant, tcp)
+        if (dominant == "TCP"):
+            self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
+        if (dominant == "UDP"):
+            self.PacketsWindowPage.sent_dominant_animation(dominant, udp, subservient, tcp)
+        if (dominant == "Mixed"):
+            self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
 
     def _log_packet_counts(self):
         snapshot = self.aggregator.get_snapshot()
