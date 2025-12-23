@@ -105,7 +105,7 @@ class ProtocolAnimation_Window(QWidget):
         self.duration_udp = 1200
         # Duration Variables
         self.MIN_DURATION = 300    
-        self.MAX_DURATION = 1800   
+        self.MAX_DURATION = 2400   
         self.BASE_RATE = 50 
         self.current_duration = self.MAX_DURATION
     
@@ -237,20 +237,13 @@ class ProtocolAnimation_Window(QWidget):
 
 
     def receiveProtocol(self, dominant, packetRateDominant, subservient, packetRateSubservient):
-
         # Update stored rates 
         self.packetRateDominant = packetRateDominant
         self.packetRateSubservient = packetRateSubservient
 
         # Normalize
-        normalized_rateDominant = packetRateDominant / self.BASE_RATE
-        normalized_rateSubservient = packetRateSubservient / self.BASE_RATE
-
-        raw_durationDominant = self.MAX_DURATION / (1.0 + normalized_rateDominant)
-        raw_durationSubservient = self.MAX_DURATION / (1.0 + normalized_rateSubservient)
-
-        durationDominant = max(self.MIN_DURATION, min(self.MAX_DURATION, raw_durationDominant))
-        durationSubservient = max(self.MIN_DURATION, min(self.MAX_DURATION, raw_durationSubservient))
+        durationDominant = self._duration_from_packets(packetRateDominant)
+        durationSubservient = self._duration_from_packets(packetRateSubservient)
 
         if dominant == "TCP":
             self.duration_tcp = durationDominant
@@ -275,21 +268,47 @@ class ProtocolAnimation_Window(QWidget):
         self._applied_packet_rateDominant = self.packetRateDominant
         self._applied_packet_rateSubservient = self.packetRateSubservient
 
-        # Update labels
-        if dominant == "TCP":
-            self.protocol_label_TCP.setText("Protocol: TCP (Dominant)")
-            self.protocol_label_UDP.setText("Protocol: UDP (Background)")
-        elif dominant == "UDP":
-            self.protocol_label_TCP.setText("Protocol: TCP (Background)")
-            self.protocol_label_UDP.setText("Protocol: UDP (Dominant)")
+        if dominant in ("TCP", "Mixed"):
+            if hasattr(self, "anim_group_tcp"):
+                self.anim_group_tcp.stop()
+                self.anim_group_tcp.deleteLater()
+                
+            self._reset_tcp_packets()
+            self.animationTCP()
+            
+        
+        if dominant in ("UDP", "Mixed"):
+            if hasattr(self, "anim_group_udp"):
+                self.anim_group_udp.stop()
+                self.anim_group_udp.deleteLater()
+            
+            self._reset_udp_packets()
+            self.animationUDP()
+            
+
+    def _reset_tcp_packets(self):
+        for packet, lane, direction in self.packets_tcp:
+            packet.hide()
+            packet.move(
+                self.start_x(direction),
+                self.lane_y(lane)
+            )
+
+    def _reset_udp_packets(self):
+        for packet, lane, direction in self.packets_udp:
+            packet.hide()
+            packet.move(
+                self.start_x(direction),
+                self.lane_y(lane)
+            )
+
+    def _duration_from_packets(self, packet_count):
+        if packet_count >= 1000:
+            return self.MIN_DURATION   
+        elif packet_count > 100:
+            return 1200
         else:
-            self.protocol_label_TCP.setText("Protocol: TCP")
-            self.protocol_label_UDP.setText("Protocol: UDP")
-
-        self.protocol_label_TCP.adjustSize()
-        self.protocol_label_UDP.adjustSize()
-
-
+            return self.MAX_DURATION 
             
     def lane_y(self, lane):
         return self.startPostionY + lane * self.displacement

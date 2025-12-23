@@ -154,12 +154,7 @@ class SideBarMainWindow(QMainWindow):
         else:
             print(dominant)
         
-        if (dominant == "TCP"):
-            self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
-        if (dominant == "UDP"):
-            self.PacketsWindowPage.sent_dominant_animation(dominant, udp, subservient, tcp)
-        if (dominant == "Mixed"):
-            self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
+        
 
     def _log_packet_counts(self):
         snapshot = self.aggregator.get_snapshot()
@@ -183,8 +178,23 @@ class SideBarMainWindow(QMainWindow):
         print(f"[Sniffer] last 10s: TCP={tcp} UDP={udp} total={total} unique_senders={unique_count}")
 
         # Update the protocol animation counters with real sniffer data
+        if tcp > udp:
+            dominant = "TCP"
+            subservient = "UDP"
+        elif udp > tcp:
+            dominant = "UDP"
+            subservient = "TCP"
+        else:
+            dominant = "Mixed"
+            
         if hasattr(self, "PacketsWindowPage"):
             self.PacketsWindowPage.update_packet_counts(tcp, udp)
+            if (dominant == "TCP"):
+                self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
+            if (dominant == "UDP"):
+                self.PacketsWindowPage.sent_dominant_animation(dominant, udp, subservient, tcp)
+            if (dominant == "Mixed"):
+                self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
 
         self.whichProtocol(snapshot)
 
