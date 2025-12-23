@@ -145,17 +145,17 @@ def get_sorted_history(user_name: str) -> list[dict]:
 
 def add_entry_to_whitelist(entry):
     """Append an entry to vt_whiteList.jsonl."""
-
     file_path = WHITELIST_FILE
-
+    entry = dict(entry)
+    entry["verdict"] = "whitelisted"
     with open(file_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
 
 def add_entry_to_blacklist(entry):
     """Append an entry to vt_whiteList.jsonl."""
-
     file_path = BLACKLIST_FILE
-
+    entry = dict(entry)
+    entry["verdict"] = "blacklisted"
     with open(file_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
 

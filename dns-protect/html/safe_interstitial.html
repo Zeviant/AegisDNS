@@ -14,14 +14,19 @@
     </div>
   </header>
 
-  <section class="interstitial">
-    <p class="subtitle">This site is being opened in Safe Mode</p>
+  <section class="interstitial card">
+    <h2 class="title">Check this site before proceeding</h2>
     <p class="hint" id="targetLabel"></p>
 
-    <div class="mode-list interstitial-actions">
-      <button id="allowBtn">Allow</button>
-      <button id="scanBtn">Scan</button>
-      <button id="denyBtn">Deny</button>
+    <div class="button-grid primary-actions">
+      <button id="allowBtn" class="btn primary">Continue</button>
+      <button id="scanBtn" class="btn ghost">Send scan</button>
+      <button id="denyBtn" class="btn subtle">Go back</button>
+    </div>
+
+    <div class="button-grid secondary-actions">
+      <button id="whitelistBtn" class="btn success">Whitelist</button>
+      <button id="blacklistBtn" class="btn danger">Blacklist</button>
     </div>
   </section>
 
