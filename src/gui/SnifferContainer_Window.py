@@ -61,6 +61,10 @@ class SnifferContainer_Window(QWidget):
     def update_sniffer_data(self, snapshot):
         self.graph_widget.update_data(snapshot)
 
+    def update_packet_counts(self, tcp_count: int, udp_count: int):
+        """Pass real sniffer counts down to the animation widget."""
+        self.animation_widget.update_packet_counts(tcp_count, udp_count)
+
     def sent_dominant_animation(self, dominant, packetRateDominant, subservient, packetRateSubservient):
         self.animation_widget.receiveProtocol(dominant, packetRateDominant, subservient, packetRateSubservient)
 

@@ -146,6 +146,19 @@ class ProtocolAnimation_Window(QWidget):
         layout_TCP.addWidget(self.tcp_container)
         layout_UDP.addWidget(self.udp_container)
 
+        # --- Packet counters (values provided externally every 10 seconds) ---
+        counter_style = "font-size: 12px; color: #d1d5db; padding: 4px 0; background: transparent;"
+
+        self.tcp_counter_label = QLabel("Packets received (last 10s): 0")
+        self.tcp_counter_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tcp_counter_label.setStyleSheet(counter_style)
+        layout_TCP.addWidget(self.tcp_counter_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.udp_counter_label = QLabel("Packets received (last 10s): 0")
+        self.udp_counter_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.udp_counter_label.setStyleSheet(counter_style)
+        layout_UDP.addWidget(self.udp_counter_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
         # --- TCP Lines ---
         # Left Line Model
         self.lineLModel_TCP = QWidget(self.tcp_container)
@@ -364,6 +377,11 @@ class ProtocolAnimation_Window(QWidget):
             packet.move(self.start_x(direction), self.lane_y(lane))
         # show first packet again
         self.packets_tcp[0][0].show()
+
+    def update_packet_counts(self, tcp_count: int, udp_count: int):
+        # use real sniffer data to update the packet counters
+        self.tcp_counter_label.setText(f"TCP packets (last 10s): {int(tcp_count)}")
+        self.udp_counter_label.setText(f"UDP packets (last 10s): {int(udp_count)}")
 
 
 

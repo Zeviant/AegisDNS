@@ -181,6 +181,11 @@ class SideBarMainWindow(QMainWindow):
         total = tcp + udp
         unique_count = len(unique_senders)
         print(f"[Sniffer] last 10s: TCP={tcp} UDP={udp} total={total} unique_senders={unique_count}")
+
+        # Update the protocol animation counters with real sniffer data
+        if hasattr(self, "PacketsWindowPage"):
+            self.PacketsWindowPage.update_packet_counts(tcp, udp)
+
         self.whichProtocol(snapshot)
 
     def closeEvent(self, event):
