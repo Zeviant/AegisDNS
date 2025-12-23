@@ -11,7 +11,7 @@ body {
   }
 
   body.dark {
-    background: #020617;
+    background: radial-gradient(circle at 20% 20%, #0b1228, #020617 55%);
     color: #e5e7eb;
     min-height: 100vh;
     display: flex;
@@ -52,7 +52,7 @@ body {
 
   body.dark section {
     border-color: #1f2937;
-    background: #0f172a;
+    background: #0b1220;
   }
   
   .hidden {
@@ -61,20 +61,24 @@ body {
   
   button {
     width: 100%;
-    padding: 8px;
+    padding: 10px 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     background: #0969da;
     color: #fff;
     font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    transition: opacity 120ms ease;
   }
   
   button:disabled {
-    background: #c5d6f5;
+    background: #1f2937;
+    color: #94a3b8;
     cursor: not-allowed;
+    opacity: 0.6;
   }
-  
+
   .mode-list {
     display: flex;
     flex-direction: column;
@@ -119,6 +123,13 @@ body {
     text-align: left;
   }
 
+  .interstitial.card {
+    border: 1px solid #111827;
+    padding: 20px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
   .interstitial-actions {
     margin-top: 12px;
   }
@@ -126,4 +137,47 @@ body {
   #targetLabel {
     word-break: break-all;
     white-space: normal;
+  }
+
+  .title {
+    margin: 4px 0 0;
+    font-size: 20px;
+    color: #e5e7eb;
+  }
+
+  .button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .btn.primary {
+    background: #0969da;
+  }
+
+  .btn.ghost {
+    background: #0969da;
+    color: #fff;
+  }
+
+  .btn.subtle {
+    background: #0969da;
+    color: #fff;
+  }
+
+  .btn.success {
+    background: #10b981;
+  }
+
+  .btn.danger {
+    background: #ef4444;
+  }
+
+  .primary-actions {
+    margin-top: 8px;
+  }
+
+  .secondary-actions {
+    margin-top: 6px;
   }

@@ -2,12 +2,18 @@ import os
 import json
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from PySide6.QtCore import QThread
 
-from src.logic.vt_service import classify_kind, VTScanThread
+from src.logic.vt_service import (
+    classify_kind,
+    VTScanThread,
+    add_entry_to_blacklist,
+    add_entry_to_whitelist,
+)
 
 from urllib.parse import urlparse
 import re
@@ -207,6 +213,17 @@ def get_base_domain(host: str) -> str:
         return host
     return ".".join(parts[-2:])
 
+def make_list_entry(url: str, verdict: str) -> dict:
+    kind, target = classify_kind(url)
+    return {
+        "ts": datetime.now().isoformat(),
+        "kind": kind,
+        "target": target,
+        "verdict": verdict,
+        "user": FLASK_USERNAME,
+        "source": "extension",
+    }
+
 @app.route("/is_whitelisted", methods=["POST"])
 def is_whitelisted():
     data = request.get_json(force=True, silent=True) or {}
@@ -284,4 +301,44 @@ def is_blacklisted():
                 return jsonify({"blacklisted": True})
 
     return jsonify({"blacklisted": False})
+
+
+@app.route("/add_to_whitelist", methods=["POST"])
+def add_to_whitelist():
+    data = request.get_json(force=True, silent=True) or {}
+    url = data.get("url")
+    if not url:
+        return jsonify({"ok": False, "reason": "url required"}), 400
+    verdict = "whitelisted"
+    try:
+        entry = make_list_entry(url, verdict)
+    except ValueError as e:
+        return jsonify({"ok": False, "reason": str(e)}), 400
+
+    try:
+        add_entry_to_whitelist(entry)
+    except Exception as e:
+        print("ADD_WHITELIST_ERROR", e)
+        return jsonify({"ok": False, "reason": "failed to write"}), 500
+    return jsonify({"ok": True})
+
+
+@app.route("/add_to_blacklist", methods=["POST"])
+def add_to_blacklist():
+    data = request.get_json(force=True, silent=True) or {}
+    url = data.get("url")
+    if not url:
+        return jsonify({"ok": False, "reason": "url required"}), 400
+    verdict = "blacklisted"
+    try:
+        entry = make_list_entry(url, verdict)
+    except ValueError as e:
+        return jsonify({"ok": False, "reason": str(e)}), 400
+
+    try:
+        add_entry_to_blacklist(entry)
+    except Exception as e:
+        print("ADD_BLACKLIST_ERROR", e)
+        return jsonify({"ok": False, "reason": "failed to write"}), 500
+    return jsonify({"ok": True})
 
