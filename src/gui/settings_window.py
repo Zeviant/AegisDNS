@@ -5,6 +5,7 @@ import os
 import json
 from src.gui.change_password_window import ChangePasswordWindow
 from src.gui.change_username_window import ChangeUsernameWindow
+from src.gui.delete_account_window import DeleteAccountWindow
 
 class Settings_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -56,6 +57,15 @@ class Settings_Window(QWidget):
             QPushButton:disabled {
                 background-color: #475569;
                 color: #cbd5e1;
+            }
+            QPushButton#deleteAccountBtn {
+                background-color: #dc2626;
+            }
+            QPushButton#deleteAccountBtn:hover {
+                background-color: #b91c1c;
+            }
+            QPushButton#deleteAccountBtn:pressed {
+                background-color: #991b1b;
             }
             QCheckBox {
                 color: #e5e7eb;
@@ -149,6 +159,17 @@ class Settings_Window(QWidget):
         change_password_btn.clicked.connect(self.open_change_password_window)
         card_layout.addWidget(change_password_btn)
         
+        # Delete account button
+        card_layout.addSpacing(32)
+        delete_account_btn = QPushButton("Delete Account")
+        delete_account_btn.setObjectName("deleteAccountBtn")
+        delete_account_btn.setFont(QFont("Segoe UI", 11))
+        delete_account_btn.setMinimumHeight(40)
+        delete_account_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        delete_account_btn.setFixedWidth(220)
+        delete_account_btn.clicked.connect(self.open_delete_account_window)
+        card_layout.addWidget(delete_account_btn)
+        
         card_layout.addStretch()
 
         layout.addWidget(card)
@@ -161,6 +182,10 @@ class Settings_Window(QWidget):
                 min-width: 220px;
             }
             QPushButton#changeUsernameBtn {
+                max-width: 220px;
+                min-width: 220px;
+            }
+            QPushButton#deleteAccountBtn {
                 max-width: 220px;
                 min-width: 220px;
             }
@@ -208,4 +233,8 @@ class Settings_Window(QWidget):
     def open_change_password_window(self):
         self.password_window = ChangePasswordWindow(self.user_name, self.sidebar)
         self.password_window.show()
+
+    def open_delete_account_window(self):
+        self.delete_account_window = DeleteAccountWindow(self.user_name, self.sidebar)
+        self.delete_account_window.show()
 

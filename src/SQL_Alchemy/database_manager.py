@@ -71,7 +71,9 @@ class DatabaseManager:
             # Create the new user first (needed for foreign key constraint)
             new_user = User(new_username, user.password, user.first_name, user.last_name)
             session.add(new_user)
-            session.flush()  # Flush to make new user available for foreign key references
+
+            # Flush to make new user available for foreign key references
+            session.flush()
             
             # Update all Addresses records that reference this user
             addresses = session.query(Addresses).filter_by(owner=old_username).all()
@@ -79,6 +81,29 @@ class DatabaseManager:
                 addr.owner = new_username
             
             # Delete the old user
+            session.delete(user)
+            session.commit()
+            return "success"
+        except Exception:
+            session.rollback()
+            return "error"
+            
+    @staticmethod
+    def delete_user(username: str, password: str) -> str:
+        try:
+            user = session.query(User).filter_by(user_name=username).first()
+            if not user:
+                return "error"
+            
+            if user.password != password:
+                return "wrong_password"
+            
+            # Delete all Addresses records that reference this user
+            addresses = session.query(Addresses).filter_by(owner=username).all()
+            for addr in addresses:
+                session.delete(addr)
+            
+            # Delete the user
             session.delete(user)
             session.commit()
             return "success"
