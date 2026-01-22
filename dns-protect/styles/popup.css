@@ -8,6 +8,8 @@ body {
   body.popup {
     width: 280px;
     padding: 12px;
+    background-color: #101e29;
+    color: #e5e7eb; 
   }
 
   body.dark {
@@ -36,18 +38,20 @@ body {
   h1 {
     font-size: 15px;
     margin: 0;
+    color: #ffffff;
   }
   
   #statusLabel {
     font-size: 12px;
-    color: #6c757d;
+    color: #9ca3af;
     margin: 2px 0 0;
   }
   
   section {
-    border: 1px solid #d0d7de;
+    border: 1px solid #334155;
     border-radius: 8px;
     padding: 12px;
+    background-color: #1e293b;
   }
 
   body.dark section {
@@ -64,12 +68,16 @@ body {
     padding: 10px 12px;
     border: none;
     border-radius: 10px;
-    background: #0969da;
+    background: #2563eb;
     color: #fff;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: opacity 120ms ease;
+  }
+  
+  button:hover {
+    background: #1d4ed8;
   }
   
   button:disabled {
@@ -86,26 +94,27 @@ body {
   }
   
   .mode {
-    background: #f6f8fa;
-    color: #0d1117;
-    border: 1px solid #d0d7de;
+    background: #1e293b;
+    color: #e5e7eb;
+    border: 1px solid #334155;
   }
 
   .mode.active {
-    background: #0969da;
+    background: #2563eb;
     color: #ffffff;
-    border-color: #0969da;
+    border-color: #2563eb;
   }
   
   .subtitle {
     font-size: 13px;
     margin: 0 0 8px;
     font-weight: 600;
+    color: #ffffff;
   }
   
   .hint {
     font-size: 12px;
-    color: #6c757d;
+    color: #9ca3af;
     margin-top: 8px;
   }
 
@@ -153,16 +162,16 @@ body {
   }
 
   .btn.primary {
-    background: #0969da;
+    background: #2563eb;
   }
 
   .btn.ghost {
-    background: #0969da;
+    background: #2563eb;
     color: #fff;
   }
 
   .btn.subtle {
-    background: #0969da;
+    background: #2563eb;
     color: #fff;
   }
 
