@@ -4,6 +4,7 @@ from PySide6.QtGui import QFont, QPainter, QColor
 import os
 import json
 from src.gui.change_password_window import ChangePasswordWindow
+from src.gui.change_username_window import ChangeUsernameWindow
 
 class Settings_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -126,8 +127,19 @@ class Settings_Window(QWidget):
         
         card_layout.addWidget(self.mute_notifications_checkbox)
         
-        # Password change button
+        # Username change button
         card_layout.addSpacing(32)
+        change_username_btn = QPushButton("Change Username")
+        change_username_btn.setObjectName("changeUsernameBtn")
+        change_username_btn.setFont(QFont("Segoe UI", 11))
+        change_username_btn.setMinimumHeight(40)
+        change_username_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        change_username_btn.setFixedWidth(220)
+        change_username_btn.clicked.connect(self.open_change_username_window)
+        card_layout.addWidget(change_username_btn)
+        
+        # Password change button
+        card_layout.addSpacing(16)
         change_password_btn = QPushButton("Change Password")
         change_password_btn.setObjectName("changePasswordBtn")
         change_password_btn.setFont(QFont("Segoe UI", 11))
@@ -145,6 +157,10 @@ class Settings_Window(QWidget):
         # Apply button width constraint after creating button (so object name is set)
         button_width_style = """
             QPushButton#changePasswordBtn {
+                max-width: 220px;
+                min-width: 220px;
+            }
+            QPushButton#changeUsernameBtn {
                 max-width: 220px;
                 min-width: 220px;
             }
@@ -184,6 +200,10 @@ class Settings_Window(QWidget):
     # Mute state
     def is_notifications_muted(self) -> bool:
         return self.mute_notifications_checkbox.isChecked()
+
+    def open_change_username_window(self):
+        self.username_window = ChangeUsernameWindow(self.user_name, self.sidebar)
+        self.username_window.show()
 
     def open_change_password_window(self):
         self.password_window = ChangePasswordWindow(self.user_name, self.sidebar)

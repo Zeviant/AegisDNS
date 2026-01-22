@@ -126,3 +126,4 @@
 {"ts": "2025-12-23T16:47:19.673091", "kind": "url", "target": "http://89.32.41.132/", "verdict": "CAUTION", "stats": {"malicious": 0, "suspicious": 2, "undetected": 32, "harmless": 64, "timeout": 0}, "source": "live", "user": "Nicolas"}
 {"ts": "2025-12-23T16:50:35.595741", "kind": "url", "target": "https://www.yahoo.com/", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 29, "harmless": 69, "timeout": 0}, "source": "live", "user": "Nicolas"}
 {"ts": "2025-12-23T16:51:05.371183", "kind": "ip", "target": "185.220.204.141", "verdict": "BLOCK", "stats": {"malicious": 3, "suspicious": 5, "undetected": 31, "harmless": 56, "timeout": 0}, "source": "live", "user": "Nicolas"}
+{"ts": "2026-01-22T16:36:45.995141", "kind": "url", "target": "https://bri.co.id/", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 27, "harmless": 71, "timeout": 0}, "source": "live", "user": "Bendover"}
