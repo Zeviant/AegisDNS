@@ -38,13 +38,6 @@ class DatabaseManager:
             
     @staticmethod
     def update_password(username: str, current_password: str, new_password: str) -> str:
-        """
-        Updates a user's password after verifying the current password.
-        Returns:
-            "success": if password was updated successfully.
-            "wrong_password": if current password is incorrect.
-            "error": on an unexpected database error.
-        """
         try:
             user = session.query(User).filter_by(user_name=username).first()
             if not user:
@@ -54,6 +47,64 @@ class DatabaseManager:
                 return "wrong_password"
             
             user.password = new_password
+            session.commit()
+            return "success"
+        except Exception:
+            session.rollback()
+            return "error"
+            
+    @staticmethod
+    def update_username(old_username: str, current_password: str, new_username: str) -> str:
+
+        try:
+            user = session.query(User).filter_by(user_name=old_username).first()
+            if not user:
+                return "error"
+            
+            if user.password != current_password:
+                return "wrong_password"
+            
+            # Check if new username already exists
+            if session.query(User).filter_by(user_name=new_username).first():
+                return "taken"
+            
+            # Create the new user first (needed for foreign key constraint)
+            new_user = User(new_username, user.password, user.first_name, user.last_name)
+            session.add(new_user)
+
+            # Flush to make new user available for foreign key references
+            session.flush()
+            
+            # Update all Addresses records that reference this user
+            addresses = session.query(Addresses).filter_by(owner=old_username).all()
+            for addr in addresses:
+                addr.owner = new_username
+            
+            # Delete the old user
+            session.delete(user)
+            session.commit()
+            return "success"
+        except Exception:
+            session.rollback()
+            return "error"
+            
+    @staticmethod
+    def delete_user(username: str, password: str) -> str:
+        try:
+            user = session.query(User).filter_by(user_name=username).first()
+            if not user:
+                return "error"
+            
+            if user.password != password:
+                return "wrong_password"
+            
+            # Delete all Addresses records that reference this user
+            addresses = session.query(Addresses).filter_by(owner=username).all()
+            for addr in addresses:
+                session.delete(addr)
+            
+            # Delete the user
+            session.delete(user)
             session.commit()
             return "success"
         except Exception:

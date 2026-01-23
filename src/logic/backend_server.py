@@ -241,6 +241,10 @@ def is_whitelisted():
     with open(whitelist_path, "r", encoding="utf-8") as f:
         for line in f:
             entry = json.loads(line)
+            # Only check entries for the current user
+            if entry.get("user") != FLASK_USERNAME:
+                continue
+                
             target = entry.get("target", "").strip()
             if not target:
                 continue
@@ -286,6 +290,10 @@ def is_blacklisted():
     with open(blacklist_path, "r", encoding="utf-8") as f:
         for line in f:
             entry = json.loads(line)
+            # Only check entries for the current user
+            if entry.get("user") != FLASK_USERNAME:
+                continue
+                
             target = entry.get("target", "").strip()
             if not target:
                 continue

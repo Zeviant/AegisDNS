@@ -180,6 +180,10 @@ chrome.webNavigation.onBeforeNavigate.addListener(handleSafeModeNavigation, {
   url: [{ schemes: ["http", "https"] }],
 });
 
+chrome.webNavigation.onBeforeNavigate.addListener(handleGlobalBlacklistEnforcement, {
+  url: [{ schemes: ["http", "https"] }],
+});
+
 async function handleSafeModeNavigation(details) {
   console.log("SAFE MODE TRIGGERED:", details.url);
 
@@ -255,6 +259,36 @@ async function handleSafeModeNavigation(details) {
       console.warn("Failed to finalize safe interstitial:", e);
     });
   }
+}
+
+async function handleGlobalBlacklistEnforcement(details) {
+  // Enforce blacklist in all modes except "none". Safe mode already handles it separately.
+  if (currentMode === "none" || currentMode === "safe") return;
+  if (!isTopFrame(details)) return;
+
+  const url = details.url;
+  const extBase = chrome.runtime.getURL("");
+  if (url.startsWith(extBase)) return;
+  if (isSearchUrl(url) || isNoiseUrl(url)) return;
+
+  const allowKey = `${details.tabId}|${url}`;
+  if (safeAllowOnce.has(allowKey)) {
+    safeAllowOnce.delete(allowKey);
+    return;
+  }
+
+  const isBlocked = await checkBlacklist(details);
+  if (!isBlocked) return;
+
+  const warningUrl =
+    `${chrome.runtime.getURL("html/blacklist_interstitial.html")}` +
+    `?target=${encodeURIComponent(url)}`;
+
+  chrome.tabs.update(details.tabId, { url: warningUrl }, () => {
+    if (chrome.runtime.lastError) {
+      console.error("REDIRECT ERROR (global blacklist):", chrome.runtime.lastError.message);
+    }
+  });
 }
 
 // // Intercept navigations and show interstitial
