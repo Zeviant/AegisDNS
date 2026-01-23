@@ -186,6 +186,7 @@ class SideBarMainWindow(QMainWindow):
             subservient = "TCP"
         else:
             dominant = "Mixed"
+            subservient = "TCP"
             
         if hasattr(self, "PacketsWindowPage"):
             self.PacketsWindowPage.update_packet_counts(tcp, udp)

@@ -37,7 +37,7 @@ class SnifferContainer_Window(QWidget):
 
         # Set stylesheet
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/WhiteList&BlackList_Style.qss", "r") as f:
+        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
             self.setStyleSheet(f.read())
 
         # Page 1 — Packet Sniffer Graph

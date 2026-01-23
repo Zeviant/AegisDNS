@@ -20,7 +20,7 @@ class Log_Window(QWidget):
         layout = QVBoxLayout(self)
 
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
             self.setStyleSheet(f.read())
 
         # -- Title --
@@ -78,6 +78,27 @@ class Log_Window(QWidget):
 
             # -- SCAN button  --
             scan_btn = QPushButton("SCAN")
+            scan_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #2563eb; 
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 6px 18px;
+                font-weight: 700;
+                font-size: 13px;
+                min-width: 70px;
+                max-width: 70px;
+            }
+            QPushButton:hover {
+                background-color: #5682e1ff; 
+            }
+            QPushButton:pressed {
+                background-color: #0051ffff; 
+                padding-top: 7px;
+                padding-bottom: 5px;
+            }
+            """)
             scan_btn.clicked.connect(lambda checked, addr=target: self.scan_address(addr))
             
             btn_container = QWidget()
@@ -90,7 +111,7 @@ class Log_Window(QWidget):
             
         # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
-        self.table.setColumnWidth(1, 420)  # Target
+        self.table.setColumnWidth(1, 420)  
         self.table.resizeRowsToContents()
 
         QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))
