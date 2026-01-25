@@ -36,7 +36,7 @@ class History_Window(QWidget):
         layout = QVBoxLayout(self)
 
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
             self.setStyleSheet(f.read())
 
         # -- Title --

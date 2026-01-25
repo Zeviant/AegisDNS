@@ -1,0 +1,128 @@
+/* =========================================================
+   BASE / GLOBAL STYLE (MainWindow_Style)
+   ========================================================= */
+
+QWidget {
+    background: qlineargradient(x1:0,y1:0, x2:0,y2:1,
+        stop:0 #0f172a, stop:1 #0b1220);
+    color: #e5e7eb;
+    font-size: 14px;
+}
+
+/* --------------------------------------------------------- */
+/* CARDS, INPUTS, BUTTONS                                    */
+/* --------------------------------------------------------- */
+
+QFrame#card {
+    background: #101e29;
+    border-radius: 16px;
+}
+
+QLineEdit {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #e5e7eb;
+}
+
+QLineEdit:focus {
+    border: 1px solid #60a5fa;
+    background: rgba(255,255,255,0.09);
+}
+
+QPushButton {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    background: #1d4ed8;
+    color: white;
+    font-weight: 600;
+}
+
+QPushButton:hover { background: #2563eb; }
+QPushButton:pressed { background: #1e40af; }
+QPushButton:disabled {
+    background: #334155;
+    color: #cbd5e1;
+}
+
+/* --------------------------------------------------------- */
+/* PROGRESS BAR                                              */
+/* --------------------------------------------------------- */
+
+QProgressBar#scanProgress {
+    background: #1c2839;
+    border-radius: 3px;
+}
+
+QProgressBar#scanProgress::chunk {
+    background: #5f5cf6ff;
+    border-radius: 3px;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+#title_label {
+    font-size: 16px;
+    font-family: "Segoe UI Semibold";
+    color: #ffffff;
+}
+
+#sideMenuButton {
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+#sideMenuButton:hover,
+#sideMenuButton:pressed,
+#sideMenuButton:focus {
+    background: transparent;
+}
+
+QStackedWidget {
+    background-color: #101e29;
+    color: #ffffff;
+}
+
+QListWidget,
+#title_frame {
+    background-color: #1e293b;
+    color: #e5e7eb;
+}
+
+/* =========================================================
+   WHITELIST & BLACKLIST — FINAL AUTHORITY
+   ========================================================= */
+
+QWidget {
+    background-color: #0f3284ff;
+    color: #e5e7eb;
+    font-family: "Segoe UI";
+    font-size: 13px;
+}
+
+QTableWidget, QTableView {
+    background-color: #1e293b;
+    alternate-background-color: #24344c;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
+QTableWidget::item:selected,
+QTableView::item:selected {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+QPushButton {
+    background-color: #2563eb;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: bold;
+}

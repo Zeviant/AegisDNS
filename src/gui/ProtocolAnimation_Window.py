@@ -77,6 +77,7 @@ class ProtocolAnimation_Window(QWidget):
         # --- Main layout ---
         layout = QVBoxLayout(self)
         layout_Animations = QHBoxLayout()
+
         
         layout_TCP = QVBoxLayout()
         layout_UDP = QVBoxLayout()
@@ -91,6 +92,7 @@ class ProtocolAnimation_Window(QWidget):
         
         # --- Protocol General Variables ---
         # Protocol Variables
+        self.animationEnded = False
         self.protocol_tcp = "TCP"
         self.protocol_udp = "UDP"
         self.dominantState = ""
@@ -232,9 +234,12 @@ class ProtocolAnimation_Window(QWidget):
         layout.addLayout(layout_Animations)
         layout.addStretch()
 
+        # Flags to track when animations need to be updated
+        self._tcp_needs_restart = False
+        self._pending_duration_tcp = self.duration_tcp
+        
         self.animationUDP()
         self.animationTCP()
-
 
     def receiveProtocol(self, dominant, packetRateDominant, subservient, packetRateSubservient):
         # Update stored rates 
@@ -269,13 +274,9 @@ class ProtocolAnimation_Window(QWidget):
         self._applied_packet_rateSubservient = self.packetRateSubservient
 
         if dominant in ("TCP", "Mixed"):
-            if hasattr(self, "anim_group_tcp"):
-                self.anim_group_tcp.stop()
-                self.anim_group_tcp.deleteLater()
-                
-            self._reset_tcp_packets()
-            self.animationTCP()
-            
+            # Instead of restarting immediately, set a flag to restart after current loop
+            self._tcp_needs_restart = True
+            self._pending_duration_tcp = self.duration_tcp
         
         if dominant in ("UDP", "Mixed"):
             if hasattr(self, "anim_group_udp"):
@@ -284,7 +285,6 @@ class ProtocolAnimation_Window(QWidget):
             
             self._reset_udp_packets()
             self.animationUDP()
-            
 
     def _reset_tcp_packets(self):
         for packet, lane, direction in self.packets_tcp:
@@ -322,27 +322,55 @@ class ProtocolAnimation_Window(QWidget):
     def animationTCP(self):
         # --- Animation ---
         self.anim_group_tcp = QSequentialAnimationGroup()
+        
         for packet, lane, direction in self.packets_tcp:
             y = self.lane_y(lane)
             packet.move(self.start_x(direction), y)
-
+            
             anim = QPropertyAnimation(packet, b"pos")
             anim.stateChanged.connect(
                 lambda newState, oldState, p=packet:
                     p.show() if newState == QAbstractAnimation.Running else None
             )
+            
             duration = int(self.duration_tcp)
-            print(f"The durationis now {duration}")
             anim.setDuration(duration)
             anim.setEasingCurve(QEasingCurve.OutCubic)
             anim.setStartValue(QPoint(self.start_x(direction), y))
             anim.setEndValue(QPoint(self.end_x(direction), y + self.vertical_drop))
             anim.finished.connect(packet.hide)
             self.anim_group_tcp.addAnimation(anim)
-
-        self.anim_group_tcp.setLoopCount(-1)
-        self.anim_group_tcp.currentLoopChanged.connect(self._on_loop_restart_tcp)
+        
+        # Connect finished signal to handle loop completion
+        self.anim_group_tcp.finished.connect(self._on_tcp_animation_finished)
+        self.anim_group_tcp.setLoopCount(1)  # Set to 1, we'll manually restart to check for updates
         self.anim_group_tcp.start()
+
+    def _on_tcp_animation_finished(self):
+        # Check if we need to restart with new duration
+        if self._tcp_needs_restart:
+            self._tcp_needs_restart = False
+            self.duration_tcp = self._pending_duration_tcp
+            
+            # Clean up old animation
+            if hasattr(self, "anim_group_tcp"):
+                self.anim_group_tcp.deleteLater()
+            
+            # Reset packets to starting positions
+            self._reset_tcp_packets()
+            
+            # Start new animation with updated duration
+            self.animationTCP()
+        else:
+            # Continue with same duration
+            if hasattr(self, "anim_group_tcp"):
+                self.anim_group_tcp.deleteLater()
+            
+            # Reset packets to starting positions
+            self._reset_tcp_packets()
+            
+            # Restart animation
+            self.animationTCP()
 
     def animationUDP(self):
          # --- Animation ---
@@ -389,13 +417,6 @@ class ProtocolAnimation_Window(QWidget):
             lambda: QTimer.singleShot(0, self.animationUDP)
         )
         self.anim_group_udp.start()
-
-    def _on_loop_restart_tcp(self, loop):
-        for packet, lane, direction in self.packets_tcp:
-            packet.hide()
-            packet.move(self.start_x(direction), self.lane_y(lane))
-        # show first packet again
-        self.packets_tcp[0][0].show()
 
     def update_packet_counts(self, tcp_count: int, udp_count: int):
         # use real sniffer data to update the packet counters

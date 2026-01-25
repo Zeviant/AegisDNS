@@ -20,7 +20,7 @@ class BlackList_Window(QWidget):
         layout = QVBoxLayout(self)
 
         # Load Sheet Style
-        with open("src\gui\Style_Sheet\WhiteList&BlackList_Style.qss", "r") as f:
+        with open("src\gui\Style_Sheet\DefaultStyle.qss", "r") as f:
             self.setStyleSheet(f.read())
 
         # -- Title --
@@ -42,7 +42,7 @@ class BlackList_Window(QWidget):
         self.table.setWordWrap(True)
 
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/table_style.qss", "r") as f:
+        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
             self.table.setStyleSheet(f.read())
 
         # -- Load Table --
