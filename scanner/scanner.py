@@ -44,10 +44,17 @@ def scan_domain(domain: str):
             "reason": reason
         })
 
-    # --------------- WIP ----------------
-
     # --- REGISTRAR ---
     registrar_result = score_registrar(registrar)
+    if registrar_result:
+        score, reason = registrar_result
+        risk_score += score
+        signals.append({
+            "name": "registrar",
+            "value": registrar,
+            "score": score,
+            "reason": reason
+        })
 
     # --- PRIVACY ---
     privacy_result = score_privacy(privacy)

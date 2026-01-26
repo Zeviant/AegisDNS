@@ -1,5 +1,7 @@
 from datetime import datetime
+from scoring.registrar_list import HIGH_RISK_REGISTRARS, MEDIUM_RISK_REGISTRARS, LOW_RISK_REGISTRARS, normalize_registrar
 
+# --- DOMAIN AGE ---
 def score_domain_age(age_days: int | None) -> tuple[int, str] | None:
     """
     Scores domain age. Older = likely safer. Newer = sus.
@@ -18,13 +20,26 @@ def score_domain_age(age_days: int | None) -> tuple[int, str] | None:
     
     return(0, "Domain age does not indicate any particular risk (Registered more than a year ago).")
 
-
+# --- REGISTRAR ---
+# NOTE: SERIOUSLY CONSIDER REBALANCING RISK CLASSES IN registrar_list.py.
 def score_registrar(registrar : str | None) -> tuple[int, str] | None:
     """
     Registrar: A domain registrar is a company authorized to register domain names on behalf of individuals or organizations.
     A lot of cases can be handled here, some registrars are more reputable and others are more sus 🤪.
     """
-    return
+    if not registrar:
+        return None
+    
+    r = normalize_registrar(registrar)
+
+    if r in HIGH_RISK_REGISTRARS:
+        return (5, "Registrar has high abuse density.")
+    elif r in MEDIUM_RISK_REGISTRARS:
+        return (3, "Registrar has elevated abuse density.")
+    elif r in LOW_RISK_REGISTRARS:
+        return (1, "Registrar has above average abuse density.")
+    
+    return (0, "Registrar does not indicate malicious activity.")
 
 def score_privacy(privacy : bool | None) -> tuple[int, str] | None:
     """
