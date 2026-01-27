@@ -1,24 +1,23 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from scoring.registrar_list import HIGH_RISK_REGISTRARS, MEDIUM_RISK_REGISTRARS, LOW_RISK_REGISTRARS, normalize_registrar
 
 # --- DOMAIN AGE ---
-def score_domain_age(age_days: int | None) -> tuple[int, str] | None:
+def score_domain_age(created: datetime | None) -> tuple[int, str] | None:
     """
     Scores domain age. Older = likely safer. Newer = sus.
     """
-    
-    if age_days is None:
+    if not created:
         return None
     
-    # CAN ADD MORE CASES // BE MORE SPECIFIC
+    now = datetime.now(timezone.utc)
+    age_days = (now - created).days
     if age_days < 7:
         return (30, "Domain registered less than 7 days ago")
     elif age_days < 30:
         return (15, "Domain registered less than 30 days ago")
     elif age_days < 365:
         return (5, "Domain registered less than 1 year ago")
-    
-    return(0, "Domain age does not indicate any particular risk (Registered more than a year ago).")
+    return (0, "Domain age does not indicate any particular risk")
 
 # --- REGISTRAR ---
 # NOTE: SERIOUSLY CONSIDER REBALANCING RISK CLASSES IN registrar_list.py.
@@ -33,20 +32,26 @@ def score_registrar(registrar : str | None) -> tuple[int, str] | None:
     r = normalize_registrar(registrar)
 
     if r in HIGH_RISK_REGISTRARS:
-        return (5, "Registrar has high abuse density.")
+        return (5, "Registrar has high abuse density")
     elif r in MEDIUM_RISK_REGISTRARS:
-        return (3, "Registrar has elevated abuse density.")
+        return (3, "Registrar has elevated abuse density")
     elif r in LOW_RISK_REGISTRARS:
-        return (1, "Registrar has above average abuse density.")
+        return (1, "Registrar has above average abuse density")
     
-    return (0, "Registrar does not indicate malicious activity.")
+    return (0, "Registrar does not indicate malicious activity")
 
 def score_privacy(privacy : bool | None) -> tuple[int, str] | None:
     """
     Some registrars offer WHOIS privacy protection. Often used by individuals who want privacy, companies that don't want spam, etc.
     However, it is also very often used by malicious actors 😒.
     """
-    return
+    if privacy is None:
+        return None
+    
+    if privacy:
+        return(3, "Privacy protection has been detected by the scanner")
+    
+    return (0, "No privacy protection has been detected by the scanner")
 
 def score_expiration_date(edt : datetime | None) -> tuple [int, str] | None:
     """
@@ -54,4 +59,18 @@ def score_expiration_date(edt : datetime | None) -> tuple [int, str] | None:
     and often cycle through many different domains to avoid detection. A domain rented for 5 years, for example, is likely to be more reputable
     than one rented for a month.
     """
-    return
+    if not edt:
+        return None
+    
+    now_utc = datetime.now(timezone.utc)
+
+    remaining = (edt - now_utc).days
+
+    if remaining < 30:
+        return(5, "Domain expires in less than 30 days")
+    elif remaining < 90:
+        return(3, "Domain expires in less than 90 days")
+    elif remaining < 365:
+        return(1, "Domain expires in less than a year")
+    
+    return(0, "Domain expiration date is more than a year from current date")
