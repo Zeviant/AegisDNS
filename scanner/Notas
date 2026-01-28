@@ -1,7 +1,28 @@
-1. IMPLEMENT FUNCTIONALITY FOR URLS & IP ADDRESSES
+1. IMPLEMENT FUNCTIONALITY FOR URLS (just extract domain from it) & IP ADDRESSES
 2. REBALANCE REGISTRAR LIST
 3. OTHER WHOIS PARAMETERS THAT COULD BE WORTH CONSIDERING LATER:
 * Email addresses in WHOIS – Could detect if it’s a known spammy/temporary email, but again this is high maintenance.
 * DNSSEC status – unsigned domains are slightly more suspicious, but most domains don’t use it, so it may generate noise.
 * Name servers – Some malicious networks use specific patterns (like low-cost hostnames or dynamic hosting providers), but detecting that is messy and requires constant updates.
 * Country/region of registrant – Could help flag high-risk jurisdictions, but GDPR and privacy services make this often unavailable.
+4. MAYBE OPTIONALLY DISPLAY ALL WHOIS / DNS INFORMATION, EVEN IF ITS NOT RELEVANT TO SCORING. STILL INTERESTING.
+--> or opt2: display all relevant information that is used for scoring, and display why it is suspicious or not. maybe even with colors.
+
+checks for critical security measures like SSL configuration, HTTP security headers, and email authentication protocols to give you a comprehensive view of a site's security implementation. 
+ Features:
+
+    DNS resolution with subdomain detection
+
+    Common port scanning (nmap)
+
+    Technology detection (httpx/curl)
+
+    Cookie security analysis
+
+    WHOIS information (root domains)
+
+    Analysis of robots.txt & sitemap.xml
+
+    Cookie analysis
+
+    Export to TXT

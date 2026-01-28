@@ -5,20 +5,32 @@ from features.whois import (
     extract_privacy,
     extract_expiration_date
     )
-from scoring.rules import (
+from scoring.rules_whois import (
     score_domain_age,
     score_registrar,
     score_privacy,
     score_expiration_date
     )
-from datetime import datetime, timezone, timedelta
+from features.dns import(
+    fetch_dns,
+    extract_A_AAAA_metrics,
+    extract_ns_records
+)
+from scoring.rules_dns import(
+    score_dns_A_AAAA,
+    score_ns_records
+)
 
 def scan_domain(domain: str):
     signals = []
     risk_score = 0
 
+    # |-------------------------|
+    # |*** ----- WHOIS ----- ***|
+    # |-------------------------|
+
     who = fetch_whois(domain)
-    print(who)
+    # print(who)
     creation_date = extract_creation_date(who)
     registrar = extract_registrar(who)
     privacy = extract_privacy(who)
@@ -61,7 +73,7 @@ def scan_domain(domain: str):
             "reason": reason
         })
 
-    # --- EXPIRTAION DATE ---
+    # --- EXPIRATION DATE ---
     expiration_date_result = score_expiration_date(expiration_date)
     if expiration_date_result:
         score, reason = expiration_date_result
@@ -73,6 +85,46 @@ def scan_domain(domain: str):
             "reason": reason
         })
 
+    # |-------------------------|
+    # |*** ------ DNS ------ ***|
+    # |-------------------------|
+
+    # --- TTL + A/AAAA RECORDS ---
+    dns_data = fetch_dns(domain)
+    dns_metrics = extract_A_AAAA_metrics(dns_data)
+
+    dns_result = score_dns_A_AAAA(dns_metrics)
+    if dns_result:
+        score, reason = dns_result
+        risk_score += score
+
+        signals.append({
+            "name": "dns_A_AAAA",
+            "record_count": dns_metrics["record_count"],
+            "min_ttl": dns_metrics["min_ttl"],
+            "risk_score": score,
+            "reason": reason
+        })
+
+    # --- NS RECORDS ---
+    ns_records = extract_ns_records(domain)
+
+    ns_result = score_ns_records(ns_records)
+    if ns_result:
+        score, reason = ns_result
+        risk_score += score
+        signals.append({
+            "name": "dns_ns",
+            "nameservers": ns_records,
+            "risk_score": score,
+            "reason": reason
+        })
+
+
+    # |-------------------------|
+    # |*** ---- RESULTS ---- ***|
+    # |-------------------------|
+
     return{
         "indicator": domain,
         "type": "domain",
@@ -82,5 +134,3 @@ def scan_domain(domain: str):
 
 if __name__ == "__main__":
     print(scan_domain("example.com"))
-
-    
