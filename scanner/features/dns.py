@@ -1,11 +1,8 @@
 """
 Use dnspython library maybe.
 Possible paramaters that can be used for risk score:
-    - A / AAAA records (A = IPv4, AAAA = IPv6 // Malicious or disposable domains often use: cheap or shared hosting IPs, 
-    rapidly changing IPs (fast-flux networks) IP addresses in unusual countries)
-    - MX records (determines email provider, disposable domains often skip email setup)
-    - NS records (Cheap/free DNS providers are often used for malicious purposes)
-    - CNAME / TXT records (Look for domain verification or SPF/DKIM; some spam domains omit SPF) --> (idk what this means yet)
+    - IP addresses in unusual countries)
+    - CNAME / TXT records (Look for domain verification or SPF/DKIM; some spam domains omit SPF)
 """
 import dns.resolver
 
@@ -127,3 +124,51 @@ def has_dmarc(domain: str) -> bool:
         return True
     except Exception:
         return False
+    
+# --- CNAME RECORDS ---
+def extract_cname_records(domain: str) -> list[str] | None:
+    try:
+        answers = dns.resolver.resolve(domain, "CNAME")
+        return sorted(
+            str(r.target).rstrip(".").lower()
+            for r in answers
+        )
+    except Exception:
+        return None
+
+KNOWN_CNAME_PROVIDERS = {
+    "cloudflare": ["cloudflare.net", "pages.dev"],
+    "github_pages": ["github.io"],
+    "vercel": ["vercel.app", "now.sh"],
+    "netlify": ["netlify.app"],
+    "heroku": ["herokuapp.com", "herokudns.com"],
+    "aws": ["amazonaws.com", "cloudfront.net"],
+    "azure": ["azurewebsites.net"],
+    "firebase": ["firebaseapp.com", "web.app"],
+}
+
+SUSPICIOUS_CNAME_PROVIDERS = [
+    "duckdns.org",
+    "no-ip.org",
+    "no-ip.biz",
+    "freedns.afraid.org",
+    "dynu.com",
+    "dnsexit.com",
+    "dvrlists.net",
+    "your-freedom.net",
+    "subdomain.me",
+]
+
+def classify_cname_target(cnames: list[str]) -> str:
+    joined = " ".join(cnames)
+
+    for provider, patterns in KNOWN_CNAME_PROVIDERS.items():
+        for p in patterns:
+            if p in joined:
+                return provider
+
+    for suspicious in SUSPICIOUS_CNAME_PROVIDERS:
+        if suspicious in joined:
+            return "suspicious_free_hosting"
+
+    return "unknown"

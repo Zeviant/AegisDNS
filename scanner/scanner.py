@@ -18,14 +18,23 @@ from features.dns import(
     extract_mx_records,
     extract_txt_records,
     has_spf,
-    has_dmarc
+    has_dmarc,
+    extract_cname_records
     
 )
 from scoring.rules_dns import(
     score_dns_A_AAAA,
     score_ns_records,
-    score_mail_configuration
+    score_mail_configuration,
+    score_cname_records
 )
+
+def is_apex_domain(domain: str) -> bool:
+    """
+    Returns True if the domain is an apex/root domain like example.com
+    Returns False for subdomains like docs.github.com
+    """
+    return domain.count(".") == 1
 
 def scan_domain(domain: str):
     signals = []
@@ -126,17 +135,23 @@ def scan_domain(domain: str):
             "reason": reason
         })
 
-    # --- MAIL CONFIGURATION ---
-    txt_records = extract_txt_records(domain)
-    spf_present = has_spf(txt_records)
-    dmarc_present = has_dmarc(domain)
-    mx_records = extract_mx_records(domain)
+    # --- MAIL CONFIGURATION
+    if is_apex_domain(domain):
+        txt_records = extract_txt_records(domain)
+        spf_present = has_spf(txt_records)
+        dmarc_present = has_dmarc(domain)
+        mx_records = extract_mx_records(domain)
 
-    mail_score, mail_reason = score_mail_configuration(
-        mx_records,
-        spf_present,
-        dmarc_present
-    )
+        mail_score, mail_reason = score_mail_configuration(
+            mx_records,
+            spf_present,
+            dmarc_present
+        )
+    else:
+        mail_score, mail_reason = 0, "Mail configuration not evaluated for subdomains"
+        mx_records = None
+        spf_present = False
+        dmarc_present = False
 
     risk_score += mail_score
     signals.append({
@@ -147,6 +162,21 @@ def scan_domain(domain: str):
         "risk_score": mail_score,
         "reason": mail_reason
     })
+
+    # --- CNAME RECORDS ---
+    cname_records = extract_cname_records(domain)
+    cname_result = score_cname_records(cname_records)
+
+    if cname_result:
+        score, reason = cname_result
+        risk_score += score
+        signals.append({
+            "name": "dns_cname",
+            "cname_records": cname_records,
+            "risk_score": score,
+            "reason": reason
+        })
+
 
     # |-------------------------|
     # |*** ---- RESULTS ---- ***|
@@ -160,4 +190,4 @@ def scan_domain(domain: str):
     }
 
 if __name__ == "__main__":
-    print(scan_domain("example.com"))
+    print(scan_domain("bookviewmain24.com"))
