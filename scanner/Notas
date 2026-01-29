@@ -26,3 +26,5 @@ checks for critical security measures like SSL configuration, HTTP security head
     Cookie analysis
 
     Export to TXT
+
+5. ADD LEGITIMACY OFFSETS (e.g., if domain age > 3 years, then -2 score)

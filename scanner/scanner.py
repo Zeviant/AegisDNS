@@ -14,11 +14,17 @@ from scoring.rules_whois import (
 from features.dns import(
     fetch_dns,
     extract_A_AAAA_metrics,
-    extract_ns_records
+    extract_ns_records,
+    extract_mx_records,
+    extract_txt_records,
+    has_spf,
+    has_dmarc
+    
 )
 from scoring.rules_dns import(
     score_dns_A_AAAA,
-    score_ns_records
+    score_ns_records,
+    score_mail_configuration
 )
 
 def scan_domain(domain: str):
@@ -120,6 +126,27 @@ def scan_domain(domain: str):
             "reason": reason
         })
 
+    # --- MAIL CONFIGURATION ---
+    txt_records = extract_txt_records(domain)
+    spf_present = has_spf(txt_records)
+    dmarc_present = has_dmarc(domain)
+    mx_records = extract_mx_records(domain)
+
+    mail_score, mail_reason = score_mail_configuration(
+        mx_records,
+        spf_present,
+        dmarc_present
+    )
+
+    risk_score += mail_score
+    signals.append({
+        "name": "dns_mail",
+        "mx_records": mx_records,
+        "spf_present": spf_present,
+        "dmarc_present": dmarc_present,
+        "risk_score": mail_score,
+        "reason": mail_reason
+    })
 
     # |-------------------------|
     # |*** ---- RESULTS ---- ***|

@@ -9,6 +9,7 @@ Possible paramaters that can be used for risk score:
 """
 import dns.resolver
 
+# --- TTL + A/AAAA RECORDS ---
 def fetch_dns(domain: str) -> dict[str, list]:
 
     data = {
@@ -48,6 +49,8 @@ def extract_A_AAAA_metrics(dns_data : dict) -> dict[str, int | None] | None:
         "min_ttl": min(ttls) if ttls else None
     }
 
+
+# --- NS RECORDS ---
 def extract_ns_records(domain: str) -> list[str] | None:
     try:
         answers = dns.resolver.resolve(domain, "NS")
@@ -89,4 +92,38 @@ def classify_ns_provider(ns_records: list[str]) -> str:
 
     return "unknown"
 
+# --- MAIL CONFIGURATION ---
+def extract_mx_records(domain: str) -> list[str] | None:
+    try:
+        answers = dns.resolver.resolve(domain, "MX")
+        return sorted(
+            str(r.exchange).rstrip(".").lower()
+            for r in answers
+        )
+    except Exception:
+        return None
 
+
+def extract_txt_records(domain: str) -> list[str]:
+    try:
+        answers = dns.resolver.resolve(domain, "TXT")
+        return [
+            "".join(part.decode() if isinstance(part, bytes) else part)
+            for r in answers
+            for part in r.strings
+        ]
+    except Exception:
+        return []
+    
+def has_spf(txt_records: list[str]) -> bool:
+    return any(
+        r.lower().startswith("v=spf1")
+        for r in txt_records
+    )
+
+def has_dmarc(domain: str) -> bool:
+    try:
+        dns.resolver.resolve(f"_dmarc.{domain}", "TXT")
+        return True
+    except Exception:
+        return False

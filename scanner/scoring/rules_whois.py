@@ -17,7 +17,16 @@ def score_domain_age(created: datetime | None) -> tuple[int, str] | None:
         return (15, "Domain registered less than 30 days ago")
     elif age_days < 365:
         return (5, "Domain registered less than 1 year ago")
-    return (0, "Domain age does not indicate any particular risk")
+    elif age_days >= 365 and age_days < 730:
+        return (0, "Domain age does not indicate any particular risk")
+    elif age_days >= 730 and age_days < 1095:
+        return(-3, "Domain registered more than 2 years ago")
+    elif age_days >= 1095 and age_days < 1825:
+        return(-7, "Domain registered more than 3 years ago")
+    elif age_days >= 1825:
+        return(-15, "Domain registered more than 5 years ago")
+    
+    return None
 
 # --- REGISTRAR ---
 # NOTE: SERIOUSLY CONSIDER REBALANCING RISK CLASSES IN registrar_list.py.
@@ -72,5 +81,9 @@ def score_expiration_date(edt : datetime | None) -> tuple [int, str] | None:
         return(3, "Domain expires in less than 90 days")
     elif remaining < 365:
         return(1, "Domain expires in less than a year")
-    
-    return(0, "Domain expiration date is more than a year from current date")
+    elif remaining >= 365 and remaining < 730:
+        return(0, "Domain expiration date is more than a year from current date")
+    elif remaining >= 730 and remaining < 1095:
+        return(-1, "Domain expiration date is more than two years from current date")
+    elif remaining >= 1095:
+        return(-3, "Domain expiration date is more than three years from current date")
