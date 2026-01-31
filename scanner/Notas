@@ -24,8 +24,6 @@ checks for critical security measures like SSL configuration, HTTP security head
 
     Cookie analysis
 
-5. ADD LEGITIMACY OFFSETS (e.g., if domain age > 3 years, then -2 score)
-
 Find domains to test here:
 https://www.ncsc.gov.uk/files/NCSC_APT28.pdf
 https://www.virustotal.com/gui/community-buzz

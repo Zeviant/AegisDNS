@@ -84,6 +84,6 @@ def score_expiration_date(edt : datetime | None) -> tuple [int, str] | None:
     elif remaining >= 365 and remaining < 730:
         return(0, "Domain expiration date is more than a year from current date")
     elif remaining >= 730 and remaining < 1095:
-        return(-1, "Domain expiration date is more than two years from current date")
+        return(-3, "Domain expiration date is more than two years from current date")
     elif remaining >= 1095:
-        return(-3, "Domain expiration date is more than three years from current date")
+        return(-5, "Domain expiration date is more than three years from current date")

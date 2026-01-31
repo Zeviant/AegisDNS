@@ -1,4 +1,4 @@
-from features.dns import classify_ns_provider, classify_cname_target
+from features.dns import classify_ns_provider
 
 # --- A / AAAA records + TTL ---
 def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
@@ -13,10 +13,7 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
 
     # --- TTL SCORING ---
     if min_ttl is not None:
-        if min_ttl <= 30:
-            score += 2
-            reasons.append("Extremely low DNS TTL (≤30s)")
-        elif min_ttl <= 60:
+        if min_ttl <= 60:
             score += 1
             reasons.append("Low DNS TTL (≤60s)")
 
@@ -33,15 +30,9 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
     
     # --- TTL + A/AAAA RECORD COUNT SCORING ---
     if min_ttl is not None:
-        if min_ttl <= 30 and record_count >= 10:
+        if min_ttl <= 60 and record_count >= 10:
             score += 3
-            reasons.append("Fast-flux behavior detected: ≤30s TTL with ≥10 records")
-        elif min_ttl <= 60 and record_count >= 5:
-            score += 2
-            reasons.append("Suspicious DNS churn behavior detected: ≤60s TTL with ≥5 records")
-        elif min_ttl <= 60 and record_count >= 3:
-            score += 1
-            reasons.append("Potential fast-flux pattern: ≤60s TTL with ≥3 records")
+            reasons.append("Fast-flux behavior detected: ≤60s TTL with ≥10 records")
 
     if score == 0:
         reasons.append("TTL and number of A/AAAA records is normal")
@@ -90,22 +81,7 @@ def score_mail_configuration(
         reasons.append("No mail configuration detected.")
 
     if mx_records and spf_present and dmarc_present:
-        score -= 6
+        score -= 5
         reasons.append("Proper mail configuration detected")
 
     return score, "; ".join(reasons)
-
-# --- CNAME RECORDS ---
-def score_cname_records(cname_records: list[str] | None) -> tuple[int, str] | None:
-    if not cname_records:
-        return None
-
-    provider = classify_cname_target(cname_records)
-
-    if provider == "suspicious_free_hosting":
-        return (5, "CNAME points to free or abuse-prone hosting provider")
-
-    if provider == "unknown":
-        return (2, "CNAME points to unknown external domain")
-
-    return (0, "CNAME points to known hosting provider")

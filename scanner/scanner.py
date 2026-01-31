@@ -18,25 +18,71 @@ from features.dns import(
     extract_mx_records,
     extract_txt_records,
     has_spf,
-    has_dmarc,
-    extract_cname_records
+    has_dmarc
     
 )
 from scoring.rules_dns import(
     score_dns_A_AAAA,
     score_ns_records,
-    score_mail_configuration,
-    score_cname_records
+    score_mail_configuration
 )
+from features.web import (
+    extract_html_credential_features,
+    fetch_web_page
+)
+from scoring.rules_web import score_html_credentials
+from urllib.parse import urlparse
+import tldextract
 
-def is_apex_domain(domain: str) -> bool:
+def is_apex_domain(indicator: str) -> bool:
     """
-    Returns True if the domain is an apex/root domain like example.com
+    Returns True if the indicator is an apex/root indicator like example.com
     Returns False for subdomains like docs.github.com
     """
-    return domain.count(".") == 1
+    return indicator.count(".") == 1
 
-def scan_domain(domain: str):
+def normalize_indicator(indicator: str) -> dict:
+    """
+    Returns:
+    {
+        input_type: 'url' | 'domain',
+        domain: registrable domain (example.com),
+        host: host/subdomain (example.com or sub.example.com),
+        url: full URL if input was URL
+    }
+    """
+    if "://" in indicator:
+        parsed = urlparse(indicator)
+        host = parsed.hostname
+        ext = tldextract.extract(host)
+        domain = f"{ext.domain}.{ext.suffix}" if ext.domain and ext.suffix else None
+        return {
+            "input_type": "url",
+            "domain": domain,
+            "host": host,
+            "url": indicator
+        }
+
+    # domain input
+    ext = tldextract.extract(indicator)
+    domain = f"{ext.domain}.{ext.suffix}" if ext.domain and ext.suffix else None
+    host = indicator
+    return {
+        "input_type": "domain",
+        "domain": domain,
+        "host": host,
+        "url": None
+    }
+
+
+
+def scan_domain(indicator: str):
+    ctx = normalize_indicator(indicator)
+
+    domain = ctx["domain"]
+    host = ctx["host"]
+    url = ctx["url"]
+
     signals = []
     risk_score = 0
 
@@ -163,36 +209,47 @@ def scan_domain(domain: str):
         "reason": mail_reason
     })
 
-    # --- CNAME RECORDS ---
-    cname_records = extract_cname_records(domain)
-    cname_result = score_cname_records(cname_records)
-
-    if cname_result:
-        score, reason = cname_result
-        risk_score += score
-        signals.append({
-            "name": "dns_cname",
-            "cname_records": cname_records,
-            "risk_score": score,
-            "reason": reason
-        })
-
     # |-------------------------|
     # |*** ------ WEB ------ ***|
     # |-------------------------|
 
-    # do tmrw
+    # --- HTML ---
+    web_url = None
+
+    if url:
+        web_url = url
+    else:
+        # domain input
+        web_url = f"https://{domain}"
+
+    response = fetch_web_page(web_url)
+
+    html_result = None
+    if response:
+        html_metrics = extract_html_credential_features(response.text, response.url)
+        html_result = score_html_credentials(html_metrics)
+
+    if html_result:
+        score, reason = html_result
+        risk_score += score
+        signals.append({
+            "name": "html_credentials",
+            "risk_score": score,
+            "details": html_metrics,
+            "reason": reason
+        })
 
     # |-------------------------|
     # |*** ---- RESULTS ---- ***|
     # |-------------------------|
 
-    return{
-        "indicator": domain,
-        "type": "domain",
+    return {
+        "indicator": indicator,
+        "type": "indicator",
+        "domain": domain,
         "total_risk_score": risk_score,
         "signals": signals
     }
 
 if __name__ == "__main__":
-    print(scan_domain("bookviewmain24.com"))
+    print(scan_domain("google.com"))
