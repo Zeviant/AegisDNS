@@ -26,11 +26,10 @@ from scoring.rules_dns import(
     score_ns_records,
     score_mail_configuration
 )
-from features.web import (
-    extract_html_credential_features,
-    fetch_web_page
-)
-from scoring.rules_web import score_html_credentials
+
+from features.web import fetch_tls_certificate
+from scoring.rules_web import score_tls_certificate
+
 from urllib.parse import urlparse
 import tldextract
 
@@ -213,7 +212,6 @@ def scan_domain(indicator: str):
     # |*** ------ WEB ------ ***|
     # |-------------------------|
 
-    # --- HTML ---
     web_url = None
 
     if url:
@@ -221,21 +219,26 @@ def scan_domain(indicator: str):
     else:
         # domain input
         web_url = f"https://{domain}"
+    
+    # --- TLS ---
+    tls_metrics = fetch_tls_certificate(host)
 
-    response = fetch_web_page(web_url)
+    tls_result = score_tls_certificate(
+        tls_metrics,
+        creation_date
+    )
 
-    html_result = None
-    if response:
-        html_metrics = extract_html_credential_features(response.text, response.url)
-        html_result = score_html_credentials(html_metrics)
-
-    if html_result:
-        score, reason = html_result
+    if tls_result:
+        score, reason = tls_result
         risk_score += score
         signals.append({
-            "name": "html_credentials",
+            "name": "tls_certificate",
             "risk_score": score,
-            "details": html_metrics,
+            "details": {
+                "issuer": tls_metrics.get("issuer") if tls_metrics else None,
+                "validity_days": tls_metrics.get("validity_days") if tls_metrics else None,
+                "is_wildcard": tls_metrics.get("is_wildcard") if tls_metrics else None,
+            },
             "reason": reason
         })
 
@@ -252,4 +255,4 @@ def scan_domain(indicator: str):
     }
 
 if __name__ == "__main__":
-    print(scan_domain("google.com"))
+    print(scan_domain("facebook.com"))
