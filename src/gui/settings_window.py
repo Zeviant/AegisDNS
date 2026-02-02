@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QListWidget, QComboBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -29,15 +29,27 @@ class Settings_Window(QWidget):
                 background-color: #101e29;
                 color: #e5e7eb;
             }
+            QFrame#card {
+                background-color: #0f263e;
+            }
             QLabel#settingsTitle {
                 font-size: 22px;
                 font-weight: 700;
                 padding: 12px 10px;
                 color: #ffffff;
-                background-color: #1c2839;
+                background-color: #0f263e;
                 border-radius: 4px;
                 margin: 2px;
-                border-bottom: 2px solid #2d4a6e;
+                border-bottom: 4px solid #153351;
+            }
+            QLabel#SectionDivider{
+                font-size: 16px;
+                font-weight: bold;
+                color: #ffffff;
+                background-color: #0f263e;
+                border-radius: 4px;
+                margin: 2px;
+                border-bottom: 4px solid #153351;
             }
             QPushButton {
                 background-color: #2563eb;
@@ -89,6 +101,19 @@ class Settings_Window(QWidget):
                 background-color: #1d4ed8;
                 border-color: #1d4ed8;
             }
+            QComboBox#themeDropDown{
+                font-size: 14px;
+                font-weight: bold;
+                color: #ffffff;
+                background-color: #153351;
+            }
+            QComboBox#themeDropDown QAbstractItemView {
+                background-color: #153351; /* Match your main box color */
+                color: #ffffff;
+                selection-background-color: #2563eb; /* Color when you hover over an item */
+                border: 1px solid #2d4a6e;
+                outline: none;
+            }
         """)
 
         # Title (styled like table headers)
@@ -103,6 +128,20 @@ class Settings_Window(QWidget):
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(48, 48, 48, 48)
         card_layout.setSpacing(24)
+
+        # User Layout
+        user_layout = QVBoxLayout()
+
+        # Theme Layout
+        theme_layout = QVBoxLayout()
+
+        # Notification Layout
+        notify_layout = QVBoxLayout()
+
+        # Add layout to main one
+        card_layout.addLayout(user_layout)
+        card_layout.addLayout(theme_layout)
+        card_layout.addLayout(notify_layout)
 
         # Mute notifications checkbox with custom checkmark
         class CheckBoxWithCheckmark(QCheckBox):
@@ -137,6 +176,12 @@ class Settings_Window(QWidget):
         
         card_layout.addWidget(self.mute_notifications_checkbox)
         
+        # User section title
+        user_section = QLabel()
+        user_section.setText("User")
+        user_section.setObjectName("SectionDivider")
+        user_layout.addWidget(user_section)
+
         # Username change button
         card_layout.addSpacing(32)
         change_username_btn = QPushButton("Change Username")
@@ -146,10 +191,10 @@ class Settings_Window(QWidget):
         change_username_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         change_username_btn.setFixedWidth(220)
         change_username_btn.clicked.connect(self.open_change_username_window)
-        card_layout.addWidget(change_username_btn)
+        user_layout.addWidget(change_username_btn)
         
         # Password change button
-        card_layout.addSpacing(16)
+        user_layout.addSpacing(16)
         change_password_btn = QPushButton("Change Password")
         change_password_btn.setObjectName("changePasswordBtn")
         change_password_btn.setFont(QFont("Segoe UI", 11))
@@ -157,10 +202,10 @@ class Settings_Window(QWidget):
         change_password_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         change_password_btn.setFixedWidth(220)
         change_password_btn.clicked.connect(self.open_change_password_window)
-        card_layout.addWidget(change_password_btn)
+        user_layout.addWidget(change_password_btn)
         
         # Delete account button
-        card_layout.addSpacing(32)
+        user_layout.addSpacing(16)
         delete_account_btn = QPushButton("Delete Account")
         delete_account_btn.setObjectName("deleteAccountBtn")
         delete_account_btn.setFont(QFont("Segoe UI", 11))
@@ -168,7 +213,7 @@ class Settings_Window(QWidget):
         delete_account_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         delete_account_btn.setFixedWidth(220)
         delete_account_btn.clicked.connect(self.open_delete_account_window)
-        card_layout.addWidget(delete_account_btn)
+        user_layout.addWidget(delete_account_btn)
         
         card_layout.addStretch()
 
@@ -191,6 +236,23 @@ class Settings_Window(QWidget):
             }
         """
         self.setStyleSheet(self.styleSheet() + button_width_style)
+
+        # Theme section title
+        theme_section = QLabel()
+        theme_section.setText("Themes")
+        theme_section.setObjectName("SectionDivider")
+        theme_layout.addWidget(theme_section)
+
+        theme_selector = QComboBox()
+        theme_selector.addItems(["Light", "Dark", "System Default"])
+        theme_selector.setObjectName("themeDropDown")
+        theme_layout.addWidget(theme_selector)
+
+        # Notifications section title
+        notify_section = QLabel()
+        notify_section.setText("Notifications")
+        notify_section.setObjectName("SectionDivider")
+        notify_layout.addWidget(notify_section)
 
     def load_mute_setting(self) -> bool:
         try:
