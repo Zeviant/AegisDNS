@@ -4,7 +4,7 @@ from scoring.registrar_list import HIGH_RISK_REGISTRARS, MEDIUM_RISK_REGISTRARS,
 # --- DOMAIN AGE ---
 def score_domain_age(created: datetime | None) -> tuple[int, str] | None:
     """
-    Scores domain age. Older = likely safer. Newer = sus.
+    Scores domain age. Older = likely safer. Newer = more suspicious.
     """
     if not created:
         return None
@@ -14,15 +14,15 @@ def score_domain_age(created: datetime | None) -> tuple[int, str] | None:
     if age_days < 7:
         return (30, "Domain registered less than 7 days ago")
     elif age_days < 30:
-        return (15, "Domain registered less than 30 days ago")
+        return (15, "Domain registered less than a month ago")
+    elif age_days < 90:
+        return (10, "Domain registered less than 3 months ago")
     elif age_days < 365:
         return (5, "Domain registered less than 1 year ago")
     elif age_days >= 365 and age_days < 730:
         return (0, "Domain age does not indicate any particular risk")
-    elif age_days >= 730 and age_days < 1095:
-        return(-6, "Domain registered more than 2 years ago")
-    elif age_days >= 1095 and age_days < 1825:
-        return(-8, "Domain registered more than 3 years ago")
+    elif age_days >= 730 and age_days < 1825:
+        return(-5, "Domain registered more than 2 years ago")
     elif age_days >= 1825:
         return(-10, "Domain registered more than 5 years ago")
     
@@ -33,7 +33,7 @@ def score_domain_age(created: datetime | None) -> tuple[int, str] | None:
 def score_registrar(registrar : str | None) -> tuple[int, str] | None:
     """
     Registrar: A domain registrar is a company authorized to register domain names on behalf of individuals or organizations.
-    A lot of cases can be handled here, some registrars are more reputable and others are more sus 🤪.
+    A lot of cases can be handled here, some registrars are more reputable and others are more suspicious.
     """
     if not registrar:
         return None
@@ -52,7 +52,7 @@ def score_registrar(registrar : str | None) -> tuple[int, str] | None:
 def score_privacy(privacy : bool | None) -> tuple[int, str] | None:
     """
     Some registrars offer WHOIS privacy protection. Often used by individuals who want privacy, companies that don't want spam, etc.
-    However, it is also very often used by malicious actors 😒.
+    However, it is also very often used by malicious actors.
     """
     if privacy is None:
         return None

@@ -1,12 +1,11 @@
-1. IMPLEMENT FUNCTIONALITY FOR URLS (just extract domain from it) & IP ADDRESSES
 2. REBALANCE REGISTRAR LIST
-3. OTHER WHOIS PARAMETERS THAT COULD BE WORTH CONSIDERING LATER:
-* Email addresses in WHOIS – Could detect if it’s a known spammy/temporary email, but again this is high maintenance.
-* DNSSEC status – unsigned domains are slightly more suspicious, but most domains don’t use it, so it may generate noise.
-* Country/region of registrant – Could help flag high-risk jurisdictions, but GDPR and privacy services make this often unavailable.
-4. MAYBE OPTIONALLY DISPLAY ALL WHOIS / DNS INFORMATION, EVEN IF ITS NOT RELEVANT TO SCORING. STILL INTERESTING.
---> or opt2: display all relevant information that is used for scoring, and display why it is suspicious or not. maybe even with colors.
+3. IMPLEMENT BONUS SCORING BASED ON SIGNAL COMBINATIONS
+4. REBALANCE TLS
 
 Find domains to test here:
 https://www.ncsc.gov.uk/files/NCSC_APT28.pdf
 https://www.virustotal.com/gui/community-buzz
+
+generalinteresttopics.com
+netflix.com
+globaltechengineers.org

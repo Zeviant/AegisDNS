@@ -26,7 +26,6 @@ from scoring.rules_dns import(
     score_ns_records,
     score_mail_configuration
 )
-
 from features.web import (
     fetch_tls_certificate,
     fetch_http_security_headers
@@ -35,9 +34,11 @@ from scoring.rules_web import (
     score_tls_certificate,
     score_http_security_headers
 )
+from scoring.rules_ip import score_ip_indicator
 
 from urllib.parse import urlparse
 import tldextract
+import ipaddress
 
 def is_apex_domain(indicator: str) -> bool:
     """
@@ -47,39 +48,37 @@ def is_apex_domain(indicator: str) -> bool:
     return indicator.count(".") == 1
 
 def normalize_indicator(indicator: str) -> dict:
-    """
-    Returns:
-    {
-        input_type: 'url' | 'domain',
-        domain: registrable domain (example.com),
-        host: host/subdomain (example.com or sub.example.com),
-        url: full URL if input was URL
-    }
-    """
+    host = None
+    domain = None
+    url = None
+    is_ip = False
+
     if "://" in indicator:
         parsed = urlparse(indicator)
         host = parsed.hostname
-        ext = tldextract.extract(host)
-        domain = f"{ext.domain}.{ext.suffix}" if ext.domain and ext.suffix else None
-        return {
-            "input_type": "url",
-            "domain": domain,
-            "host": host,
-            "url": indicator
-        }
+        url = indicator
+    else:
+        host = indicator
 
-    # domain input
-    ext = tldextract.extract(indicator)
-    domain = f"{ext.domain}.{ext.suffix}" if ext.domain and ext.suffix else None
-    host = indicator
+    # --- IP detection ---
+    try:
+        ipaddress.ip_address(host)
+        is_ip = True
+    except Exception:
+        is_ip = False
+
+    if not is_ip:
+        ext = tldextract.extract(host)
+        if ext.domain and ext.suffix:
+            domain = f"{ext.domain}.{ext.suffix}"
+
     return {
-        "input_type": "domain",
+        "input_type": "ip" if is_ip else ("url" if url else "domain"),
         "domain": domain,
         "host": host,
-        "url": None
+        "url": url,
+        "is_ip": is_ip
     }
-
-
 
 def scan_domain(indicator: str):
     ctx = normalize_indicator(indicator)
@@ -87,9 +86,35 @@ def scan_domain(indicator: str):
     domain = ctx["domain"]
     host = ctx["host"]
     url = ctx["url"]
+    is_ip = ctx["is_ip"]
 
     signals = []
     risk_score = 0
+
+    # |-------------------------|
+    # |*** ------ IPs ------ ***|
+    # |-------------------------|
+
+    if is_ip:
+        score, reason = score_ip_indicator(
+            ip=host,
+            url=url
+        )
+
+        risk_score += score
+        signals.append({
+            "name": "ip_indicator",
+            "risk_score": score,
+            "reason": reason
+        })
+
+        return {
+            "indicator": indicator,
+            "type": "indicator",
+            "domain": None,
+            "total_risk_score": risk_score,
+            "signals": signals
+        }
 
     # |-------------------------|
     # |*** ----- WHOIS ----- ***|
@@ -275,4 +300,4 @@ def scan_domain(indicator: str):
     }
 
 if __name__ == "__main__":
-    print(scan_domain("reddit.com"))
+    print(scan_domain("example.com"))
