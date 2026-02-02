@@ -7,23 +7,6 @@
 4. MAYBE OPTIONALLY DISPLAY ALL WHOIS / DNS INFORMATION, EVEN IF ITS NOT RELEVANT TO SCORING. STILL INTERESTING.
 --> or opt2: display all relevant information that is used for scoring, and display why it is suspicious or not. maybe even with colors.
 
-checks for critical security measures like SSL configuration, HTTP security headers, and email authentication protocols to give you a comprehensive view of a site's security implementation. 
- Features:
-
-    DNS resolution with subdomain detection
-
-    Common port scanning (nmap)
-
-    Technology detection (httpx/curl)
-
-    Cookie security analysis
-
-    WHOIS information (root domains)
-
-    Analysis of robots.txt & sitemap.xml
-
-    Cookie analysis
-
 Find domains to test here:
 https://www.ncsc.gov.uk/files/NCSC_APT28.pdf
 https://www.virustotal.com/gui/community-buzz

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+# --- TLS ---
 def score_tls_certificate(tls: dict | None, domain_creation_date: datetime | None) -> tuple[int, str] | None:
     
     if not tls:
@@ -38,3 +39,33 @@ def score_tls_certificate(tls: dict | None, domain_creation_date: datetime | Non
         reasons.append("TLS certificate characteristics appear normal")
 
     return score, "; ".join(reasons)
+
+# --- SECURITY HEADERS ---
+def score_http_security_headers(headers: dict | None) -> tuple[int, str] | None:
+    if not headers:
+        return None
+
+    score = 0
+    present = []
+
+    if headers.get("hsts"):
+        score -= 2
+        present.append("HSTS")
+
+    if headers.get("csp"):
+        score -= 2
+        present.append("CSP")
+
+    if headers.get("x_frame"):
+        score -= 1
+        present.append("X-Frame-Options")
+
+    if present:
+        reason = f"Security headers present: {', '.join(present)}"
+    else:
+        score += 1
+        reason = "No common HTTP security headers detected"
+
+    return score, reason
+
+

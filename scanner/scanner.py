@@ -27,8 +27,14 @@ from scoring.rules_dns import(
     score_mail_configuration
 )
 
-from features.web import fetch_tls_certificate
-from scoring.rules_web import score_tls_certificate
+from features.web import (
+    fetch_tls_certificate,
+    fetch_http_security_headers
+)
+from scoring.rules_web import (
+    score_tls_certificate,
+    score_http_security_headers
+)
 
 from urllib.parse import urlparse
 import tldextract
@@ -242,6 +248,20 @@ def scan_domain(indicator: str):
             "reason": reason
         })
 
+    # --- HTTP SECURITY HEADERS ---
+    headers = fetch_http_security_headers(web_url)
+    headers_result = score_http_security_headers(headers)
+
+    if headers_result:
+        score, reason = headers_result
+        risk_score += score
+        signals.append({
+            "name": "http_security_headers",
+            "present": headers,
+            "risk_score": score,
+            "reason": reason
+        })
+
     # |-------------------------|
     # |*** ---- RESULTS ---- ***|
     # |-------------------------|
@@ -255,4 +275,4 @@ def scan_domain(indicator: str):
     }
 
 if __name__ == "__main__":
-    print(scan_domain("facebook.com"))
+    print(scan_domain("reddit.com"))
