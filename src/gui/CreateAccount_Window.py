@@ -1,6 +1,7 @@
 # --- Qt Libraries ---
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QMessageBox
+from PySide6.QtGui import QIcon
 
 # --- Connection to other modules ---
 from src.SQL_Alchemy.database_manager import DatabaseManager
@@ -93,17 +94,25 @@ class CreateAccount_Window(QWidget):
         # In case some of the filds are empty
         if (self.firstName_line_edit.text() == "" or self.lastName_line_edit.text() == ""):
             fieldsEmpty_box = QMessageBox()
-            fieldsEmpty_box.setWindowTitle("ERROR")
+            fieldsEmpty_box.setWindowTitle("Empty Fields")
+            fieldsEmpty_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             fieldsEmpty_box.setIcon(QMessageBox.Warning)
-            fieldsEmpty_box.setText("Some fields are empty!")
+            fieldsEmpty_box.setText("Please, make sure to not \nleave any field in blank.")
+            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
+                    QMessage_Style = f.read()
+            fieldsEmpty_box.setStyleSheet(QMessage_Style)
             fieldsEmpty_box.exec()
         
         # In case passwords does not match
         elif (password != cpassword): 
                 passwordMissmatch_box = QMessageBox()
-                passwordMissmatch_box.setWindowTitle("ERROR")
+                passwordMissmatch_box.setWindowTitle("Password Missmatch")
+                passwordMissmatch_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
                 passwordMissmatch_box.setIcon(QMessageBox.Warning)
-                passwordMissmatch_box.setText("Passwords must match!")
+                passwordMissmatch_box.setText("The two entered passwords \n must be equal.")
+                with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
+                    QMessage_Style = f.read()
+                passwordMissmatch_box.setStyleSheet(QMessage_Style)
                 passwordMissmatch_box.exec()
         
         # If everything ok so far
@@ -117,17 +126,25 @@ class CreateAccount_Window(QWidget):
         if result == "taken": 
             # Display Warning Message
             userNameAlreadyExists_box = QMessageBox()
-            userNameAlreadyExists_box.setWindowTitle("ERROR")
+            userNameAlreadyExists_box.setWindowTitle("Taken Username")
+            userNameAlreadyExists_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             userNameAlreadyExists_box.setIcon(QMessageBox.Warning)
-            userNameAlreadyExists_box.setText("Username already taken!")
+            userNameAlreadyExists_box.setText("The username entered already \nexists. Please, try another one.")
+            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
+                QMessage_Style = f.read()
+            userNameAlreadyExists_box.setStyleSheet(QMessage_Style)
             userNameAlreadyExists_box.exec()
 
         # If username is not taken, add it to the database
         elif result == "success":
             successMessage_box = QMessageBox()
-            successMessage_box.setWindowTitle("Success!")
+            successMessage_box.setWindowTitle("User created successfully")
+            successMessage_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             successMessage_box.setIcon(QMessageBox.Information)
-            successMessage_box.setText("User created successfully")
+            successMessage_box.setText("User created successfully.\nPlease sign in to proceed.")
+            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
+                QMessage_Style = f.read()
+            successMessage_box.setStyleSheet(QMessage_Style)
             successMessage_box.exec()
             self.close()
 

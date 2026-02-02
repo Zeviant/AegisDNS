@@ -106,9 +106,13 @@ class Start_Window(QWidget):
         # Check if any field is empty
         if(self.name_line_edit.text() == "" or self.password_line_edit.text() == ""): 
             fieldsEmpty_box = QMessageBox()
-            fieldsEmpty_box.setWindowTitle("ERROR")
+            fieldsEmpty_box.setWindowTitle("Empty Fields")
+            fieldsEmpty_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             fieldsEmpty_box.setIcon(QMessageBox.Warning)
-            fieldsEmpty_box.setText("Some fields are empty!")
+            fieldsEmpty_box.setText("Please, make sure to not \nleave any field in blank.")
+            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
+                    QMessage_Style = f.read()
+            fieldsEmpty_box.setStyleSheet(QMessage_Style)
             fieldsEmpty_box.exec()
         
         else: 
@@ -131,11 +135,15 @@ class Start_Window(QWidget):
                 self.close()
             
             else:
-                login_fail_box = QMessageBox()
-                login_fail_box.setWindowTitle("ERROR")
-                login_fail_box.setIcon(QMessageBox.Warning)
-                login_fail_box.setText("Username or password wrong")
-                login_fail_box.exec()
+                loginFail_box = QMessageBox()
+                loginFail_box.setWindowTitle("Login Fail")
+                loginFail_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
+                loginFail_box.setIcon(QMessageBox.Warning)
+                loginFail_box.setText("The username or password \nentered is incorrect.")
+                with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
+                        QMessage_Style = f.read()
+                loginFail_box.setStyleSheet(QMessage_Style)
+                loginFail_box.exec()
             
     
     def centerOnScreen (self):

@@ -92,13 +92,9 @@ class SideBarMainWindow(QMainWindow):
 
         # List of menu items
         self.menuList = [
-            {
-                "name": "Analyze Address",
-                "icon": "src\\images\\SideBar_icons\\analyze_icon.png",
-                "widget": Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification),
-            }, 
+            {"name": "Analyze Address", "icon": "src\\images\\SideBar_icons\\analyze_icon.png", "widget": Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification),}, 
             {"name": "History File", "icon": "src\images\SideBar_icons\history_icon.png", "widget": History_Window(self.username)},
-            {"name": "Navigation Logs", "icon": "src\images\SideBar_icons\history_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
+            {"name": "Navigation Logs", "icon": "src\\images\\SideBar_icons\\navigation_white_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
             {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
             {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": SnifferContainer_Window()},
             {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": Settings_Window(self.username, sidebar_reference=self)},
@@ -109,14 +105,12 @@ class SideBarMainWindow(QMainWindow):
         self.signalSlot()
         self.stackWidget()
 
-        # Periodically poll history to show notifications for any scans
         self._last_notified_ts: str | None = None
         self._notify_timer = QTimer(self)
-        self._notify_timer.setInterval(5000)  # 5 seconds
+        self._notify_timer.setInterval(5000)  
         self._notify_timer.timeout.connect(self._check_new_scans_for_notifications)
         self._notify_timer.start()
 
-        # Log packet counts to terminal every 10 seconds
         self._packet_log_timer = QTimer(self)
         self._packet_log_timer.setInterval(10_000)
         self._packet_log_timer.timeout.connect(self._log_packet_counts)
@@ -155,7 +149,6 @@ class SideBarMainWindow(QMainWindow):
             print(dominant)
         
         
-
     def _log_packet_counts(self):
         snapshot = self.aggregator.get_snapshot()
         if not snapshot:
