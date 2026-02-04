@@ -24,7 +24,9 @@ class WhiteBlackList_Window(QWidget):
         button_layout = QHBoxLayout()
 
         self.white_btn = QPushButton("White List")
+        self.white_btn.setObjectName("TopButton")
         self.black_btn = QPushButton("Black List")
+        self.black_btn.setObjectName("TopButton")
 
         self.white_btn.clicked.connect(self.show_white_list)
         self.black_btn.clicked.connect(self.show_black_list)
@@ -41,8 +43,8 @@ class WhiteBlackList_Window(QWidget):
 
         # Set stylesheet
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-            self.setStyleSheet(f.read())
+        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
+        #     self.setStyleSheet(f.read())
 
         # Page 1 — White List
         white_page = QWidget()

@@ -1,0 +1,323 @@
+/* === Sidebar Settings */
+#title_label {{
+    font-size: 16px;
+    font-family: "Segoe UI Semibold";
+    color: {textPrimary};
+}}
+
+#title_icon {{
+    max-width: 35px;
+    max-height: 35px;
+}}
+
+QPushButton#SideMenuButton {{
+    background: none;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    max-width: 3px;
+}}
+
+QPushButton#SideMenuButton:hover,
+QPushButton#SideMenuButton:pressed,
+QPushButton#SideMenuButton:focus {{
+    background: none;
+    background-color: transparent;
+    border: none;
+    outline: none;
+}}
+
+QStackedWidget {{
+    background-color: {60Color};
+    color: {textPrimary};
+}}
+
+QListWidget,
+#title_frame {{
+    background-color: {60Color};
+    color: {textPrimary};
+}}
+
+#stackedWidget,
+#title_frame {{
+    border: 1px solid {30Color};
+}}
+
+#stackedWidget {{
+    border-left: none;
+}}
+
+#title_frame {{
+    border-bottom: none;
+}}
+
+#listWidget {{
+    font-size: 13px;
+    font-family: "Segoe UI Semibold";
+    color: {textPrimary}; 
+}}
+
+#listWidget::item,
+#listWidget_icon::item {{
+    border: none;
+    padding: 5px 10px;
+    margin: 2px 0;
+    color: {textPrimary};
+}}
+
+#listWidget::item {{
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}}
+
+#listWidget_icon::item {{
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+}}
+
+#listWidget_icon::item {{
+    padding-top: 0px;
+}}
+
+#listWidget::item:hover,
+#listWidget_icon::item:hover {{
+    background-color: {10Color}; 
+    color: {textPrimary};
+}}
+
+#listWidget::item:selected,
+#listWidget_icon::item:selected {{
+    background-color: {10Color}; 
+    color: {textPrimary};
+}}
+
+#listWidget::icon {{
+    width: 18px;
+    height: 18px;
+}}
+
+#listWidget_icon::icon {{
+    width: 23px;
+    height: 23px;
+}}
+
+/* === Authentication Window*/
+QWidget {{
+    background-color: {60Color};      
+    color: {textPrimary};                
+    font-family: "Segoe UI";
+    font-size: 14px;
+}}
+
+QWidget#contentSquare {{
+    background-color: {60Color};      
+    border-radius: 16px;
+    border: 0px;
+    padding: 24px;
+}}
+
+QLabel#AutenticationLabel {{
+    color: {textPrimary};                
+    font-weight: bold;
+    font-size:16px;
+    letter-spacing: 0.5px;
+}}
+
+QLineEdit#AutenticationLine {{
+    background-color: {60Color};      
+    border: 1px solid {30Color};      
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: {textPrimary};
+    selection-background-color: {textPrimary}; 
+    selection-color: white;
+}}
+
+QLineEdit#AutenticationLine:focus {{
+    border: 1px solid {10Color};      
+    background-color: {60Color};      
+}}
+
+QPushButton#AutenticationButton {{
+    background-color: {10Color};      
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: bold;
+    font-size:16px;
+    letter-spacing: 0.3px;
+}}
+
+QPushButton#AutenticationButton:hover {{
+    background-color: {10Color};      
+}}
+
+QPushButton#AutenticationButton:pressed {{
+    background-color: {10Color};      
+}}
+
+QPushButton#AutenticationButton:disabled {{
+    background-color: {30Color};
+    color: {textPrimary};
+}}
+
+/* === Tables */
+QFrame#card {{
+    background: {60Color};
+    border-radius: 16px;
+}}
+
+QLabel#TitleTables{{
+    font-size: 22px;
+    font-weight: 700;
+    padding: 12px 10px;
+    color: {textPrimary};
+    background-color: {10Color};
+    border-radius: 4px;
+    margin: 2px;
+    border-bottom: 4px solid {30Color};
+}}
+
+QHeaderView::section {{
+    background-color: {30Color};
+    color: {textPrimary};
+    padding: 6px;
+    border: 1px solid {30Color};
+    font-weight: bold;
+}}
+
+QTableCornerButton::section {{
+    background-color: {30Color}; 
+    border: 1px solid {30Color};
+}}
+
+QTableWidget, QTableView {{
+    background-color: {60Color};
+    alternate-background-color: {60Color};
+    color: {textPrimary};
+    border: 1px solid {30Color};
+    border-radius: 8px;
+}}
+
+QTableWidget::item:selected,
+QTableView::item:selected {{
+    background-color: {10Color};
+    color: {textPrimary};
+}}
+
+QPushButton {{
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    background: {10Color};
+    color: white;
+    font-weight: bold;
+}}
+
+QPushButton:hover {{ background: {10Color}; }}
+QPushButton:pressed {{ background: {10Color}; }}
+QPushButton:disabled {{
+    background: {30Color};
+    color: {textPrimary};
+}}
+
+QPushButton#TopButton {{
+    border: none;
+    border-radius: 4px;
+    padding: 10px 0px;
+    background: {10Color};
+    color: {textPrimary};
+    font-weight: bold;
+    font-size:20px;
+    max-width: 370px;
+    border-bottom: 4px solid {30Color};
+}}
+
+QPushButton#TopButton:hover {{ background: {10Color}; }}
+QPushButton#TopButton:pressed {{ background: {10Color}; }}
+QPushButton#TopButton:disabled {{
+    background: {30Color};
+    color: {textPrimary};
+}}
+
+
+/* === Packet Sniffer */
+QLabel#protocolLabel {{
+    font-size: 14px;
+    font-weight: bold;
+    padding: 6px 10px 8px 10px;
+    color: {textPrimary};
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid {30Color};
+}}
+
+/* === Setting Window */
+QLabel#SectionDivider {{
+    font-size: 16px;
+    font-weight: bold;
+    color: {textPrimary};
+    background-color: {60Color};
+    border-radius: 4px;
+    margin: 2px;
+    border-bottom: 4px solid {30Color};
+}}
+
+QFrame#cardSettings {{
+    background-color: {60Color};
+}}
+
+QPushButton#deleteAccountBtn {{
+    background-color: {10Color};
+}}
+
+QPushButton#deleteAccountBtn:hover {{
+    background-color: {10Color};
+}}
+
+QPushButton#deleteAccountBtn:pressed {{
+    background-color: {10Color};
+}}
+
+QCheckBox {{
+    color: {textPrimary};
+    font-size: 11pt;
+}}
+
+QCheckBox::indicator {{
+    width: 20px;
+    height: 20px;
+    border: 2px solid {30Color};
+    border-radius: 4px;
+    background-color: {60Color};
+}}
+
+QCheckBox::indicator:checked {{
+    background-color: {10Color};
+    border-color: {10Color};
+}}
+
+QCheckBox::indicator:hover {{
+    border-color: {10Color};
+}}
+
+QCheckBox::indicator:checked:hover {{
+    background-color: {10Color};
+    border-color: {10Color};
+}}
+
+QComboBox#themeDropDown {{
+    font-size: 14px;
+    font-weight: bold;
+    color: {textPrimary};
+    background-color: {60Color};
+}}
+
+QComboBox#themeDropDown QAbstractItemView {{
+    background-color: {60Color}; 
+    color: {textPrimary};
+    selection-background-color: {10Color}; 
+    border: 1px solid {30Color};
+    outline: none;
+}}

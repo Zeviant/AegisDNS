@@ -3,6 +3,8 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtGui
 from datetime import datetime
 from src.logic.backend_server import get_sorted_logs
+import json
+
 
 class Log_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -20,11 +22,12 @@ class Log_Window(QWidget):
         layout = QVBoxLayout(self)
 
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-            self.setStyleSheet(f.read())
+        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
+        #     self.setStyleSheet(f.read())
 
         # -- Title --
         title = QLabel(f"Navigation Logs")
+        title.setObjectName("TitleTables")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
@@ -130,3 +133,4 @@ class Log_Window(QWidget):
             # Set address & scan
             main_window.input_edit.setText(address)
             main_window.on_ok()
+

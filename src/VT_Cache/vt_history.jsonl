@@ -133,3 +133,4 @@
 {"ts": "2025-12-24T14:24:38.331227", "kind": "url", "target": "https://www.reddit.com/", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 70, "timeout": 0}, "source": "cache", "user": "Nicolas"}
 {"ts": "2025-12-24T14:25:34.904079", "kind": "url", "target": "https://www.instagram.com/", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 27, "harmless": 71, "timeout": 0}, "source": "cache", "user": "Nicolas"}
 {"ts": "2025-12-24T14:25:56.900820", "kind": "url", "target": "https://www.instagram.com/", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 27, "harmless": 71, "timeout": 0}, "source": "cache", "user": "Nicolas"}
+{"ts": "2026-02-04T19:00:35.786436", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 27, "harmless": 71, "timeout": 0}, "source": "cache", "user": "Nico"}

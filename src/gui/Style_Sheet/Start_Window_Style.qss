@@ -7,7 +7,7 @@ QWidget {
 }
 
 /* === LABELS === */
-QLabel {
+QLabel#AuthenticationLabel {
     color: #ffffffff;                /* light gray-white */
     font-weight: bold;
     font-size:16px;

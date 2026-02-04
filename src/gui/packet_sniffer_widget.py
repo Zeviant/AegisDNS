@@ -7,36 +7,7 @@ from PySide6.QtGui import QPainter, QColor, QPen, QBrush
 class PacketSnifferWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.setStyleSheet("""
-        QLabel {
-            font-size: 22px;
-            font-weight: 700;
-            padding: 12px 10px;
-            color: #ffffff;
-            background-color: #1c2839;
-            border-radius: 4px;
-            margin: 2px;
-            border-bottom: 2px solid #2d4a6e;
-        }
-
-        QLabel#protocolLabel {
-            font-size: 14px;
-            font-weight: bold;
-            padding: 6px 10px 8px 10px;
-            color: #ffffff;
-            background-color: transparent;
-            border: none;
-            border-bottom: 2px solid #2d4a6e;
-        }
-
-        QWidget {
-            background-color: #1c2839;
-            color: #e5e7eb;
-            font-family: Segoe UI;
-        }
-        """)
-
+        
         # --- Title ---
         # --- Main layout ---
         layout = QVBoxLayout(self)
@@ -45,6 +16,7 @@ class PacketSnifferWidget(QWidget):
 
         # --- Title ---
         title = QLabel("Packet Sniffer")
+        title.setObjectName("TitleTables")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
         layout.addStretch()

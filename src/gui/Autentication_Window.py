@@ -22,10 +22,12 @@ class Start_Window(QWidget):
 
         # Fixed Box Size
         contentSquare = QWidget()
+        contentSquare.setObjectName("contentSquare")
         contentSquare.setFixedSize(300, 500) 
         
         # --- User Icon ---
         userIcon_label = QLabel("")
+        userIcon_label.setObjectName("AutenticationLabel")
         pixmap = QPixmap("src/images/Login_icon/user(4).png")
         pixmap = pixmap.scaled(128, 128, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         userIcon_label.setPixmap(pixmap)
@@ -33,15 +35,23 @@ class Start_Window(QWidget):
 
         # --- Name and Password labels and line edits ---
         name_label = QLabel("Name")
+        name_label.setObjectName("AutenticationLabel")
+
         password_label = QLabel("Password")
+        password_label.setObjectName("AutenticationLabel")
+       
         self.name_line_edit = QLineEdit()
+        self.name_line_edit.setObjectName("AutenticationLine")
         self.password_line_edit = QLineEdit()
+        self.password_line_edit.setObjectName("AutenticationLine")
         self.password_line_edit.setEchoMode(QLineEdit.Password) # Esto es para que salga como ****
 
         # --- Buttons ---
         login_button = QPushButton("Login")
+        login_button.setObjectName("AutenticationButton")
         login_button.setDefault(True)
         signUp_button = QPushButton("Create Account")
+        signUp_button.setObjectName("AutenticationButton")
         login_button.clicked.connect(self.login_account) # Connecting the actions to the login_account function
         signUp_button.clicked.connect(self.create_account) # Connecting the actions to the create_account function
        
@@ -119,12 +129,12 @@ class Start_Window(QWidget):
             
             if DatabaseManager.authenticate_user(username, passwordH): 
                 # Load Sheet Style
-                with open("src/gui/Style_Sheet/sidebar_Style.qss") as f: 
-                    style_str = f.read()
+                # with open("src/gui/Style_Sheet/sidebar_Style.qss") as f: 
+                #     style_str = f.read()
 
                 # Username and password are passed to the mainwindow
                 self.MainMenu = SideBarMainWindow(username, passwordH)
-                self.MainMenu.setStyleSheet(style_str)
+                # self.MainMenu.setStyleSheet(style_str)
                 self.MainMenu.show()
 
                 # Start local extension server

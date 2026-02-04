@@ -36,11 +36,12 @@ class History_Window(QWidget):
         layout = QVBoxLayout(self)
 
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-            self.setStyleSheet(f.read())
+        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
+        #     self.setStyleSheet(f.read())
 
         # -- Title --
         title = QLabel(f"History Log")
+        title.setObjectName("TitleTables")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 

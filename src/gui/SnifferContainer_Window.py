@@ -20,7 +20,9 @@ class SnifferContainer_Window(QWidget):
         button_layout = QHBoxLayout()
 
         self.graph_btn = QPushButton("Sniffer Graph")
+        self.graph_btn.setObjectName("TopButton")
         self.animation_btn = QPushButton("Protocol Animation")
+        self.animation_btn.setObjectName("TopButton")
 
         self.graph_widget = PacketSnifferWidget()
         self.animation_widget = ProtocolAnimation_Window()
@@ -37,8 +39,8 @@ class SnifferContainer_Window(QWidget):
 
         # Set stylesheet
         # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-            self.setStyleSheet(f.read())
+        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
+        #     self.setStyleSheet(f.read())
 
         # Page 1 — Packet Sniffer Graph
         graph_page = QWidget()

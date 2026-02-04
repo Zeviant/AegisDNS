@@ -6,6 +6,8 @@ import json
 from src.gui.change_password_window import ChangePasswordWindow
 from src.gui.change_username_window import ChangeUsernameWindow
 from src.gui.delete_account_window import DeleteAccountWindow
+from src.gui.log_window import Log_Window
+from PySide6.QtWidgets import QApplication
 
 class Settings_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -23,108 +25,110 @@ class Settings_Window(QWidget):
         layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(24)
 
+        self.themeName = "Dark"
+
         # Set base styling with button and checkbox styles
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #101e29;
-                color: #e5e7eb;
-            }
-            QFrame#card {
-                background-color: #0f263e;
-            }
-            QLabel#settingsTitle {
-                font-size: 22px;
-                font-weight: 700;
-                padding: 12px 10px;
-                color: #ffffff;
-                background-color: #0f263e;
-                border-radius: 4px;
-                margin: 2px;
-                border-bottom: 4px solid #153351;
-            }
-            QLabel#SectionDivider{
-                font-size: 16px;
-                font-weight: bold;
-                color: #ffffff;
-                background-color: #0f263e;
-                border-radius: 4px;
-                margin: 2px;
-                border-bottom: 4px solid #153351;
-            }
-            QPushButton {
-                background-color: #2563eb;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 10px 16px;
-                font-weight: bold;
-                font-size: 11pt;
-            }
-            QPushButton:hover {
-                background-color: #1d4ed8;
-            }
-            QPushButton:pressed {
-                background-color: #1e40af;
-            }
-            QPushButton:disabled {
-                background-color: #475569;
-                color: #cbd5e1;
-            }
-            QPushButton#deleteAccountBtn {
-                background-color: #dc2626;
-            }
-            QPushButton#deleteAccountBtn:hover {
-                background-color: #b91c1c;
-            }
-            QPushButton#deleteAccountBtn:pressed {
-                background-color: #991b1b;
-            }
-            QCheckBox {
-                color: #e5e7eb;
-                font-size: 11pt;
-            }
-            QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
-                border: 2px solid #334155;
-                border-radius: 4px;
-                background-color: #1e293b;
-            }
-            QCheckBox::indicator:checked {
-                background-color: #2563eb;
-                border-color: #2563eb;
-            }
-            QCheckBox::indicator:hover {
-                border-color: #3b82f6;
-            }
-            QCheckBox::indicator:checked:hover {
-                background-color: #1d4ed8;
-                border-color: #1d4ed8;
-            }
-            QComboBox#themeDropDown{
-                font-size: 14px;
-                font-weight: bold;
-                color: #ffffff;
-                background-color: #153351;
-            }
-            QComboBox#themeDropDown QAbstractItemView {
-                background-color: #153351; /* Match your main box color */
-                color: #ffffff;
-                selection-background-color: #2563eb; /* Color when you hover over an item */
-                border: 1px solid #2d4a6e;
-                outline: none;
-            }
-        """)
+        # self.setStyleSheet("""
+        #     QWidget {
+        #         background-color: #101e29;
+        #         color: #e5e7eb;
+        #     }
+        #     QFrame#card {
+        #         background-color: #0f263e;
+        #     }
+        #     QLabel#settingsTitle {
+        #         font-size: 22px;
+        #         font-weight: 700;
+        #         padding: 12px 10px;
+        #         color: #ffffff;
+        #         background-color: #0f263e;
+        #         border-radius: 4px;
+        #         margin: 2px;
+        #         border-bottom: 4px solid #153351;
+        #     }
+        #     QLabel#SectionDivider{
+        #         font-size: 16px;
+        #         font-weight: bold;
+        #         color: #ffffff;
+        #         background-color: #0f263e;
+        #         border-radius: 4px;
+        #         margin: 2px;
+        #         border-bottom: 4px solid #153351;
+        #     }
+        #     QPushButton {
+        #         background-color: #2563eb;
+        #         color: white;
+        #         border: none;
+        #         border-radius: 8px;
+        #         padding: 10px 16px;
+        #         font-weight: bold;
+        #         font-size: 11pt;
+        #     }
+        #     QPushButton:hover {
+        #         background-color: #1d4ed8;
+        #     }
+        #     QPushButton:pressed {
+        #         background-color: #1e40af;
+        #     }
+        #     QPushButton:disabled {
+        #         background-color: #475569;
+        #         color: #cbd5e1;
+        #     }
+        #     QPushButton#deleteAccountBtn {
+        #         background-color: #dc2626;
+        #     }
+        #     QPushButton#deleteAccountBtn:hover {
+        #         background-color: #b91c1c;
+        #     }
+        #     QPushButton#deleteAccountBtn:pressed {
+        #         background-color: #991b1b;
+        #     }
+        #     QCheckBox {
+        #         color: #e5e7eb;
+        #         font-size: 11pt;
+        #     }
+        #     QCheckBox::indicator {
+        #         width: 20px;
+        #         height: 20px;
+        #         border: 2px solid #334155;
+        #         border-radius: 4px;
+        #         background-color: #1e293b;
+        #     }
+        #     QCheckBox::indicator:checked {
+        #         background-color: #2563eb;
+        #         border-color: #2563eb;
+        #     }
+        #     QCheckBox::indicator:hover {
+        #         border-color: #3b82f6;
+        #     }
+        #     QCheckBox::indicator:checked:hover {
+        #         background-color: #1d4ed8;
+        #         border-color: #1d4ed8;
+        #     }
+        #     QComboBox#themeDropDown{
+        #         font-size: 14px;
+        #         font-weight: bold;
+        #         color: #ffffff;
+        #         background-color: #153351;
+        #     }
+        #     QComboBox#themeDropDown QAbstractItemView {
+        #         background-color: #153351; /* Match your main box color */
+        #         color: #ffffff;
+        #         selection-background-color: #2563eb; /* Color when you hover over an item */
+        #         border: 1px solid #2d4a6e;
+        #         outline: none;
+        #     }
+        # """)
 
         # Title (styled like table headers)
         title = QLabel("Settings")
-        title.setObjectName("settingsTitle")
+        title.setObjectName("TitleTables")
         title.setAlignment(Qt.AlignHCenter)
         layout.addWidget(title)
 
         # Settings card
         card = QFrame()
-        card.setObjectName("card")
+        card.setObjectName("cardSettings")
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(48, 48, 48, 48)
         card_layout.setSpacing(24)
@@ -244,8 +248,9 @@ class Settings_Window(QWidget):
         theme_layout.addWidget(theme_section)
 
         theme_selector = QComboBox()
-        theme_selector.addItems(["Light", "Dark", "System Default"])
+        theme_selector.addItems(["System Default", "Dark", "Light"])
         theme_selector.setObjectName("themeDropDown")
+        theme_selector.currentTextChanged.connect(self.changeTheme)
         theme_layout.addWidget(theme_selector)
 
         # Notifications section title
@@ -253,6 +258,20 @@ class Settings_Window(QWidget):
         notify_section.setText("Notifications")
         notify_section.setObjectName("SectionDivider")
         notify_layout.addWidget(notify_section)
+
+    def changeTheme(self, theme_name):
+        print(theme_name)
+        with open("src/gui/Style_Sheet/themes.json", "r") as f:
+            themes = json.load(f)
+            current_theme_data = themes.get(theme_name)
+
+        with open("src/gui/Style_Sheet/SettingsStyle.qss", "r") as f:
+            template_content = f.read()
+
+        final_style = template_content.format(**current_theme_data)
+
+        # self.setStyleSheet(final_style)
+        QApplication.instance().setStyleSheet(final_style)
 
     def load_mute_setting(self) -> bool:
         try:

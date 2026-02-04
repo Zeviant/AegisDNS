@@ -1,0 +1,23 @@
+{
+  "Default": {
+    "60Color": "#0f172a",
+    "30Color": "#4069abff",
+    "10Color": "#3b82f6",
+    "textPrimary": "#ffffff"
+
+  },
+
+  "Dark": {
+    "60Color": "#000000",
+    "30Color": "#4C4E52",
+    "10Color": "#2E67F8",
+    "textPrimary": "#ffffff"
+  },
+
+  "Light": {
+    "60Color": "#ffffff",
+    "30Color": "#D9C5D4",
+    "10Color": "#B19CD9",
+    "textPrimary": "#ffffff"
+  }
+}
