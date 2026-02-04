@@ -19,20 +19,19 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
 
     # --- A/AAAA RECORD COUNT SCORING ---
     if record_count >= 10:
-        score += 3
+        score += 2
         reasons.append("Very high number of A/AAAA records detected (≥10)")
     elif record_count >= 7:
-        score += 2
-        reasons.append("High number of A/AAAA records detected (≥7)")
-    elif record_count >= 3:
         score += 1
-        reasons.append("Above average number of A/AAAA records detected (≥3)")
+        reasons.append("High number of A/AAAA records detected (≥7)")
     
-    # --- TTL + A/AAAA RECORD COUNT SCORING ---
-    if min_ttl is not None:
-        if min_ttl <= 60 and record_count >= 10:
-            score += 3
-            reasons.append("Fast-flux behavior detected: ≤60s TTL with ≥10 records")
+    # --- FAST-FLUX BEHAVIOR ---
+    if min_ttl is not None and min_ttl <= 30 and record_count >= 15:
+        score += 5
+        reasons.append("Extreme fast-flux behavior detected: ≤30s TTL with ≥15 records")
+    elif min_ttl is not None and min_ttl <= 60 and record_count >= 10:
+        score += 2
+        reasons.append("Possible fast-flux behavior detected: ≤60s TTL with ≥10 records")
 
     if score == 0:
         reasons.append("TTL and number of A/AAAA records is normal")
@@ -81,7 +80,7 @@ def score_mail_configuration(
         reasons.append("No mail configuration detected.")
 
     if mx_records and spf_present and dmarc_present:
-        score -= 5
+        score -= 6
         reasons.append("Proper mail configuration detected")
 
     return score, "; ".join(reasons)
