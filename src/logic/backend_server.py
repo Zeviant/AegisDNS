@@ -10,10 +10,10 @@ from PySide6.QtCore import QThread
 
 from src.logic.vt_service import (
     classify_kind,
-    VTScanThread,
     add_entry_to_blacklist,
     add_entry_to_whitelist,
 )
+from src.logic.scanner_service import ScannerScanThread
 
 from urllib.parse import urlparse
 import re
@@ -31,7 +31,7 @@ SERVER_PORT = 5005
 
 
 # Pending scan requests list
-SCAN_THREADS: list[VTScanThread] = []
+SCAN_THREADS: list[ScannerScanThread] = []
 
 # Initialize Flask app (CORS enables cross-origin requests like from extensions)
 app = Flask(__name__)
@@ -147,7 +147,7 @@ def scan_event():
         return jsonify({"ok": False, "reason": str(e)}), 400
 
     try:
-        worker = VTScanThread(kind, target, FLASK_USERNAME)
+        worker = ScannerScanThread(kind, target, FLASK_USERNAME)
         SCAN_THREADS.append(worker)
         worker.start()
 

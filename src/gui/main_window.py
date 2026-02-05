@@ -7,37 +7,24 @@ from PySide6.QtWidgets import QProgressBar
 import time
 
 # Connection with service layer
-from src.logic.vt_service import (
-    _load_state,
-    classify_kind,
-    VTScanThread,
-    VIRUSTOTAL_RATELIMIT
-)
+from src.logic.vt_service import classify_kind
+from src.logic.scanner_service import ScannerScanThread
 
 # --- Qt Presentation Functions ---
 def render_vt_html(verdict: str, stats: dict) -> str:
     color = {"BLOCK": "#ef4444", "CAUTION": "#f59e0b", "SAFE": "#10b981"}.get(verdict, "#93a3b1")
-    harmless = stats.get("harmless", 0)
-    malicious = stats.get("malicious", 0)
-    suspicious = stats.get("suspicious", 0)
-    undetected = stats.get("undetected", 0)
-    timeout = stats.get("timeout", 0)
+    risk_score = stats.get("risk_score", 0)
+    signal_count = stats.get("signal_count", 0)
     return f"""
       <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
         <h2 style="margin:0 0 12px; font-size:22px; color:{color};">Verdict: {verdict}</h2>
         <table style="border-collapse:collapse; margin-top:6px;">
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Harmless</td>
-              <td style="padding:4px 12px; font-weight:600;">{harmless}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Malicious</td>
-              <td style="padding:4px 12px; font-weight:600;">{malicious}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Suspicious</td>
-              <td style="padding:4px 12px; font-weight:600;">{suspicious}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Undetected</td>
-              <td style="padding:4px 12px; font-weight:600;">{undetected}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Timeout</td>
-              <td style="padding:4px 12px; font-weight:600;">{timeout}</td></tr>
+          <tr><td style="padding:4px 12px; color:#9aa5b1;">Risk Score</td>
+              <td style="padding:4px 12px; font-weight:600;">{risk_score}</td></tr>
+          <tr><td style="padding:4px 12px; color:#9aa5b1;">Signals Detected:</td>
+              <td style="padding:4px 12px; font-weight:600;"></td></tr>
         </table>
-        <p style="margin-top:12px; color:#9aa5b1;">Source: VirusTotal (last_analysis_stats)</p>
+        <p style="margin-top:12px; color:#9aa5b1;">Source: Custom Scanner</p>
       </div>
     """
 
@@ -47,7 +34,7 @@ def show_vt_box(parent, verdict: str, stats: dict):
             else QMessageBox.Information)
     box = QMessageBox(parent)
     box.setIcon(icon)
-    box.setWindowTitle("VirusTotal Result")
+    box.setWindowTitle("Scan Result")
     box.setTextFormat(Qt.RichText)
     box.setText(render_vt_html(verdict, stats))
     box.setStandardButtons(QMessageBox.Ok)
@@ -201,13 +188,6 @@ class Main_Window(QMainWindow):
 
         # Remember last submitted text so we can reference it in notifications
         self._last_submitted_text = raw
-        
-        state = _load_state()
-        last = float(state.get("last_call", 0) or 0)
-        remaining = int(max(0, VIRUSTOTAL_RATELIMIT - (time.time() - last)))
-        if remaining > 0:
-            self.start_cooldown(remaining)
-            return
 
         try:
             # Logic function call: uses imported classify_kind
@@ -225,7 +205,7 @@ class Main_Window(QMainWindow):
         self._progress_timer.start()
 
         # Delegation of work to the imported service layer thread
-        self._worker = VTScanThread(kind, target, self.userName, self)
+        self._worker = ScannerScanThread(kind, target, self.userName, self)
         self._worker.tick.connect(self.on_cooldown_tick)
         self._worker.result.connect(self.on_result)
         self._worker.start()
@@ -245,8 +225,8 @@ class Main_Window(QMainWindow):
         ))
 
         if not payload.get("ok"):
-            # The API key error message now comes from the logic layer
-            QMessageBox.critical(self, "VirusTotal Error", payload.get("message", "Unknown error"))
+            # Error message from the scanner service
+            QMessageBox.critical(self, "Scan Error", payload.get("message", "Unknown error"))
             return
 
         stats = payload.get("stats", {}) or {}

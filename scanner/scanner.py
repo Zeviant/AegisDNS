@@ -293,7 +293,6 @@ def scan_domain(indicator: str):
 
     return {
         "indicator": indicator,
-        "type": "indicator",
         "domain": domain,
         "total_risk_score": risk_score,
         "signals": signals
