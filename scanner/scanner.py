@@ -267,6 +267,7 @@ def scan_domain(indicator: str):
             "risk_score": score,
             "details": {
                 "issuer": tls_metrics.get("issuer") if tls_metrics else None,
+                "issue_date": tls_metrics.get("not_before").date().isoformat() if tls_metrics and tls_metrics.get("not_before") else None,
                 "validity_days": tls_metrics.get("validity_days") if tls_metrics else None,
                 "is_wildcard": tls_metrics.get("is_wildcard") if tls_metrics else None,
             },
@@ -299,4 +300,4 @@ def scan_domain(indicator: str):
     }
 
 if __name__ == "__main__":
-    print(scan_domain("example.com"))
+    print(scan_domain("netflix.com"))

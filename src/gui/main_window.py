@@ -69,7 +69,8 @@ class Main_Window(QMainWindow):
         central = QWidget(self)
         self.setCentralWidget(central)
         page = QVBoxLayout(central)
-        page.setContentsMargins(40, 40, 40, 40)
+        page.setContentsMargins(40, -100, 40, 40)
+        page.setSpacing(0)
 
         # Load table styling from QSS file
         with open("src/gui/Style_Sheet/MainWindow_Style.qss", "r") as f:
@@ -121,18 +122,16 @@ class Main_Window(QMainWindow):
         card_wrap.addLayout(row)
         card_wrap.addWidget(self.progress)
 
-        # Logo (VirusTotal)
+        # Logo (Aegis DNS)
         logo = QLabel()
         logo.setStyleSheet("background: transparent;")
-        logo_pix = QPixmap("src/images/Other_icons/VirusTotal_logo.svg.png")
+        logo_pix = QPixmap("src/images/Other_icons/AegisDNS_Logo.png")
         if not logo_pix.isNull():
-            logo.setPixmap(logo_pix.scaledToWidth(350, Qt.SmoothTransformation))
+            logo.setPixmap(logo_pix.scaledToWidth(375, Qt.SmoothTransformation))
         logo.setAlignment(Qt.AlignHCenter)
 
-        page.addSpacing(56)
         page.addWidget(logo, 0, Qt.AlignHCenter)
-        page.addSpacing(24)
-        page.addStretch(1)
+        page.addSpacing(10)
         page.addWidget(card, 0, Qt.AlignHCenter)
         page.addStretch(2)
 
