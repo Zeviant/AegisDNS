@@ -22,6 +22,13 @@ QPushButton {
 QPushButton:hover { background: #2563eb; }
 QPushButton:disabled { background: #334155; color: #cbd5e1; }
 QPushButton:pressed { background: #1e40af; }
+QPushButton#deepScanButton {
+    border: none; border-radius: 10px; padding: 10px 16px;
+    background: #1d4ed8; color: white; font-weight: 600;
+}
+QPushButton#deepScanButton:hover { background: #2563eb; }
+QPushButton#deepScanButton:disabled { background: #334155; color: #cbd5e1; }
+QPushButton#deepScanButton:pressed { background: #1e40af; }
 
 QProgressBar#scanProgress {
     background: #1c2839;
@@ -31,4 +38,17 @@ QProgressBar#scanProgress {
 QProgressBar#scanProgress::chunk {
     background: #5f5cf6ff; /* purple */
     border-radius: 3px;
+}
+
+QLabel#infoIcon {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #9aa5b1;
+    font-weight: bold;
+}
+QLabel#infoIcon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #e5e7eb;
 }

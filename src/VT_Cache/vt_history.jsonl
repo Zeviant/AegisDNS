@@ -154,3 +154,9 @@
 {"ts": "2026-02-07T13:25:22.156026", "kind": "domain", "target": "example.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-02-07T13:26:37.583986", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"risk_score": 23, "signal_count": 8}, "source": "cache", "user": "Ben"}
 {"ts": "2026-02-07T13:27:11.084887", "kind": "domain", "target": "stuvia.com", "verdict": "SAFE", "stats": {"risk_score": -10, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-07T13:41:08.863236", "kind": "domain", "target": "example.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T16:11:59.822673", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"risk_score": 23, "signal_count": 8}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T16:12:02.830641", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"risk_score": 23, "signal_count": 8}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T16:12:21.663609", "kind": "domain", "target": "example.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T16:12:45.381290", "kind": "domain", "target": "hello.com", "verdict": "SAFE", "stats": {"risk_score": -3, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-07T16:13:42.959013", "kind": "domain", "target": "global.com", "verdict": "SAFE", "stats": {"risk_score": -12, "signal_count": 9}, "source": "scanner", "user": "Ben"}

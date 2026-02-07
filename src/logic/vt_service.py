@@ -56,30 +56,6 @@ def _save_state(state: dict) -> None:
     os.replace(tmp, CACHE_FILE)
     _STATE_MEMO = state
 
-def append_history(kind: str, target: str, verdict: str, stats: dict, source: str, userName: str = "N/A") -> None:
-    # Get the timestamp as a datetime object
-    now = datetime.now() 
-    
-    entry = {
-        "ts": now.isoformat(), 
-        "kind": kind,
-        "target": target,
-        "verdict": verdict,
-        "stats": stats,
-        "source": source,  
-        "user": userName,
-    }
-
-    try:
-        # 1. Log to JSONL file (VT-specific logging remains here)
-        with open(HISTORY_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-    except Exception:
-        pass
-        
-    # 2. Log to SQLAlchemy DB (Delegated to DatabaseManager)
-    DatabaseManager.log_address_scan(target, verdict, userName)
-
 # --- Inputs (if URL, IP or Domain) ---
 DOMAIN_RE = re.compile(
     r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)"
@@ -111,12 +87,6 @@ def url_to_vt_id(url: str) -> str:
     """VirusTotal URL ID is base64url of the URL without '=' padding."""
     b64 = base64.urlsafe_b64encode(url.encode("utf-8")).decode("ascii")
     return b64.strip("=")
-
-def cache_key(kind: str, target: str) -> str:
-    if kind == "url":
-        norm = target if target.lower().startswith(("http://", "https://")) else f"http://{target}"
-        return f"url:{norm}"
-    return f"{kind}:{target}"
 
 def get_sorted_history(user_name: str) -> list[dict]:
     """ Used to filter and sort the JSON history log """
@@ -287,26 +257,29 @@ def delete_blackList_entry(user_name: str, ts: str, target: str):
         for line in kept_lines:
             f.write(line)
 
-# --- Sending the input to VT API (The Thread/Worker) ---
-class VTScanThread(QThread):
-    result = Signal(dict)     
-    tick = Signal(int)         
+# --- Deep Scan Thread  ---
+class VTDeepScanThread(QThread):
+    result = Signal(dict)
+    tick = Signal(int)
     
-    def __init__(self, kind: str, target: str, userName: str, parent=None):
+    def __init__(self, kind: str, target: str, parent=None):
         super().__init__(parent)
-        self.kind = kind         
+        self.kind = kind
         self.target = target
-        self.userName = userName  
         
-        self.api_key = os.environ.get("VIRUSTOTAL_API_KEY") 
-        
+        self.api_key = os.environ.get("VIRUSTOTAL_API_KEY")
         self.base = "https://www.virustotal.com/api/v3"
         self.headers = {"x-apikey": self.api_key} if self.api_key else {}
 
     def _verdict_from_stats(self, stats: dict) -> str:
         mal = int(stats.get("malicious", 0))
         susp = int(stats.get("suspicious", 0))
-        return "BLOCK" if mal > 0 else "CAUTION" if susp > 0 else "SAFE"
+        if mal > 3:
+            return "BLOCK"
+        elif mal > 0 or susp > 0:
+            return "CAUTION"
+        else:
+            return "SAFE"
 
     def _enforce_cooldown(self) -> float:
         state = _load_state()
@@ -329,37 +302,10 @@ class VTScanThread(QThread):
                 self.result.emit({"ok": False, "message": "Missing API key. Set VIRUSTOTAL_API_KEY in your environment or .env file."})
                 return
 
-            # 0) Cache check (skip cooldown if cache hit)
-            state = _load_state()
-            cache = state.get("cache", {})
-            key = cache_key(self.kind, self.target)
-            
-            cached = cache.get(key)
-            if cached:
-                stats = cached.get("stats", {}) or {}
-                verdict = cached.get("verdict", "UNKNOWN")
-                
-                # mark a “use” to enforce cooldown even for cache
-                state["last_call"] = time.time() 
-                _save_state(state)
-                
-                append_history(self.kind, self.target, verdict, stats, source="cache", userName=self.userName)
-                self.result.emit(
-                    {
-                        "ok": True,
-                        "message": "cache",
-                        "stats": stats,
-                        "verdict": verdict,
-                        "kind": self.kind,
-                        "target": self.target,
-                    }
-                )
-                return
-
-            # 1) Cooldown (UI stays responsive; main thread shows countdown via tick)
+            # Enforce cooldown
             _ = self._enforce_cooldown()
 
-            # 2) Live API call
+            # Live API call
             if self.kind == "url":
                 submit = requests.post(
                     f"{self.base}/urls",
@@ -389,6 +335,7 @@ class VTScanThread(QThread):
                     return
                 attrs = ru.json().get("data", {}).get("attributes", {}) or {}
                 stats = attrs.get("last_analysis_stats", {}) or {}
+                engine_results = attrs.get("last_analysis_results", {}) or {}
                 verdict = self._verdict_from_stats(stats)
 
             elif self.kind == "domain":
@@ -398,6 +345,7 @@ class VTScanThread(QThread):
                     return
                 attrs = rd.json().get("data", {}).get("attributes", {}) or {}
                 stats = attrs.get("last_analysis_stats", {}) or {}
+                engine_results = attrs.get("last_analysis_results", {}) or {}
                 verdict = self._verdict_from_stats(stats)
 
             elif self.kind == "ip":
@@ -407,17 +355,13 @@ class VTScanThread(QThread):
                     return
                 attrs = ri.json().get("data", {}).get("attributes", {}) or {}
                 stats = attrs.get("last_analysis_stats", {}) or {}
+                engine_results = attrs.get("last_analysis_results", {}) or {}
                 verdict = self._verdict_from_stats(stats)
             else:
                 self.result.emit({"ok": False, "message": f"Unknown kind: {self.kind}"})
                 return
 
-            # 3) Save to cache + history, then emit
-            state = _load_state()                   
-            state.setdefault("cache", {})
-            state["cache"][key] = {"stats": stats, "verdict": verdict, "ts": datetime.now().isoformat()}
-            _save_state(state)
-            append_history(self.kind, self.target, verdict, stats, source="live", userName=self.userName)
+            # Return results without saving to cache/history
             self.result.emit(
                 {
                     "ok": True,
@@ -426,6 +370,7 @@ class VTScanThread(QThread):
                     "verdict": verdict,
                     "kind": self.kind,
                     "target": self.target,
+                    "engine_results": engine_results,
                 }
             )
 
