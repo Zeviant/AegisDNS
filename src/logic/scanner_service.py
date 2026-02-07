@@ -89,6 +89,7 @@ class ScannerScanThread(QThread):
                 stats = cached.get("stats", {}) or {}
                 verdict = cached.get("verdict", "UNKNOWN")
                 risk_score = cached.get("risk_score", 0)
+                signals = cached.get("signals", [])
                 
                 state["last_call"] = datetime.now().isoformat()
                 _save_scanner_state(state)
@@ -103,6 +104,7 @@ class ScannerScanThread(QThread):
                         "kind": self.kind,
                         "target": self.target,
                         "risk_score": risk_score,
+                        "signals": signals,
                     }
                 )
                 return
@@ -130,6 +132,7 @@ class ScannerScanThread(QThread):
                 "stats": stats,
                 "verdict": verdict,
                 "risk_score": risk_score,
+                "signals": signals,
                 "ts": datetime.now().isoformat()
             }
             state["last_call"] = datetime.now().isoformat()

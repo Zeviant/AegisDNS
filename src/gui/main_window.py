@@ -11,24 +11,36 @@ from src.logic.vt_service import classify_kind
 from src.logic.scanner_service import ScannerScanThread
 
 # --- Qt Presentation Functions ---
-def render_vt_html(verdict: str, stats: dict) -> str:
+def render_vt_html(verdict: str, stats: dict, signals: list = None) -> str:
     color = {"BLOCK": "#ef4444", "CAUTION": "#f59e0b", "SAFE": "#10b981"}.get(verdict, "#93a3b1")
     risk_score = stats.get("risk_score", 0)
-    signal_count = stats.get("signal_count", 0)
+    
+    signals_html = ""
+    if signals:
+        signals_html = "<div style='margin-top:12px;'><div style='color:#9aa5b1; margin-bottom:8px;'>Signals Detected:</div><ul style='margin:0; padding-left:20px; color:#e5e7eb;'>"
+        for signal in signals:
+            signal_name = signal.get("name", "Unknown")
+            signal_score = signal.get("risk_score", 0)
+            signal_reason = signal.get("reason", "")
+            if signal_reason:
+                signals_html += f"<li style='margin-bottom:4px;'>{signal_name}: {signal_score} ({signal_reason})</li>"
+            else:
+                signals_html += f"<li style='margin-bottom:4px;'>{signal_name}: {signal_score}</li>"
+        signals_html += "</ul></div>"
+    
     return f"""
       <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
         <h2 style="margin:0 0 12px; font-size:22px; color:{color};">Verdict: {verdict}</h2>
         <table style="border-collapse:collapse; margin-top:6px;">
           <tr><td style="padding:4px 12px; color:#9aa5b1;">Risk Score</td>
               <td style="padding:4px 12px; font-weight:600;">{risk_score}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Signals Detected:</td>
-              <td style="padding:4px 12px; font-weight:600;"></td></tr>
         </table>
+        {signals_html}
         <p style="margin-top:12px; color:#9aa5b1;">Source: Custom Scanner</p>
       </div>
     """
 
-def show_vt_box(parent, verdict: str, stats: dict):
+def show_vt_box(parent, verdict: str, stats: dict, signals: list = None):
     icon = (QMessageBox.Critical if verdict == "BLOCK"
             else QMessageBox.Warning if verdict == "CAUTION"
             else QMessageBox.Information)
@@ -36,13 +48,13 @@ def show_vt_box(parent, verdict: str, stats: dict):
     box.setIcon(icon)
     box.setWindowTitle("Scan Result")
     box.setTextFormat(Qt.RichText)
-    box.setText(render_vt_html(verdict, stats))
+    box.setText(render_vt_html(verdict, stats, signals))
     box.setStandardButtons(QMessageBox.Ok)
 
     lbl = box.findChild(QLabel, "qt_msgbox_label")
     if lbl:
         lbl.setWordWrap(True)
-        lbl.setMinimumSize(420, 260)
+        lbl.setMinimumSize(500, 400)
         lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
     box.exec()
@@ -230,6 +242,7 @@ class Main_Window(QMainWindow):
 
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
+        signals = payload.get("signals", [])
 
         # Small delay so user can see bar getting filled up (CAN REMOVE LATER MAYBE) @NicoVegaPortaluppi
-        QTimer.singleShot(200, lambda: show_vt_box(self, verdict, stats))
+        QTimer.singleShot(200, lambda: show_vt_box(self, verdict, stats, signals))

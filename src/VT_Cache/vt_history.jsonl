@@ -143,3 +143,14 @@
 {"ts": "2026-02-06T16:38:37.907291", "kind": "url", "target": "https://fischipedia.org/wiki/Glorp%27s_Saucer", "verdict": "CAUTION", "stats": {"risk_score": 11, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-02-06T16:38:40.171812", "kind": "url", "target": "https://en.wikipedia.org/wiki/Lerp_(biology)", "verdict": "SAFE", "stats": {"risk_score": -15, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-02-06T16:43:28.246297", "kind": "url", "target": "https://soundcloud.com/junkit-cheah", "verdict": "SAFE", "stats": {"risk_score": -14, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-07T13:05:01.138870", "kind": "domain", "target": "google.com", "verdict": "SAFE", "stats": {"risk_score": -18, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:06:48.570765", "kind": "domain", "target": "google.com", "verdict": "SAFE", "stats": {"risk_score": -18, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:11:36.102413", "kind": "domain", "target": "google.com", "verdict": "SAFE", "stats": {"risk_score": -18, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:13:11.448899", "kind": "domain", "target": "google.com", "verdict": "SAFE", "stats": {"risk_score": -18, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:13:31.606779", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -14, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-07T13:13:56.649797", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -14, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:14:38.531021", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -14, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:20:09.863751", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -14, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:25:22.156026", "kind": "domain", "target": "example.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-07T13:26:37.583986", "kind": "domain", "target": "globaltechengineers.org", "verdict": "BLOCK", "stats": {"risk_score": 23, "signal_count": 8}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-07T13:27:11.084887", "kind": "domain", "target": "stuvia.com", "verdict": "SAFE", "stats": {"risk_score": -10, "signal_count": 9}, "source": "scanner", "user": "Ben"}
