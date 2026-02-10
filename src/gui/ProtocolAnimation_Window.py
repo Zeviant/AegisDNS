@@ -19,22 +19,9 @@ class TitleWidget(QWidget):
         # Set font styling
         font = QFont("Segoe UI Semibold", 20, QFont.Bold)
         self.title_label.setFont(font)
-        
-        # Set text color to white for contrast
-        self.title_label.setStyleSheet("color: white;")
-        
+              
         layout.addWidget(self.title_label)
-        
-        # Set background color 
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #2563eb;
-                border-radius: 8px;
-                font: 13px;
-                font-weight: bold;
-            }
-        """)
-        
+         
         # Set fixed height based on content
         font_metrics = QFontMetrics(font)
         text_height = font_metrics.height()
@@ -45,34 +32,6 @@ class ProtocolAnimation_Window(QWidget):
         super().__init__()
         # --- Window's Settings ---
         self.resize(600, 600)
-        self.setStyleSheet("""
-        QLabel {
-            font-size: 22px;
-            font-weight: 700;
-            padding: 12px 10px;
-            color: #ffffff;
-            background-color: #1c2839;
-            border-radius: 4px;
-            margin: 2px;
-            border-bottom: 2px solid #2d4a6e;
-        }
-
-        QLabel#protocolLabel {
-            font-size: 14px;
-            font-weight: bold;
-            padding: 6px 10px 8px 10px;
-            color: #ffffff;
-            background-color: transparent;
-            border: none;
-            border-bottom: 2px solid #2d4a6e;
-        }
-
-        QWidget {
-            background-color: #1c2839;
-            color: #e5e7eb;
-            font-family: Segoe UI;
-        }
-        """)
 
         # --- Main layout ---
         layout = QVBoxLayout(self)
@@ -87,6 +46,7 @@ class ProtocolAnimation_Window(QWidget):
 
         # --- Title ---
         title = QLabel("Protocol Animation")
+        title.setObjectName("TitleTables")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
         

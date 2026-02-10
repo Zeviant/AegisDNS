@@ -18,52 +18,6 @@ class DeleteAccountWindow(QWidget):
         self.resize(450, 350)
         self.centerOnScreen()
 
-        # self.setStyleSheet("""
-        #     QWidget {
-        #         background-color: #101e29;
-        #         color: #e5e7eb;
-        #     }
-        #     QLineEdit {
-        #         background-color: #1e293b;
-        #         border: 1px solid #334155;
-        #         border-radius: 8px;
-        #         padding: 8px 10px;
-        #         color: #ffffff;
-        #     }
-        #     QLineEdit:focus {
-        #         border: 1px solid #3b82f6;
-        #         background-color: #273449;
-        #     }
-        #     QPushButton {
-        #         background-color: #2563eb;
-        #         color: white;
-        #         border: none;
-        #         border-radius: 8px;
-        #         padding: 10px 16px;
-        #         font-weight: bold;
-        #         font-size: 10pt;
-        #     }
-        #     QPushButton:hover {
-        #         background-color: #1d4ed8;
-        #     }
-        #     QPushButton:pressed {
-        #         background-color: #1e40af;
-        #     }
-        #     QPushButton:disabled {
-        #         background-color: #475569;
-        #         color: #cbd5e1;
-        #     }
-        #     QPushButton#deleteAccountBtn {
-        #         background-color: #dc2626;
-        #     }
-        #     QPushButton#deleteAccountBtn:hover {
-        #         background-color: #b91c1c;
-        #     }
-        #     QPushButton#deleteAccountBtn:pressed {
-        #         background-color: #991b1b;
-        #     }
-        # """)
-
         # Main layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(40, 30, 40, 30)
@@ -79,7 +33,6 @@ class DeleteAccountWindow(QWidget):
         # Warning label
         warning_label = QLabel("WARNING: This action is permanent.")
         warning_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        warning_label.setStyleSheet("color: #ffffff;")
         warning_label.setAlignment(Qt.AlignCenter)
         card_layout.addWidget(warning_label)
 

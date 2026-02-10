@@ -25,101 +25,6 @@ class Settings_Window(QWidget):
         layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(24)
 
-        self.themeName = "Dark"
-
-        # Set base styling with button and checkbox styles
-        # self.setStyleSheet("""
-        #     QWidget {
-        #         background-color: #101e29;
-        #         color: #e5e7eb;
-        #     }
-        #     QFrame#card {
-        #         background-color: #0f263e;
-        #     }
-        #     QLabel#settingsTitle {
-        #         font-size: 22px;
-        #         font-weight: 700;
-        #         padding: 12px 10px;
-        #         color: #ffffff;
-        #         background-color: #0f263e;
-        #         border-radius: 4px;
-        #         margin: 2px;
-        #         border-bottom: 4px solid #153351;
-        #     }
-        #     QLabel#SectionDivider{
-        #         font-size: 16px;
-        #         font-weight: bold;
-        #         color: #ffffff;
-        #         background-color: #0f263e;
-        #         border-radius: 4px;
-        #         margin: 2px;
-        #         border-bottom: 4px solid #153351;
-        #     }
-        #     QPushButton {
-        #         background-color: #2563eb;
-        #         color: white;
-        #         border: none;
-        #         border-radius: 8px;
-        #         padding: 10px 16px;
-        #         font-weight: bold;
-        #         font-size: 11pt;
-        #     }
-        #     QPushButton:hover {
-        #         background-color: #1d4ed8;
-        #     }
-        #     QPushButton:pressed {
-        #         background-color: #1e40af;
-        #     }
-        #     QPushButton:disabled {
-        #         background-color: #475569;
-        #         color: #cbd5e1;
-        #     }
-        #     QPushButton#deleteAccountBtn {
-        #         background-color: #dc2626;
-        #     }
-        #     QPushButton#deleteAccountBtn:hover {
-        #         background-color: #b91c1c;
-        #     }
-        #     QPushButton#deleteAccountBtn:pressed {
-        #         background-color: #991b1b;
-        #     }
-        #     QCheckBox {
-        #         color: #e5e7eb;
-        #         font-size: 11pt;
-        #     }
-        #     QCheckBox::indicator {
-        #         width: 20px;
-        #         height: 20px;
-        #         border: 2px solid #334155;
-        #         border-radius: 4px;
-        #         background-color: #1e293b;
-        #     }
-        #     QCheckBox::indicator:checked {
-        #         background-color: #2563eb;
-        #         border-color: #2563eb;
-        #     }
-        #     QCheckBox::indicator:hover {
-        #         border-color: #3b82f6;
-        #     }
-        #     QCheckBox::indicator:checked:hover {
-        #         background-color: #1d4ed8;
-        #         border-color: #1d4ed8;
-        #     }
-        #     QComboBox#themeDropDown{
-        #         font-size: 14px;
-        #         font-weight: bold;
-        #         color: #ffffff;
-        #         background-color: #153351;
-        #     }
-        #     QComboBox#themeDropDown QAbstractItemView {
-        #         background-color: #153351; /* Match your main box color */
-        #         color: #ffffff;
-        #         selection-background-color: #2563eb; /* Color when you hover over an item */
-        #         border: 1px solid #2d4a6e;
-        #         outline: none;
-        #     }
-        # """)
-
         # Title (styled like table headers)
         title = QLabel("Settings")
         title.setObjectName("TitleTables")
@@ -224,23 +129,6 @@ class Settings_Window(QWidget):
         layout.addWidget(card)
         layout.addStretch()
 
-        # Apply button width constraint after creating button (so object name is set)
-        button_width_style = """
-            QPushButton#changePasswordBtn {
-                max-width: 220px;
-                min-width: 220px;
-            }
-            QPushButton#changeUsernameBtn {
-                max-width: 220px;
-                min-width: 220px;
-            }
-            QPushButton#deleteAccountBtn {
-                max-width: 220px;
-                min-width: 220px;
-            }
-        """
-        self.setStyleSheet(self.styleSheet() + button_width_style)
-
         # Theme section title
         theme_section = QLabel()
         theme_section.setText("Themes")
@@ -270,7 +158,6 @@ class Settings_Window(QWidget):
 
         final_style = template_content.format(**current_theme_data)
 
-        # self.setStyleSheet(final_style)
         QApplication.instance().setStyleSheet(final_style)
 
     def load_mute_setting(self) -> bool:

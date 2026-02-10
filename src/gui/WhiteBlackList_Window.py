@@ -41,11 +41,6 @@ class WhiteBlackList_Window(QWidget):
         # ---------------------------
         self.stacked = QStackedWidget()
 
-        # Set stylesheet
-        # Load table styling from QSS file
-        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-        #     self.setStyleSheet(f.read())
-
         # Page 1 — White List
         white_page = QWidget()
         white_layout = QVBoxLayout()

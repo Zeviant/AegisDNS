@@ -19,10 +19,6 @@ class WhiteList_Window(QWidget):
 
         layout = QVBoxLayout(self)
 
-        # Load Sheet Style
-        # with open("src\gui\Style_Sheet\DefaultStyle.qss", "r") as f:
-        #     self.setStyleSheet(f.read())
-
         # -- Title --
         title = QLabel(f"White List Log")
         title.setObjectName("TitleTables")
@@ -41,10 +37,6 @@ class WhiteList_Window(QWidget):
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(True)
-
-        # Load table styling from QSS file
-        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-        #     self.table.setStyleSheet(f.read())
 
         # -- Load Table --
         self.load_entry()
@@ -146,11 +138,6 @@ class WhiteList_Window(QWidget):
     # -- Menu of options --
     def show_options(self, row): 
         menu = QMenu(self.table)
-        with open("src/gui/Style_Sheet/QMenu_Style.qss") as f: 
-            style_str = f.read()
-        
-        menu.setStyleSheet(style_str)
-
         menu.addAction("Delete")
 
         # Get mouse position
