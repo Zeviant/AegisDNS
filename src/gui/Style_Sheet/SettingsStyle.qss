@@ -81,7 +81,7 @@ QListWidget,
 
 #listWidget::item:hover,
 #listWidget_icon::item:hover {{
-    background-color: {10Color}; 
+    background-color: {buttonHover}; 
     color: {textPrimary};
 }}
 
@@ -123,6 +123,28 @@ QLabel#AutenticationLabel {{
     letter-spacing: 0.5px;
 }}
 
+QLabel {{
+    color: {textPrimary};
+    font-weight: bold;
+    font-size:12px;
+    letter-spacing: 0.5px;
+}}
+
+QLineEdit{{
+    background-color: {60Color};      
+    border: 1px solid {30Color};      
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: {textPrimary};
+    selection-background-color: {textPrimary}; 
+    selection-color: {textPrimary};
+}}
+
+QLineEdit:focus {{
+    border: 1px solid {10Color};      
+    background-color: {60Color};      
+}}
+
 QLineEdit#AutenticationLine {{
     background-color: {60Color};      
     border: 1px solid {30Color};      
@@ -130,7 +152,7 @@ QLineEdit#AutenticationLine {{
     padding: 8px 10px;
     color: {textPrimary};
     selection-background-color: {textPrimary}; 
-    selection-color: white;
+    selection-color: {textPrimary};
 }}
 
 QLineEdit#AutenticationLine:focus {{
@@ -150,11 +172,11 @@ QPushButton#AutenticationButton {{
 }}
 
 QPushButton#AutenticationButton:hover {{
-    background-color: {10Color};      
+    background-color: {buttonHover};      
 }}
 
 QPushButton#AutenticationButton:pressed {{
-    background-color: {10Color};      
+    background-color: {buttonPressed};      
 }}
 
 QPushButton#AutenticationButton:disabled {{
@@ -215,8 +237,8 @@ QPushButton {{
     font-weight: bold;
 }}
 
-QPushButton:hover {{ background: {10Color}; }}
-QPushButton:pressed {{ background: {10Color}; }}
+QPushButton:hover {{ background: {buttonHover}; }}
+QPushButton:pressed {{ background: {buttonPressed}; }}
 QPushButton:disabled {{
     background: {30Color};
     color: {textPrimary};
@@ -234,13 +256,12 @@ QPushButton#TopButton {{
     border-bottom: 4px solid {30Color};
 }}
 
-QPushButton#TopButton:hover {{ background: {10Color}; }}
-QPushButton#TopButton:pressed {{ background: {10Color}; }}
+QPushButton#TopButton:hover {{ background: {buttonHover}; }}
+QPushButton#TopButton:pressed {{ background: {buttonPressed}; }}
 QPushButton#TopButton:disabled {{
     background: {30Color};
     color: {textPrimary};
 }}
-
 
 /* === Packet Sniffer */
 QLabel#protocolLabel {{
@@ -251,6 +272,11 @@ QLabel#protocolLabel {{
     background-color: transparent;
     border: none;
     border-bottom: 2px solid {30Color};
+}}
+
+/* === Packet Sniffer Graph*/
+QChartView {{
+    background: {30Color};
 }}
 
 /* === Setting Window */
@@ -273,11 +299,11 @@ QPushButton#deleteAccountBtn {{
 }}
 
 QPushButton#deleteAccountBtn:hover {{
-    background-color: {10Color};
+    background-color: {buttonHover};
 }}
 
 QPushButton#deleteAccountBtn:pressed {{
-    background-color: {10Color};
+    background-color: {buttonPressed};
 }}
 
 QCheckBox {{
@@ -299,12 +325,12 @@ QCheckBox::indicator:checked {{
 }}
 
 QCheckBox::indicator:hover {{
-    border-color: {10Color};
+    border-color: {buttonHover};
 }}
 
 QCheckBox::indicator:checked:hover {{
-    background-color: {10Color};
-    border-color: {10Color};
+    background-color: {buttonHover};
+    border-color: {buttonHover};
 }}
 
 QComboBox#themeDropDown {{
@@ -320,4 +346,118 @@ QComboBox#themeDropDown QAbstractItemView {{
     selection-background-color: {10Color}; 
     border: 1px solid {30Color};
     outline: none;
+}}
+
+/* === QMenus */
+
+QMenu {{
+    background-color: {60Color};
+    color: {textPrimary};
+    border: 1px solid {30Color};
+    padding: 4px;
+    font-size: 13px;
+    font-family: "Segoe UI Semibold";
+    border-radius: 12px; 
+}}
+
+QMenu::item {{
+    background-color: transparent;
+    color: {textPrimary};
+    padding: 6px 18px;
+    border-radius: 6px;
+    margin: 2px 4px;
+}}
+
+QMenu::item:selected {{
+    background-color: {buttonHover};
+    color: {textPrimary};
+}}
+
+QMenu::item:pressed {{
+    background-color: {buttonPressed};
+    color: {textPrimary};
+}}
+
+QMenu::separator {{
+    height: 1px;
+    background-color: {30Color};
+    margin: 4px 8px;
+}}
+
+QMenu::icon {{
+    margin-right: 8px;
+}}
+
+/* === QMessageBox */
+QMessageBox {{
+        background-color: {60Color};
+        color: {textPrimary};
+    }}
+    QLabel {{
+        color: {textPrimary};
+        font-size: 12px;
+        font-weight:bold;
+    }}
+    QPushButton {{
+        background-color: {10Color};
+        color: white;
+        padding: 5px 15px;
+        border-radius: 4px;
+    }}
+    QPushButton:hover {{
+        background-color: {buttonHover};
+    }}
+    QPushButton:pressed {{
+        background-color: {buttonPressed};
+    }}
+
+/* === Log Window */
+QPushButton#ScanButton {{
+    background-color: {10Color}; 
+    color: {textPrimary};
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 70px;
+    max-width: 70px;
+}}
+
+QPushButton#ScanButton:hover {{
+    background-color: {buttonHover}; 
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 70px;
+    max-width: 70px;
+}}
+
+QPushButton#ScanButton:pressed {{
+    background-color: {buttonPressed}; 
+    border: none;
+    border-radius: 8px;
+    padding: 6px 18px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 70px;
+    max-width: 70px;
+}}
+
+/* === Settings */
+QPushButton#changePasswordBtn {{
+    max-width: 220px;
+    min-width: 220px;
+}}
+
+QPushButton#changeUsernameBtn {{
+    max-width: 220px;
+    min-width: 220px;
+}}
+
+QPushButton#deleteAccountBtn {{
+    max-width: 220px;
+    min-width: 220px;
 }}

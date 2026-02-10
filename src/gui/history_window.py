@@ -35,10 +35,6 @@ class History_Window(QWidget):
         
         layout = QVBoxLayout(self)
 
-        # Load table styling from QSS file
-        # with open("src/gui/Style_Sheet/DefaultStyle.qss", "r") as f:
-        #     self.setStyleSheet(f.read())
-
         # -- Title --
         title = QLabel(f"History Log")
         title.setObjectName("TitleTables")
@@ -188,11 +184,6 @@ class History_Window(QWidget):
     # -- Menu of options --
     def show_options(self, row, col): 
         menu = QMenu(self.table)
-        with open("src/gui/Style_Sheet/QMenu_Style.qss") as f: 
-            style_str = f.read()
-        
-        menu.setStyleSheet(style_str)
-
         menu.addAction("White List")
         menu.addAction("Black List")
         menu.addAction("Delete")

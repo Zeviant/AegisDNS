@@ -98,9 +98,6 @@ class CreateAccount_Window(QWidget):
             fieldsEmpty_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             fieldsEmpty_box.setIcon(QMessageBox.Warning)
             fieldsEmpty_box.setText("Please, make sure to not \nleave any field in blank.")
-            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
-                    QMessage_Style = f.read()
-            fieldsEmpty_box.setStyleSheet(QMessage_Style)
             fieldsEmpty_box.exec()
         
         # In case passwords does not match
@@ -110,9 +107,6 @@ class CreateAccount_Window(QWidget):
                 passwordMissmatch_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
                 passwordMissmatch_box.setIcon(QMessageBox.Warning)
                 passwordMissmatch_box.setText("The two entered passwords \n must be equal.")
-                with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
-                    QMessage_Style = f.read()
-                passwordMissmatch_box.setStyleSheet(QMessage_Style)
                 passwordMissmatch_box.exec()
         
         # If everything ok so far
@@ -130,9 +124,6 @@ class CreateAccount_Window(QWidget):
             userNameAlreadyExists_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             userNameAlreadyExists_box.setIcon(QMessageBox.Warning)
             userNameAlreadyExists_box.setText("The username entered already \nexists. Please, try another one.")
-            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
-                QMessage_Style = f.read()
-            userNameAlreadyExists_box.setStyleSheet(QMessage_Style)
             userNameAlreadyExists_box.exec()
 
         # If username is not taken, add it to the database
@@ -142,9 +133,6 @@ class CreateAccount_Window(QWidget):
             successMessage_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             successMessage_box.setIcon(QMessageBox.Information)
             successMessage_box.setText("User created successfully.\nPlease sign in to proceed.")
-            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
-                QMessage_Style = f.read()
-            successMessage_box.setStyleSheet(QMessage_Style)
             successMessage_box.exec()
             self.close()
 

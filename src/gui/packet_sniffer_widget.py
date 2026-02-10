@@ -24,8 +24,6 @@ class PacketSnifferWidget(QWidget):
         # --- Chart title ---
         self.setMinimumHeight(350)
 
-        # self.setStyleSheet("QWidget { background-color: #2a3a52; }")
-
         # --- Data series ---
         self.series = QLineSeries()
         self.series.setName("Network Activity Level")
@@ -37,8 +35,8 @@ class PacketSnifferWidget(QWidget):
         self.chart = QChart()
         self.chart.addSeries(self.series)
         self.chart.legend().hide()
-        self.chart.setBackgroundBrush(QColor("#000035"))
-        self.chart.setPlotAreaBackgroundBrush(QColor("#000035"))
+        self.chart.setBackgroundBrush(QColor("#0f172a"))
+        self.chart.setPlotAreaBackgroundBrush(QColor("#0f172a"))
         self.chart.setPlotAreaBackgroundVisible(True)
 
         # --- X axis (time) ---

@@ -143,10 +143,6 @@ class Main_Window(QMainWindow):
         page.setContentsMargins(40, -100, 40, 40)
         page.setSpacing(0)
 
-        # Load table styling from QSS file
-        with open("src/gui/Style_Sheet/MainWindow_Style.qss", "r") as f:
-            self.setStyleSheet(f.read())
-
         card = QFrame()
         card.setObjectName("card")
         shadow = QGraphicsDropShadowEffect(blurRadius=40, xOffset=0, yOffset=12)
@@ -182,6 +178,7 @@ class Main_Window(QMainWindow):
         self._progress_accum = 0.0
 
         self.ok_btn = QPushButton("OK")
+        self.ok_btn.setMinimumHeight(40)
         self.ok_btn.clicked.connect(self.on_ok)
         self.input_edit.returnPressed.connect(self.ok_btn.click)
 
@@ -211,30 +208,9 @@ class Main_Window(QMainWindow):
         deep_scan_layout.setContentsMargins(0, 0, 0, 0)
         
         self.deep_scan_btn = QPushButton("DEEP SCAN")
-        self.deep_scan_btn.setObjectName("deepScanButton")
+        # self.deep_scan_btn.setObjectName("deepScanButton")
         self.deep_scan_btn.setMinimumHeight(40)
         self.deep_scan_btn.setMinimumWidth(120)
-        self.deep_scan_btn.setStyleSheet("""
-            QPushButton#deepScanButton {
-                border: none;
-                border-radius: 10px;
-                padding: 10px 16px;
-                background: #1d4ed8;
-                color: white;
-                font-weight: 600;
-            }
-            QPushButton#deepScanButton:hover {
-                background: #2563eb;
-            }
-            QPushButton#deepScanButton:disabled {
-                background: #334155;
-                color: #cbd5e1;
-            }
-            QPushButton#deepScanButton:pressed {
-                background: #1e40af;
-            }
-        """)
-
         vt_logo = QLabel()
         vt_logo_pix = QPixmap("src/images/Other_icons/VirusTotal_logo.svg.png")
         if not vt_logo_pix.isNull():

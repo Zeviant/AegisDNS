@@ -3,6 +3,8 @@
     "60Color": "#0f172a",
     "30Color": "#4069abff",
     "10Color": "#3b82f6",
+    "buttonHover": "#2563eb",
+    "buttonPressed": "#1e40af",
     "textPrimary": "#ffffff"
 
   },
@@ -11,6 +13,8 @@
     "60Color": "#000000",
     "30Color": "#4C4E52",
     "10Color": "#2E67F8",
+    "buttonHover": "#2563eb",
+    "buttonPressed": "#1e40af",
     "textPrimary": "#ffffff"
   },
 
@@ -18,6 +22,8 @@
     "60Color": "#ffffff",
     "30Color": "#D9C5D4",
     "10Color": "#B19CD9",
-    "textPrimary": "#ffffff"
+    "buttonHover": "#2563eb",
+    "buttonPressed": "#1e40af",
+    "textPrimary": "#000000"
   }
 }

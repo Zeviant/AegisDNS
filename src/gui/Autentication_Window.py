@@ -101,10 +101,7 @@ class Start_Window(QWidget):
         self.root_layout.addWidget(contentSquare, alignment=QtCore.Qt.AlignCenter)  # Attaching the layout to the widget with self
 
     def create_account(self):
-        self.create_window = CreateAccount_Window()
-        with open("src/gui/Style_Sheet/Start_Window_Style.qss") as f: 
-            style_str = f.read()
-        self.create_window.setStyleSheet(style_str)       
+        self.create_window = CreateAccount_Window()    
         self.create_window.show()
         
 
@@ -120,21 +117,13 @@ class Start_Window(QWidget):
             fieldsEmpty_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
             fieldsEmpty_box.setIcon(QMessageBox.Warning)
             fieldsEmpty_box.setText("Please, make sure to not \nleave any field in blank.")
-            with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
-                    QMessage_Style = f.read()
-            fieldsEmpty_box.setStyleSheet(QMessage_Style)
             fieldsEmpty_box.exec()
         
         else: 
             
             if DatabaseManager.authenticate_user(username, passwordH): 
-                # Load Sheet Style
-                # with open("src/gui/Style_Sheet/sidebar_Style.qss") as f: 
-                #     style_str = f.read()
-
                 # Username and password are passed to the mainwindow
                 self.MainMenu = SideBarMainWindow(username, passwordH)
-                # self.MainMenu.setStyleSheet(style_str)
                 self.MainMenu.show()
 
                 # Start local extension server
@@ -150,9 +139,6 @@ class Start_Window(QWidget):
                 loginFail_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
                 loginFail_box.setIcon(QMessageBox.Warning)
                 loginFail_box.setText("The username or password \nentered is incorrect.")
-                with open("src/gui/Style_Sheet/QMessage_Style.qss") as f: 
-                        QMessage_Style = f.read()
-                loginFail_box.setStyleSheet(QMessage_Style)
                 loginFail_box.exec()
             
     
