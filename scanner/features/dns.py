@@ -52,21 +52,90 @@ def extract_ns_records(domain: str) -> list[str] | None:
     except Exception:
         return None
 
+# --- Known / Reputable DNS Providers ---
 KNOWN_DNS_PROVIDERS = {
-    "cloudflare": ["cloudflare.com"],
-    "aws_route53": ["awsdns"],
-    "google": ["googledomains.com", "google.com"],
-    "azure": ["azure-dns"],
-    "verisign": ["verisign"],
-    "godaddy": ["domaincontrol.com"],
+    # Cloud & CDN providers
+    "cloudflare":       ["cloudflare.com"],
+    "aws_route53":      ["awsdns"],
+    "google":           ["googledomains.com", "google.com"],
+    "azure":            ["azure-dns"],
+    "akamai":           ["akam.net"],
+    "oracle_dyn":       ["dynect.net"],
+    "ns1":              ["nsone.net"],
+    "ultradns":         ["ultradns.com", "ultradns.net"],
+    "incapsula":        ["incapdns.net"],                      
+
+    # Big Tech (operate their own nameservers)
+    "facebook":         ["facebook.com"],
+    "apple":            ["apple.com"],
+    "yahoo":            ["yahoodns.net"],
+    "microsoft":        ["msft.net"],
+
+    # Domain Registrars / DNS Hosting
+    "godaddy":          ["domaincontrol.com"],
+    "namecheap":        ["registrar-servers.com"],
+    "name_com":         ["name.com"],
+    "gandi":            ["gandi.net"],
+    "hover":            ["hover.com"],
+    "ionos":            ["ui-dns.com", "ui-dns.org", "ui-dns.de"],
+    "verisign":         ["verisign"],
+    "tucows":           ["tucows.com"],
+    "enom":             ["enom.com"],
+
+    # Hosting Providers (with DNS services)
+    "digitalocean":     ["digitalocean.com"],
+    "linode":           ["linode.com"],
+    "hetzner":          ["hetzner.com", "hetzner.de"],
+    "ovh":              ["ovh.net"],
+    "bluehost":         ["bluehost.com"],
+    "siteground":       ["siteground.net", "sgvps.net"],
+    "hostinger":        ["hostinger"],
+    "dreamhost":        ["dreamhost.com"],
+    "pair":             ["pair.com"],
+
+    # Website Builders (managed DNS)
+    "wix":              ["wixdns.net"],
+    "squarespace":      ["squarespace.com"],
+    "shopify":          ["shopify.com"],
+    "wordpress":        ["wordpress.com"],
+
+    # DNS-specific services
+    "dnsmadeeasy":      ["dnsmadeeasy.com"],
+    "cloudns":          ["cloudns.net"],
+    "hurricane":        ["he.net"],
+    "dnsimple":         ["dnsimple.com"],
+    "easydns":          ["easydns.com", "easydns.net"],
+    "dns_com":          ["dns.com"],
+
+    # Asian Cloud / Hosting
+    "alibaba":          ["hichina.com", "alidns.com"],
+    "tencent":          ["dnspod.net"],
 }
 
+# --- Suspicious / Abuse-Prone DNS Providers ---
 SUSPICIOUS_DNS_PROVIDERS = [
+    # Free DNS hosting
     "freedns",
     "afraid.org",
+
+    # Dynamic DNS
     "duckdns",
     "no-ip",
+    "noip.com",
     "dynu",
+    "changeip",
+    "dyndns.org",
+    "ddns.net",
+    "dynserv",
+    "dtdns",
+    "twodns.de",
+
+    # Free hosting / subdomains often abused
+    "biz.nf",
+    "chickenkiller.com",
+    "mooo.com",
+    "strangled.net",
+    "crabdance.com",
 ]
 
 def classify_ns_provider(ns_records: list[str]) -> str:

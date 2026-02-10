@@ -3,7 +3,7 @@
 from features.ip import classify_ip, has_nonstandard_port
 
 def score_ip_indicator(ip: str, url: str | None = None) -> tuple[int, str]:
-    score = 20
+    score = 30
     reasons = ["Direct IP address encountered during browsing"]
 
     # --- IP classification ---

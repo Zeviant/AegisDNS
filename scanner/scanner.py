@@ -42,10 +42,11 @@ import ipaddress
 
 def is_apex_domain(indicator: str) -> bool:
     """
-    Returns True if the indicator is an apex/root indicator like example.com
+    Returns True if the indicator is an apex/root domain like example.com or example.co.uk
     Returns False for subdomains like docs.github.com
     """
-    return indicator.count(".") == 1
+    ext = tldextract.extract(indicator)
+    return bool(ext.domain and ext.suffix) and not ext.subdomain
 
 def normalize_indicator(indicator: str) -> dict:
     host = None
@@ -89,7 +90,7 @@ def scan_domain(indicator: str):
     is_ip = ctx["is_ip"]
 
     signals = []
-    risk_score = 0
+    risk_score = 30
 
     # |-------------------------|
     # |*** ------ IPs ------ ***|
@@ -112,7 +113,7 @@ def scan_domain(indicator: str):
             "indicator": indicator,
             "type": "indicator",
             "domain": None,
-            "total_risk_score": risk_score,
+            "total_risk_score": max(min(risk_score, 100), 0),
             "signals": signals
         }
 
@@ -121,7 +122,14 @@ def scan_domain(indicator: str):
     # |-------------------------|
 
     who = fetch_whois(domain)
-    # print(who)
+    if not who:
+        risk_score += 3
+        signals.append({
+            "name": "whois_failure",
+            "risk_score": 3,
+            "reason": "WHOIS lookup failed."
+        })
+
     creation_date = extract_creation_date(who)
     registrar = extract_registrar(who)
     privacy = extract_privacy(who)
@@ -196,6 +204,13 @@ def scan_domain(indicator: str):
             "risk_score": score,
             "reason": reason
         })
+    else:
+        risk_score += 3
+        signals.append({
+            "name": "dns_failure",
+            "risk_score": 3,
+            "reason": "DNS resolution failed."
+        })
 
     # --- NS RECORDS ---
     ns_records = extract_ns_records(domain)
@@ -269,7 +284,6 @@ def scan_domain(indicator: str):
                 "issuer": tls_metrics.get("issuer") if tls_metrics else None,
                 "issue_date": tls_metrics.get("not_before").date().isoformat() if tls_metrics and tls_metrics.get("not_before") else None,
                 "validity_days": tls_metrics.get("validity_days") if tls_metrics else None,
-                "is_wildcard": tls_metrics.get("is_wildcard") if tls_metrics else None,
             },
             "reason": reason
         })
@@ -287,6 +301,13 @@ def scan_domain(indicator: str):
             "risk_score": score,
             "reason": reason
         })
+    else:
+        risk_score += 1
+        signals.append({
+            "name": "headers_failure",
+            "risk_score": 1,
+            "reason": "HTTP security headers could not be retrieved"
+        })
 
     # |-------------------------|
     # |*** ---- RESULTS ---- ***|
@@ -295,7 +316,7 @@ def scan_domain(indicator: str):
     return {
         "indicator": indicator,
         "domain": domain,
-        "total_risk_score": risk_score,
+        "total_risk_score": max(min(risk_score, 100), 0),
         "signals": signals
     }
 

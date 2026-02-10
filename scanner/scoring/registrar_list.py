@@ -63,3 +63,21 @@ LOW_RISK_REGISTRARS = {
 }
 
 
+def match_registrar_risk(registrar: str) -> str | None:
+    normalized = normalize_registrar(registrar)
+    if not normalized:
+        return None
+
+    for entry in HIGH_RISK_REGISTRARS:
+        if entry and entry in normalized:
+            return "high"
+
+    for entry in MEDIUM_RISK_REGISTRARS:
+        if entry and entry in normalized:
+            return "medium"
+
+    for entry in LOW_RISK_REGISTRARS:
+        if entry and entry in normalized:
+            return "low"
+
+    return None

@@ -95,11 +95,13 @@ class History_Window(QWidget):
             verdict = entry.get("verdict", "").upper()
 
             color = {
-                "BLOCK": "#e74c3c",
-                "CAUTION": "#f18b0f",
-                "SAFE": "#2ecc71",
-                "TEST": "#3667ab"
-            }.get(verdict, "#7f8c8d")
+                "MALICIOUS": "#dc2626", "DANGEROUS": "#ef4444", "SUSPICIOUS": "#f97316",
+                "CAUTION": "#eab308", "NEUTRAL": "#94a3b8",
+                "SAFE": "#22c55e", "SECURE": "#059669",
+                "BLOCK": "#ef4444",
+                "WHITELISTED": "#3b82f6", "BLACKLISTED": "#991b1b",
+                "TEST": "#3667ab",
+            }.get(verdict, "#64748b")
 
             formatted_ts_item = QTableWidgetItem(formatted_ts)
             formatted_ts_item.setData(Qt.UserRole, ts)

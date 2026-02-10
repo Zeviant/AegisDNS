@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from scoring.registrar_list import HIGH_RISK_REGISTRARS, MEDIUM_RISK_REGISTRARS, LOW_RISK_REGISTRARS, normalize_registrar
+from scoring.registrar_list import match_registrar_risk
 
 # --- DOMAIN AGE ---
 def score_domain_age(created: datetime | None) -> tuple[int, str] | None:
@@ -34,17 +34,18 @@ def score_registrar(registrar : str | None) -> tuple[int, str] | None:
     """
     Registrar: A domain registrar is a company authorized to register domain names on behalf of individuals or organizations.
     A lot of cases can be handled here, some registrars are more reputable and others are more suspicious.
+    Uses substring matching against known registrar lists to handle varying WHOIS format strings.
     """
     if not registrar:
         return None
     
-    r = normalize_registrar(registrar)
+    risk = match_registrar_risk(registrar)
 
-    if r in HIGH_RISK_REGISTRARS:
+    if risk == "high":
         return (5, "Registrar has high abuse density")
-    elif r in MEDIUM_RISK_REGISTRARS:
+    elif risk == "medium":
         return (3, "Registrar has elevated abuse density")
-    elif r in LOW_RISK_REGISTRARS:
+    elif risk == "low":
         return (1, "Registrar has above average abuse density")
     
     return (0, "Registrar does not indicate malicious activity")
@@ -79,11 +80,11 @@ def score_expiration_date(edt : datetime | None) -> tuple [int, str] | None:
         return(5, "Domain expires in less than 30 days")
     elif remaining < 90:
         return(3, "Domain expires in less than 90 days")
-    elif remaining < 365:
+    elif remaining <= 365:
         return(0, "Domain expires in less than a year")
-    elif remaining >= 365 and remaining < 730:
-        return(-1, "Domain expiration date is more than a year from current date")
-    elif remaining >= 730 and remaining < 1095:
-        return(-5, "Domain expiration date is more than two years from current date")
-    elif remaining >= 1095:
-        return(-10, "Domain expiration date is more than three years from current date")
+    elif remaining > 365 and remaining < 730:
+        return(-3, "Domain expiration date is more than a year from current date")
+    elif remaining >= 730:
+        return(-7, "Domain expiration date is more than two years from current date")
+
+    return None

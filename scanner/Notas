@@ -1,6 +1,7 @@
-2. REBALANCE REGISTRAR LIST
-3. IMPLEMENT BONUS SCORING BASED ON SIGNAL COMBINATIONS
-4. REBALANCE TLS
+With regards to scoring:
+1. Maybe consider adding HTTPS header punishment bonus (if all are missing)
+2. Most of the scoring is fine, the part which can be most worth changing is the TLS scoring
+
 
 Find domains to test here:
 https://www.ncsc.gov.uk/files/NCSC_APT28.pdf
@@ -9,3 +10,5 @@ https://www.virustotal.com/gui/community-buzz
 generalinteresttopics.com
 netflix.com
 globaltechengineers.org
+
+https://www.spamhaus.org/reputation-statistics/registrars/domains/

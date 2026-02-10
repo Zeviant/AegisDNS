@@ -12,7 +12,12 @@ from src.logic.scanner_service import ScannerScanThread
 
 # --- Qt Presentation Functions ---
 def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
-    color = {"BLOCK": "#ef4444", "CAUTION": "#f59e0b", "SAFE": "#10b981"}.get(verdict, "#93a3b1")
+    color = {
+        "MALICIOUS": "#dc2626", "DANGEROUS": "#ef4444", "SUSPICIOUS": "#f97316",
+        "CAUTION": "#eab308", "NEUTRAL": "#94a3b8",
+        "SAFE": "#22c55e", "SECURE": "#059669",
+        "BLOCK": "#ef4444",
+    }.get(verdict, "#94a3b8")
     risk_score = stats.get("risk_score", 0)
     
     signals_html = ""
@@ -41,7 +46,12 @@ def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
     """
 
 def render_vt_deep_scan_html(verdict: str, stats: dict, engine_results: dict) -> str:
-    color = {"BLOCK": "#ef4444", "CAUTION": "#f59e0b", "SAFE": "#10b981"}.get(verdict, "#93a3b1")
+    color = {
+        "MALICIOUS": "#dc2626", "DANGEROUS": "#ef4444", "SUSPICIOUS": "#f97316",
+        "CAUTION": "#eab308", "NEUTRAL": "#94a3b8",
+        "SAFE": "#22c55e", "SECURE": "#059669",
+        "BLOCK": "#ef4444",
+    }.get(verdict, "#94a3b8")
     malicious = stats.get("malicious", 0)
     suspicious = stats.get("suspicious", 0)
     harmless = stats.get("harmless", 0)
@@ -65,9 +75,12 @@ def render_vt_deep_scan_html(verdict: str, stats: dict, engine_results: dict) ->
     """
 
 def show_vt_deep_scan_box(parent, verdict: str, stats: dict, engine_results: dict):
-    icon = (QMessageBox.Critical if verdict == "BLOCK"
-            else QMessageBox.Warning if verdict == "CAUTION"
-            else QMessageBox.Information)
+    if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
+        icon = QMessageBox.Critical
+    elif verdict in ("CAUTION", "NEUTRAL"):
+        icon = QMessageBox.Warning
+    else:
+        icon = QMessageBox.Information
     box = QMessageBox(parent)
     box.setIcon(icon)
     box.setWindowTitle("Deep Scan Result")
@@ -84,9 +97,12 @@ def show_vt_deep_scan_box(parent, verdict: str, stats: dict, engine_results: dic
     box.exec()
 
 def show_scan_box(parent, verdict: str, stats: dict, signals: list = None):
-    icon = (QMessageBox.Critical if verdict == "BLOCK"
-            else QMessageBox.Warning if verdict == "CAUTION"
-            else QMessageBox.Information)
+    if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
+        icon = QMessageBox.Critical
+    elif verdict in ("CAUTION", "NEUTRAL"):
+        icon = QMessageBox.Warning
+    else:
+        icon = QMessageBox.Information
     box = QMessageBox(parent)
     box.setIcon(icon)
     box.setWindowTitle("Scan Result")
