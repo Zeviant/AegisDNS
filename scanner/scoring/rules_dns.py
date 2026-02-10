@@ -13,9 +13,9 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
 
     # --- TTL SCORING ---
     if min_ttl is not None:
-        if min_ttl <= 40:
+        if min_ttl <= 30:
             score += 1
-            reasons.append("Low DNS TTL (≤40s)")
+            reasons.append("Low DNS TTL (≤30s)")
 
     # --- A/AAAA RECORD COUNT SCORING ---
     if record_count >= 10:
@@ -27,10 +27,10 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
     
     # --- FAST-FLUX BEHAVIOR ---
     if min_ttl is not None and min_ttl <= 30 and record_count >= 15:
-        score += 10
+        score += 20
         reasons.append("Extreme fast-flux behavior detected: ≤30s TTL with ≥15 records")
     elif min_ttl is not None and min_ttl <= 60 and record_count >= 10:
-        score += 4
+        score += 8
         reasons.append("Possible fast-flux behavior detected: ≤60s TTL with ≥10 records")
 
     if score == 0:
