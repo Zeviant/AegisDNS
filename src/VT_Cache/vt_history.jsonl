@@ -160,3 +160,12 @@
 {"ts": "2026-02-07T16:12:21.663609", "kind": "domain", "target": "example.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 9}, "source": "cache", "user": "Ben"}
 {"ts": "2026-02-07T16:12:45.381290", "kind": "domain", "target": "hello.com", "verdict": "SAFE", "stats": {"risk_score": -3, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-02-07T16:13:42.959013", "kind": "domain", "target": "global.com", "verdict": "SAFE", "stats": {"risk_score": -12, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-07T17:45:41.215653", "kind": "url", "target": "https://chatgpt.com/", "verdict": "SAFE", "stats": {"risk_score": 2, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-07T17:51:31.305970", "kind": "url", "target": "https://pomofocus.io/", "verdict": "SAFE", "stats": {"risk_score": 7, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-07T17:53:02.599531", "kind": "domain", "target": "pomofocus.io", "verdict": "SAFE", "stats": {"risk_score": 7, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-07T17:53:42.840319", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-07T17:53:54.590788", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-07T17:54:45.559264", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -6, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-07T17:54:54.888808", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -6, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-07T18:01:40.226931", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-07T18:02:10.568996", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}

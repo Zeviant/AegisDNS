@@ -248,7 +248,7 @@ class Settings_Window(QWidget):
         theme_layout.addWidget(theme_section)
 
         theme_selector = QComboBox()
-        theme_selector.addItems(["System Default", "Dark", "Light"])
+        theme_selector.addItems(["Default", "Dark", "Light"])
         theme_selector.setObjectName("themeDropDown")
         theme_selector.currentTextChanged.connect(self.changeTheme)
         theme_layout.addWidget(theme_selector)
