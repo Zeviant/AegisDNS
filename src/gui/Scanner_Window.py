@@ -1,14 +1,17 @@
 # --- Libraries ---
 # Qt Libraries
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QGraphicsDropShadowEffect
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QStyle, QStyleOption
 from PySide6.QtCore import Qt, QThread, Signal, QTimer
-from PySide6.QtGui import QFont, QPixmap, QCursor
+from PySide6.QtGui import QFont, QPixmap, QCursor, QPainter
 from PySide6.QtWidgets import QProgressBar
 import time
 
 # Connection with service layer
 from src.logic.vt_service import classify_kind, VTDeepScanThread
 from src.logic.scanner_service import ScannerScanThread
+
+# Connection with animations
+from src.animations.AnimatedToggle import AnimatedToggle
 
 # --- Qt Presentation Functions ---
 def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
@@ -102,8 +105,7 @@ def show_scan_box(parent, verdict: str, stats: dict, signals: list = None):
 
     box.exec()
 
-# Main Window (Where the user puts the input)
-class Main_Window(QMainWindow):
+class Scanner_Window(QWidget):
     def __init__(self, userName, password, notify_callback=None):
         super().__init__()
         self.userName = userName 
@@ -111,8 +113,8 @@ class Main_Window(QMainWindow):
         self._notify_callback = notify_callback
         self._last_submitted_text = ""
         
-        self.setWindowTitle(f"Main Window - User: {self.userName}")
-        self.resize(400, 600)
+        self.setWindowTitle(f"Scanner - User: {self.userName}")
+        self.resize(1024, 682)
         
         # Timer (UI state)
         self._cooldown_left = 0
@@ -120,40 +122,64 @@ class Main_Window(QMainWindow):
         self._cooldown_timer.setInterval(1000)
         self._cooldown_timer.timeout.connect(self._cooldown_tick)
 
-        # --- layout & style ---
-        central = QWidget(self)
-        central.setObjectName("SectionContent")
-        self.setCentralWidget(central)
-        page = QVBoxLayout(central)
-        page.setContentsMargins(40, -100, 40, 40)
-        page.setSpacing(0)
+        # Create Main Layout
+        self.setObjectName("SectionContent")
+        
+        mainLayout = QVBoxLayout(self)
+        mainLayout.setContentsMargins(40, 40, 40, 40)
+        mainLayout.setSpacing(24)
 
-        card = QFrame()
-        card.setObjectName("card")
-        shadow = QGraphicsDropShadowEffect(blurRadius=40, xOffset=0, yOffset=12)
-        shadow.setColor(Qt.black)
-        card.setGraphicsEffect(shadow)
-
-        card_wrap = QVBoxLayout(card)
-        card_wrap.setContentsMargins(48, 48, 48, 48)
-        card_wrap.setSpacing(24)
-
-        title = QLabel("ENTER A URL / DOMAIN / IP")
+        title = QLabel("Enter a URL / DOMAIN / IP")
         title.setObjectName("TitleTables")
-        tfont = QFont(); tfont.setPointSize(24); tfont.setBold(True)
-        title.setFont(tfont); title.setAlignment(Qt.AlignHCenter)
+        title.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        title.setMaximumHeight(60)
+        mainLayout.addWidget(title)
+        
+        # Create frame
+        card = QFrame()
+        card.setObjectName("cardSettings")
+        mainLayout.addWidget(card)
 
-        prompt = QLabel("Type a full URL, domain or an IP and click OK.")
-        prompt.setAlignment(Qt.AlignHCenter)
-        pfont = QFont(); pfont.setPointSize(11)
-        prompt.setFont(pfont); prompt.setStyleSheet("color: #9aa5b1;")
+        # Create Input Layout
+        inputLayout = QVBoxLayout(card)
+
+        subtitle = QLabel("Type a full URL, domain or an IP and click OK.")
+        subtitle.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+        subtitle.setObjectName("Subtitle")
+        inputLayout.addWidget(subtitle)
+
+        scanTypeLayout = QHBoxLayout()
+        scanTypeLayout.setSpacing(6)           
+        scanTypeLayout.setContentsMargins(0, 0, 0, 0)
+
+        scanTypeLabel = QLabel("Deep Scan:")
+        scanTypeLabel.setObjectName("Subtitle")
+
+        mainToggle = AnimatedToggle()
+        mainToggle.setFixedSize(mainToggle.sizeHint())
+
+        scanTypeLayout.addWidget(scanTypeLabel)
+        scanTypeLayout.addWidget(mainToggle)
+        scanTypeLayout.addStretch()            
+
+        inputLayout.addLayout(scanTypeLayout)
 
         row = QHBoxLayout(); row.setSpacing(12)
+        inputLayout.addLayout(row)
+
         self.input_edit = QLineEdit()
         self.input_edit.setPlaceholderText("Example: https://example.com  |  example.com  |  8.8.8.8")
         self.input_edit.setMinimumWidth(420)
+        self.input_edit.setFixedHeight(40)
+        row.addWidget(self.input_edit, 1)
 
-        # Create the fake progress bar
+        self.ok_btn = QPushButton("OK")
+        self.ok_btn.setObjectName("ScannerButton")
+        self.ok_btn.setMaximumHeight(40)
+        self.ok_btn.clicked.connect(self.on_ok)
+        self.input_edit.returnPressed.connect(self.ok_btn.click)
+        row.addWidget(self.ok_btn)
+
         self.progress = QProgressBar()
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
@@ -162,87 +188,29 @@ class Main_Window(QMainWindow):
         self.progress.setFixedHeight(6)
         self.progress.setObjectName("scanProgress")
         self._progress_accum = 0.0
+        inputLayout.addWidget(self.progress)
 
-        self.ok_btn = QPushButton("OK")
-        self.ok_btn.setMinimumHeight(40)
-        self.ok_btn.clicked.connect(self.on_ok)
-        self.input_edit.returnPressed.connect(self.ok_btn.click)
+        # Create Output Layout
+        outputLayout = QHBoxLayout(card)
+        placeholder1 = QLabel("Output")
 
-        row.addWidget(self.input_edit, 1)
-        row.addWidget(self.ok_btn)
-        
-        card_wrap.addWidget(title)
-        card_wrap.addWidget(prompt)
-        card_wrap.addLayout(row)
-        card_wrap.addWidget(self.progress)
+        outputLayout.addWidget(placeholder1)
+        # Create Logo Layout
+        logoLayout = QHBoxLayout(card)
+        placeholder2 = QLabel("Logo")
 
-        # Logo (Aegis DNS)
-        # logo = QLabel()
-        # logo.setStyleSheet("background: transparent;")
-        # logo_pix = QPixmap("src/images/Other_icons/AegisDNS_Logo.png")
-        # if not logo_pix.isNull():
-        #     logo.setPixmap(logo_pix.scaledToWidth(375, Qt.SmoothTransformation))
-        # logo.setAlignment(Qt.AlignHCenter)
+        logoLayout.addWidget(placeholder2)
 
-        # page.addWidget(logo, 0, Qt.AlignHCenter)
-        page.addWidget(card, 0, Qt.AlignHCenter)
-        page.addStretch(2)
-        
-        # Deep Scan section
-        # deep_scan_layout = QHBoxLayout()
-        # deep_scan_layout.setSpacing(8)
-        # deep_scan_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # self.deep_scan_btn = QPushButton("DEEP SCAN")
-        # # self.deep_scan_btn.setObjectName("deepScanButton")
-        # self.deep_scan_btn.setMinimumHeight(40)
-        # self.deep_scan_btn.setMinimumWidth(120)
-        # vt_logo = QLabel()
-        # vt_logo_pix = QPixmap("src/images/Other_icons/VirusTotal_logo.svg.png")
-        # if not vt_logo_pix.isNull():
-        #     vt_logo.setPixmap(vt_logo_pix.scaledToHeight(24, Qt.SmoothTransformation))
-        # vt_logo.setAlignment(Qt.AlignCenter)
-        
-        # # Info icon with tooltip
-        # info_icon = QLabel("?")
-        # info_icon.setObjectName("infoIcon")
-        # info_icon.setAlignment(Qt.AlignCenter)
-        # info_icon.setFixedSize(20, 20)
-        # info_font = QFont()
-        # info_font.setPointSize(10)
-        # info_font.setBold(True)
-        # info_icon.setFont(info_font)
-        # info_icon.setCursor(QCursor(Qt.PointingHandCursor))
-        
-        # tooltip_text = (
-        #     "Performs a scan using VirusTotal's API. <br>"
-        #     "VirusTotal uses over 90 different antivirus engines and is far more extensive than the basic scan."
-        # )
-        # info_icon.setToolTip(tooltip_text)
-        # info_icon.setEnabled(True)
-        # info_icon.setAttribute(Qt.WA_AlwaysShowToolTips, True)
-        
-        # deep_scan_layout.addWidget(self.deep_scan_btn)
-        # deep_scan_layout.addWidget(vt_logo)
-        # deep_scan_layout.addWidget(info_icon)
-        # deep_scan_layout.addStretch()
-        
-        # self.deep_scan_btn.clicked.connect(self.on_deep_scan)
-        
-        # deep_scan_widget = QWidget()
-        # deep_scan_widget.setLayout(deep_scan_layout)
-        # deep_scan_widget.setStyleSheet("background: transparent;")
-        # page.addWidget(deep_scan_widget, 0, Qt.AlignLeft | Qt.AlignBottom)
+        mainLayout.addLayout(inputLayout)
+        mainLayout.addLayout(outputLayout)
+        mainLayout.addLayout(logoLayout)
 
-        self._progress_timer = QTimer(self)
-        self._progress_timer.setInterval(80)
-        self._progress_timer.timeout.connect(self._advance_progress)
-        self._worker = None
-        self._deep_scan_worker = None
-        self._deep_scan_cooldown_left = 0
-        self._deep_scan_cooldown_timer = QTimer(self)
-        self._deep_scan_cooldown_timer.setInterval(1000)
-        self._deep_scan_cooldown_timer.timeout.connect(self._deep_scan_cooldown_tick)  
+    def paintEvent(self, event):
+        """ This allows the widget to support custom QSS styling """
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
 
     def _advance_progress(self):
         value = self.progress.value()

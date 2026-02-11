@@ -169,3 +169,6 @@
 {"ts": "2026-02-07T17:54:54.888808", "kind": "domain", "target": "reddit.com", "verdict": "SAFE", "stats": {"risk_score": -6, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-07T18:01:40.226931", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-07T18:02:10.568996", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-10T14:02:40.837217", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-10T14:03:28.145757", "kind": "domain", "target": "instagram.com", "verdict": "SAFE", "stats": {"risk_score": -9, "signal_count": 4}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-10T14:21:20.828960", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}

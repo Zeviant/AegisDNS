@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QListWidget, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -20,7 +20,9 @@ class Settings_Window(QWidget):
         # Settings file path
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         self.SETTINGS_FILE = os.path.join(BASE_DIR, "..", "VT_Cache", "settings.json")
-
+        
+        self.setObjectName("SectionContent")
+        
         layout = QVBoxLayout(self)
         layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(24)
@@ -136,7 +138,7 @@ class Settings_Window(QWidget):
         theme_layout.addWidget(theme_section)
 
         theme_selector = QComboBox()
-        theme_selector.addItems(["Default", "Dark", "Light"])
+        theme_selector.addItems(["Default", "Dark", "Light", "Dracula", "Cyberpunk"])
         theme_selector.setObjectName("themeDropDown")
         theme_selector.currentTextChanged.connect(self.changeTheme)
         theme_layout.addWidget(theme_selector)
@@ -146,6 +148,14 @@ class Settings_Window(QWidget):
         notify_section.setText("Notifications")
         notify_section.setObjectName("SectionDivider")
         notify_layout.addWidget(notify_section)
+
+    def paintEvent(self, event):
+        """ This allows the widget to support custom QSS styling """
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
+
 
     def changeTheme(self, theme_name):
         print(theme_name)
