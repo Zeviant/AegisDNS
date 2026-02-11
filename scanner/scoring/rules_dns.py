@@ -13,9 +13,9 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
 
     # --- TTL SCORING ---
     if min_ttl is not None:
-        if min_ttl <= 60:
+        if min_ttl <= 30:
             score += 1
-            reasons.append("Low DNS TTL (≤60s)")
+            reasons.append("Low DNS TTL (≤30s)")
 
     # --- A/AAAA RECORD COUNT SCORING ---
     if record_count >= 10:
@@ -27,10 +27,10 @@ def score_dns_A_AAAA(metrics: dict) -> tuple[int, str] | None:
     
     # --- FAST-FLUX BEHAVIOR ---
     if min_ttl is not None and min_ttl <= 30 and record_count >= 15:
-        score += 5
+        score += 20
         reasons.append("Extreme fast-flux behavior detected: ≤30s TTL with ≥15 records")
     elif min_ttl is not None and min_ttl <= 60 and record_count >= 10:
-        score += 2
+        score += 8
         reasons.append("Possible fast-flux behavior detected: ≤60s TTL with ≥10 records")
 
     if score == 0:
@@ -49,7 +49,7 @@ def score_ns_records(ns_records: list[str] | None) -> tuple[int, str] | None:
         return (5, "Domain uses free or abuse-prone DNS provider")
 
     if provider == "unknown":
-        return (1, "Domain uses unknown DNS provider")
+        return (2, "Domain uses unknown DNS provider")
 
     return (0, "DNS provider is well-known or reputable")
 
@@ -64,15 +64,15 @@ def score_mail_configuration(
     reasons = []
 
     if not mx_records:
-        score += 4
+        score += 2
         reasons.append("No MX records present")
 
     if not spf_present:
-        score += 2
+        score += 1
         reasons.append("No SPF record found")
 
     if not dmarc_present:
-        score += 2
+        score += 1
         reasons.append("No DMARC policy found")
 
     if not mx_records and not spf_present and not dmarc_present:

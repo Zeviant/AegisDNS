@@ -262,9 +262,9 @@ class SideBarMainWindow(QMainWindow):
         if self.is_notifications_muted():
             return  # Don't show notification if muted
 
-        if verdict == "BLOCK":
+        if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
             icon = QSystemTrayIcon.Critical
-        elif verdict == "CAUTION":
+        elif verdict in ("CAUTION", "NEUTRAL"):
             icon = QSystemTrayIcon.Warning
         else:
             icon = QSystemTrayIcon.Information

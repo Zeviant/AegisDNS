@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {"ts": "2025-10-07T23:52:44.933858", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "live"}
 {"ts": "2025-10-08T00:42:04.300290", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache", "user": "Nico"}
 {"ts": "2025-10-08T00:45:17.197011", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"malicious": 0, "suspicious": 0, "undetected": 28, "harmless": 67, "timeout": 0}, "source": "cache", "user": "Nico"}
@@ -172,3 +173,7 @@
 {"ts": "2026-02-10T14:02:40.837217", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "scanner", "user": "Nico"}
 {"ts": "2026-02-10T14:03:28.145757", "kind": "domain", "target": "instagram.com", "verdict": "SAFE", "stats": {"risk_score": -9, "signal_count": 4}, "source": "scanner", "user": "Nico"}
 {"ts": "2026-02-10T14:21:20.828960", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+=======
+{"ts": "2026-02-10T18:30:56.557009", "kind": "domain", "target": "generalinteresttopics.com", "verdict": "MALICIOUS", "stats": {"risk_score": 65, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-10T18:31:14.727902", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 20, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+>>>>>>> 081185fb31db96fa9b420249195c71f4661fdb3d

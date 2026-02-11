@@ -15,28 +15,13 @@ def fetch_tls_certificate(domain: str, port=443) -> dict | None:
                 not_after = datetime.strptime(cert['notAfter'], "%b %d %H:%M:%S %Y %Z").replace(tzinfo=timezone.utc)
                 validity_days = (not_after - not_before).days
 
-                # Detect wildcard by checking subjectAltName or CN
-                is_wildcard = False
-                san = cert.get('subjectAltName', [])
-                for typ, val in san:
-                    if typ == 'DNS' and val.startswith('*.'):
-                        is_wildcard = True
-                        break
-
-                # fallback check for CN
-                if not is_wildcard:
-                    cn = dict(x[0] for x in cert['subject']).get('commonName', '')
-                    if cn.startswith('*.'):
-                        is_wildcard = True
-
                 issuer = dict(x[0] for x in cert['issuer']).get('organizationName', 'Unknown')
 
                 return {
                     "issuer": issuer,
                     "not_before": not_before,
                     "not_after": not_after,
-                    "validity_days": validity_days,
-                    "is_wildcard": is_wildcard
+                    "validity_days": validity_days
                 }
 
     except Exception:
@@ -57,7 +42,10 @@ def fetch_http_security_headers(url: str) -> dict | None:
         return {
             "hsts": "strict-transport-security" in headers,
             "csp": "content-security-policy" in headers,
-            "x_frame": "x-frame-options" in headers
+            "x_frame": "x-frame-options" in headers,
+            "x_content_type": "x-content-type-options" in headers,
+            "referrer_policy": "referrer-policy" in headers,
+            "permissions_policy": "permissions-policy" in headers,
         }
 
     except Exception:
