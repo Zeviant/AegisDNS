@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QListWidget, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QListWidget, QComboBox, QScrollArea
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -31,11 +31,19 @@ class Settings_Window(QWidget):
         title.setAlignment(Qt.AlignHCenter)
         layout.addWidget(title)
 
+        # Scrollable area for settings
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        layout.addWidget(scroll)
+
+        content = QWidget()
+        scroll.setWidget(content)
+
         # Settings card
-        card = QFrame()
+        card = QFrame(content)
         card.setObjectName("cardSettings")
         card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(48, 48, 48, 48)
+        card_layout.setContentsMargins(48, 0, 48, 48)
         card_layout.setSpacing(24)
 
         # User Layout
@@ -47,10 +55,8 @@ class Settings_Window(QWidget):
         # Notification Layout
         notify_layout = QVBoxLayout()
 
-        # Add layout to main one
-        card_layout.addLayout(user_layout)
-        card_layout.addLayout(theme_layout)
-        card_layout.addLayout(notify_layout)
+        # History / Cache Layout
+        history_layout = QVBoxLayout()
 
         # Mute notifications checkbox with custom checkmark
         class CheckBoxWithCheckmark(QCheckBox):
@@ -76,15 +82,13 @@ class Settings_Window(QWidget):
         
         self.mute_notifications_checkbox = CheckBoxWithCheckmark("Mute notifications (disable system popups and sounds)")
         self.mute_notifications_checkbox.setFont(QFont("Segoe UI", 11))
-        
+
         # Load saved setting
         self.mute_notifications_checkbox.setChecked(self.load_mute_setting())
-        
+
         # Connect checkbox to save function
         self.mute_notifications_checkbox.toggled.connect(self.on_mute_toggled)
-        
-        card_layout.addWidget(self.mute_notifications_checkbox)
-        
+
         # User section title
         user_section = QLabel()
         user_section.setText("User")
@@ -124,10 +128,18 @@ class Settings_Window(QWidget):
         delete_account_btn.clicked.connect(self.open_delete_account_window)
         user_layout.addWidget(delete_account_btn)
         
+        # Add sections to the card layout
+        card_layout.addLayout(user_layout)
+        card_layout.addLayout(theme_layout)
+        card_layout.addLayout(notify_layout)
+        card_layout.addLayout(history_layout)
+
         card_layout.addStretch()
 
-        layout.addWidget(card)
-        layout.addStretch()
+        # Place the card inside a vertical layout in the scroll content
+        content_layout = QVBoxLayout(content)
+        content_layout.addWidget(card)
+        content_layout.addStretch()
 
         # Theme section title
         theme_section = QLabel()
@@ -146,6 +158,38 @@ class Settings_Window(QWidget):
         notify_section.setText("Notifications")
         notify_section.setObjectName("SectionDivider")
         notify_layout.addWidget(notify_section)
+
+        # Notifications mute checkbox
+        notify_layout.addSpacing(16)
+        notify_layout.addWidget(self.mute_notifications_checkbox)
+
+        # --- History & Cache Section ---
+        history_section = QLabel()
+        history_section.setText("History & Cache")
+        history_section.setObjectName("SectionDivider")
+        history_layout.addWidget(history_section)
+
+        # Reset scan history button
+        history_layout.addSpacing(16)
+        reset_scan_btn = QPushButton("Reset scan history")
+        reset_scan_btn.setObjectName("resetScanHistoryBtn")
+        reset_scan_btn.setFont(QFont("Segoe UI", 11))
+        reset_scan_btn.setMinimumHeight(40)
+        reset_scan_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        reset_scan_btn.setFixedWidth(220)
+        reset_scan_btn.clicked.connect(self.reset_scan_history)
+        history_layout.addWidget(reset_scan_btn)
+
+        # Reset navigation history button
+        history_layout.addSpacing(16)
+        reset_nav_btn = QPushButton("Reset navigation history")
+        reset_nav_btn.setObjectName("resetNavigationHistoryBtn")
+        reset_nav_btn.setFont(QFont("Segoe UI", 11))
+        reset_nav_btn.setMinimumHeight(40)
+        reset_nav_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        reset_nav_btn.setFixedWidth(220)
+        reset_nav_btn.clicked.connect(self.reset_navigation_history)
+        history_layout.addWidget(reset_nav_btn)
 
     def changeTheme(self, theme_name):
         print(theme_name)
@@ -205,4 +249,41 @@ class Settings_Window(QWidget):
     def open_delete_account_window(self):
         self.delete_account_window = DeleteAccountWindow(self.user_name, self.sidebar)
         self.delete_account_window.show()
+
+    # --- History & Cache reset ---
+    def _vt_cache_dir(self) -> str:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, "..", "VT_Cache")
+
+    def reset_scan_history(self):
+        cache_dir = self._vt_cache_dir()
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            scanner_cache = os.path.join(cache_dir, "scanner_cache.json")
+            vt_history = os.path.join(cache_dir, "vt_history.jsonl")
+            scan_requests = os.path.join(cache_dir, "scan_requests.jsonl")
+
+            # Reset scanner cache
+            if os.path.exists(scanner_cache):
+                with open(scanner_cache, "w", encoding="utf-8") as f:
+                    json.dump({"last_call": 0, "cache": {}}, f)
+
+            # Clear history & request logs
+            for path in (vt_history, scan_requests):
+                if os.path.exists(path):
+                    with open(path, "w", encoding="utf-8"):
+                        pass
+        except Exception:
+            pass
+
+    def reset_navigation_history(self):
+        cache_dir = self._vt_cache_dir()
+        logging_file = os.path.join(cache_dir, "logging_mode_history.jsonl")
+        # Reset logging history
+        try:
+            if os.path.exists(logging_file):
+                with open(logging_file, "w", encoding="utf-8"):
+                    pass
+        except Exception:
+            pass
 

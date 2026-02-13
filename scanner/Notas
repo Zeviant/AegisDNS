@@ -1,6 +1,7 @@
 With regards to scoring:
 1. Maybe consider adding HTTPS header punishment bonus (if all are missing)
 2. Most of the scoring is fine, the part which can be most worth changing is the TLS scoring
+3. Extend registrar lists
 
 
 Find domains to test here:

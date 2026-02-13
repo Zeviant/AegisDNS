@@ -1,2 +1,1 @@
-{"ts": "2026-02-10T18:30:56.557009", "kind": "domain", "target": "generalinteresttopics.com", "verdict": "MALICIOUS", "stats": {"risk_score": 65, "signal_count": 9}, "source": "scanner", "user": "Ben"}
-{"ts": "2026-02-10T18:31:14.727902", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 20, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-13T17:53:45.380860", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "scanner", "user": "Ben"}
