@@ -96,15 +96,18 @@ def show_vt_deep_scan_box(parent, verdict: str, stats: dict, engine_results: dic
 
     box.exec()
 
-def show_scan_box(parent, verdict: str, stats: dict, signals: list = None):
+def show_scan_box(parent, verdict: str, stats: dict, signals: list = None, silent: bool = False):
     if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
         icon = QMessageBox.Critical
     elif verdict in ("CAUTION", "NEUTRAL"):
         icon = QMessageBox.Warning
     else:
         icon = QMessageBox.Information
+
+    effective_icon = QMessageBox.NoIcon if silent else icon
+
     box = QMessageBox(parent)
-    box.setIcon(icon)
+    box.setIcon(effective_icon)
     box.setWindowTitle("Scan Result")
     box.setTextFormat(Qt.RichText)
     box.setText(render_scan_html(verdict, stats, signals))

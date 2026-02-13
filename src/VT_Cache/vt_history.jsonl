@@ -1,1 +1,4 @@
 {"ts": "2026-02-13T17:53:45.380860", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-02-13T18:20:33.006766", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-13T18:40:46.954741", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-02-13T18:41:04.801294", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "cache", "user": "Ben"}

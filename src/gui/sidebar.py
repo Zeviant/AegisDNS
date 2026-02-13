@@ -93,11 +93,11 @@ class SideBarMainWindow(QMainWindow):
         # List of menu items
         self.menuList = [
             {"name": "Analyze Address", "icon": "src\\images\\SideBar_icons\\analyze_icon.png", "widget": Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification),}, 
-            {"name": "History File", "icon": "src\images\SideBar_icons\history_icon.png", "widget": History_Window(self.username)},
+            {"name": "History File", "icon": "src\\images\\SideBar_icons\\history_icon.png", "widget": History_Window(self.username, sidebar_reference=self)},
             {"name": "Navigation Logs", "icon": "src\\images\\SideBar_icons\\navigation_white_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
-            {"name": "Packets", "icon": "src\images\SideBar_icons\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
-            {"name": "White/Black List", "icon": "src\images\SideBar_icons\list_icon.png", "widget": SnifferContainer_Window()},
-            {"name": "Settings", "icon": "src\images\SideBar_icons\settings_icon.png", "widget": Settings_Window(self.username, sidebar_reference=self)},
+            {"name": "Packets", "icon": "src\\images\\SideBar_icons\\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
+            {"name": "White/Black List", "icon": "src\\images\\SideBar_icons\\list_icon.png", "widget": SnifferContainer_Window()},
+            {"name": "Settings", "icon": "src\\images\\SideBar_icons\\settings_icon.png", "widget": Settings_Window(self.username, sidebar_reference=self)},
         ]
 
         # Call the functions
