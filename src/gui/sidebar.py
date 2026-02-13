@@ -7,6 +7,7 @@ from src.logic.vt_service import get_sorted_history
 # Import pages 
 from src.gui.history_window import History_Window
 from src.gui.main_window import Main_Window
+from src.gui.Scanner_Window import Scanner_Window
 from src.gui.log_window import Log_Window 
 from src.gui.WhiteBlackList_Window import WhiteBlackList_Window
 from src.gui.settings_window import Settings_Window
@@ -92,7 +93,7 @@ class SideBarMainWindow(QMainWindow):
 
         # List of menu items
         self.menuList = [
-            {"name": "Analyze Address", "icon": "src\\images\\SideBar_icons\\analyze_icon.png", "widget": Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification),}, 
+            {"name": "Analyze Address", "icon": "src\\images\\SideBar_icons\\analyze_icon.png", "widget": Scanner_Window(self.username, self.password, notify_callback=self.show_verdict_notification),}, 
             {"name": "History File", "icon": "src\\images\\SideBar_icons\\history_icon.png", "widget": History_Window(self.username, sidebar_reference=self)},
             {"name": "Navigation Logs", "icon": "src\\images\\SideBar_icons\\navigation_white_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
             {"name": "Packets", "icon": "src\\images\\SideBar_icons\\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
@@ -321,7 +322,7 @@ class SideBarMainWindow(QMainWindow):
             self.mainContent.removeWidget(widget)
 
         # Create instances of each page
-        self.StartWindowPage = Main_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
+        self.StartWindowPage = Scanner_Window(self.username, self.password, notify_callback=self.show_verdict_notification)
         self.MainWindowPage = History_Window(self.username)
         self.LogWindowPage = Log_Window(self.username, sidebar_reference=self)
         self.PacketsWindowPage = SnifferContainer_Window()

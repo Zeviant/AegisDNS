@@ -116,6 +116,11 @@ QWidget#contentSquare {{
     padding: 24px;
 }}
 
+QWidget#SectionContent {{
+    background-color: {30Color};  
+    border-radius: 4px;    
+}}
+
 QLabel#AutenticationLabel {{
     color: {textPrimary};                
     font-weight: bold;
@@ -124,6 +129,7 @@ QLabel#AutenticationLabel {{
 }}
 
 QLabel {{
+    background-color: transparent;
     color: {textPrimary};
     font-weight: bold;
     font-size:12px;
@@ -132,7 +138,8 @@ QLabel {{
 
 QLineEdit{{
     background-color: {60Color};      
-    border: 1px solid {30Color};      
+    border: 1px solid {30Color};    
+      
     border-radius: 8px;
     padding: 8px 10px;
     color: {textPrimary};
@@ -198,7 +205,15 @@ QLabel#TitleTables{{
     background-color: {10Color};
     border-radius: 4px;
     margin: 2px;
-    border-bottom: 4px solid {30Color};
+}}
+
+QLabel#Subtitle{{
+    background-color: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    color: {textPrimary};
+    border-radius: 2px;
+    margin: 2px;
 }}
 
 QHeaderView::section {{
@@ -231,6 +246,15 @@ QTableView::item:selected {{
 QPushButton {{
     border: none;
     border-radius: 4px;
+    padding: 10px 16px;
+    background: {10Color};
+    color: white;
+    font-weight: bold;
+}}
+
+QPushButton#ScannerButton {{
+    border: none;
+    border-radius: 8px;
     padding: 10px 16px;
     background: {10Color};
     color: white;
@@ -284,14 +308,14 @@ QLabel#SectionDivider {{
     font-size: 16px;
     font-weight: bold;
     color: {textPrimary};
-    background-color: {60Color};
+    background-color: transparent;
     border-radius: 4px;
     margin: 2px;
     border-bottom: 4px solid {30Color};
 }}
 
 QFrame#cardSettings {{
-    background-color: {60Color};
+    background-color: transparent;
 }}
 
 QPushButton#deleteAccountBtn {{
@@ -316,7 +340,7 @@ QCheckBox::indicator {{
     height: 20px;
     border: 2px solid {30Color};
     border-radius: 4px;
-    background-color: {60Color};
+    background-color: transparent;
 }}
 
 QCheckBox::indicator:checked {{
@@ -393,23 +417,19 @@ QMessageBox {{
         background-color: {60Color};
         color: {textPrimary};
     }}
-    QLabel {{
-        color: {textPrimary};
-        font-size: 12px;
-        font-weight:bold;
-    }}
-    QPushButton {{
-        background-color: {10Color};
-        color: white;
-        padding: 5px 15px;
-        border-radius: 4px;
-    }}
-    QPushButton:hover {{
-        background-color: {buttonHover};
-    }}
-    QPushButton:pressed {{
-        background-color: {buttonPressed};
-    }}
+
+QPushButton {{
+    background-color: {10Color};
+    color: white;
+    padding: 5px 15px;
+    border-radius: 4px;
+}}
+QPushButton:hover {{
+    background-color: {buttonHover};
+}}
+QPushButton:pressed {{
+    background-color: {buttonPressed};
+}}
 
 /* === Log Window */
 QPushButton#ScanButton {{

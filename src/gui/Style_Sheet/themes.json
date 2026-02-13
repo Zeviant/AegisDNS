@@ -1,7 +1,7 @@
 {
   "Default": {
     "60Color": "#0f172a",
-    "30Color": "#4069abff",
+    "30Color": "#131f3a",
     "10Color": "#3b82f6",
     "buttonHover": "#2563eb",
     "buttonPressed": "#1e40af",
@@ -10,20 +10,38 @@
   },
 
   "Dark": {
-    "60Color": "#000000",
-    "30Color": "#4C4E52",
-    "10Color": "#2E67F8",
+    "60Color": "#181818",
+    "30Color": "#1f1f1f",
+    "10Color": "#217fd4",
     "buttonHover": "#2563eb",
     "buttonPressed": "#1e40af",
-    "textPrimary": "#ffffff"
+    "textPrimary": "#e6e6e6"
   },
 
   "Light": {
-    "60Color": "#ffffff",
-    "30Color": "#D9C5D4",
-    "10Color": "#B19CD9",
+    "60Color": "#f8fafc",
+    "30Color": "#e2e8f0",
+    "10Color": "#3b82f6",
     "buttonHover": "#2563eb",
     "buttonPressed": "#1e40af",
-    "textPrimary": "#000000"
+    "textPrimary": "#0f172a"
+  },
+
+  "Dracula": {
+    "60Color": "#282a36",        
+    "30Color": "#44475a",        
+    "10Color": "#50fa7b",        
+    "buttonHover": "#8be9fd",    
+    "buttonPressed": "#ff79c6",  
+    "textPrimary": "#f8f8f2"    
+  },
+
+  "Cyberpunk": {
+    "60Color": "#0a0a0a",        
+    "30Color": "#1f1f1f",       
+    "10Color": "#ff0080",        
+    "buttonHover": "#00ffff",    
+    "buttonPressed": "#ff00ff",  
+    "textPrimary": "#e0e0e0"
   }
 }

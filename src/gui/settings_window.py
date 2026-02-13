@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOptionButton, QListWidget, QComboBox, QScrollArea
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -20,7 +20,9 @@ class Settings_Window(QWidget):
         # Settings file path
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         self.SETTINGS_FILE = os.path.join(BASE_DIR, "..", "VT_Cache", "settings.json")
-
+        
+        self.setObjectName("SectionContent")
+        
         layout = QVBoxLayout(self)
         layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(24)
@@ -148,7 +150,7 @@ class Settings_Window(QWidget):
         theme_layout.addWidget(theme_section)
 
         theme_selector = QComboBox()
-        theme_selector.addItems(["Default", "Dark", "Light"])
+        theme_selector.addItems(["Default", "Dark", "Light", "Dracula", "Cyberpunk"])
         theme_selector.setObjectName("themeDropDown")
         theme_selector.currentTextChanged.connect(self.changeTheme)
         theme_layout.addWidget(theme_selector)
@@ -158,38 +160,6 @@ class Settings_Window(QWidget):
         notify_section.setText("Notifications")
         notify_section.setObjectName("SectionDivider")
         notify_layout.addWidget(notify_section)
-
-        # Notifications mute checkbox
-        notify_layout.addSpacing(16)
-        notify_layout.addWidget(self.mute_notifications_checkbox)
-
-        # --- History & Cache Section ---
-        history_section = QLabel()
-        history_section.setText("History & Cache")
-        history_section.setObjectName("SectionDivider")
-        history_layout.addWidget(history_section)
-
-        # Reset scan history button
-        history_layout.addSpacing(16)
-        reset_scan_btn = QPushButton("Reset scan history")
-        reset_scan_btn.setObjectName("resetScanHistoryBtn")
-        reset_scan_btn.setFont(QFont("Segoe UI", 11))
-        reset_scan_btn.setMinimumHeight(40)
-        reset_scan_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        reset_scan_btn.setFixedWidth(220)
-        reset_scan_btn.clicked.connect(self.reset_scan_history)
-        history_layout.addWidget(reset_scan_btn)
-
-        # Reset navigation history button
-        history_layout.addSpacing(16)
-        reset_nav_btn = QPushButton("Reset navigation history")
-        reset_nav_btn.setObjectName("resetNavigationHistoryBtn")
-        reset_nav_btn.setFont(QFont("Segoe UI", 11))
-        reset_nav_btn.setMinimumHeight(40)
-        reset_nav_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        reset_nav_btn.setFixedWidth(220)
-        reset_nav_btn.clicked.connect(self.reset_navigation_history)
-        history_layout.addWidget(reset_nav_btn)
 
     def changeTheme(self, theme_name):
         print(theme_name)
