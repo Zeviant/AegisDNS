@@ -161,6 +161,38 @@ class Settings_Window(QWidget):
         notify_section.setObjectName("SectionDivider")
         notify_layout.addWidget(notify_section)
 
+        # Notifications: mute checkbox
+        notify_layout.addSpacing(16)
+        notify_layout.addWidget(self.mute_notifications_checkbox)
+
+        # --- History & Cache Section ---
+        history_section = QLabel()
+        history_section.setText("History & Cache")
+        history_section.setObjectName("SectionDivider")
+        history_layout.addWidget(history_section)
+
+        # Reset scan history button
+        history_layout.addSpacing(16)
+        reset_scan_btn = QPushButton("Reset scan history")
+        reset_scan_btn.setObjectName("resetScanHistoryBtn")
+        reset_scan_btn.setFont(QFont("Segoe UI", 11))
+        reset_scan_btn.setMinimumHeight(40)
+        reset_scan_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        reset_scan_btn.setFixedWidth(220)
+        reset_scan_btn.clicked.connect(self.reset_scan_history)
+        history_layout.addWidget(reset_scan_btn)
+
+        # Reset navigation history button
+        history_layout.addSpacing(16)
+        reset_nav_btn = QPushButton("Reset navigation history")
+        reset_nav_btn.setObjectName("resetNavigationHistoryBtn")
+        reset_nav_btn.setFont(QFont("Segoe UI", 11))
+        reset_nav_btn.setMinimumHeight(40)
+        reset_nav_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        reset_nav_btn.setFixedWidth(220)
+        reset_nav_btn.clicked.connect(self.reset_navigation_history)
+        history_layout.addWidget(reset_nav_btn)
+
     def changeTheme(self, theme_name):
         print(theme_name)
         with open("src/gui/Style_Sheet/themes.json", "r") as f:
