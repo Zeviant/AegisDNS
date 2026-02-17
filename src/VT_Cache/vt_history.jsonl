@@ -178,3 +178,4 @@
 {"ts": "2026-02-10T18:31:14.727902", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 20, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 >>>>>>> 081185fb31db96fa9b420249195c71f4661fdb3d
 {"ts": "2026-02-17T14:10:27.102835", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T15:31:06.885773", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}

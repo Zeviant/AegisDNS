@@ -241,6 +241,16 @@ class Scanner_Window(QWidget):
         card_layout.addLayout(outputLayout)
         card_layout.addStretch()
 
+        self._progress_timer = QTimer(self)
+        self._progress_timer.setInterval(80)
+        self._progress_timer.timeout.connect(self._advance_progress)
+        self._worker = None
+        self._deep_scan_worker = None
+        self._deep_scan_cooldown_left = 0
+        self._deep_scan_cooldown_timer = QTimer(self)
+        self._deep_scan_cooldown_timer.setInterval(1000)
+        self._deep_scan_cooldown_timer.timeout.connect(self._deep_scan_cooldown_tick)  
+
 
     def paintEvent(self, event):
         """ This allows the widget to support custom QSS styling """
