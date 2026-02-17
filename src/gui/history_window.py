@@ -1,11 +1,14 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView, QMenu
 from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtGui
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QGuiApplication
 from datetime import datetime
+import os
+import json
 from src.logic.vt_service import get_sorted_history, delete_history_entry, add_entry_to_whitelist, delete_whiteList_entry, delete_blackList_entry, add_entry_to_blacklist   
 from src.gui.WhiteList_Window import WhiteList_Window
 from src.gui.BlackList_Window import BlackList_Window
+from src.gui.main_window import show_scan_box
 
 ''' 
 TO BE ADDED:
@@ -18,9 +21,10 @@ TO BE ADDED:
 '''
 
 class History_Window(QWidget):
-    def __init__(self, user_name: str):
+    def __init__(self, user_name: str, sidebar_reference=None):
         super().__init__()
         self.user_name = user_name
+        self.sidebar = sidebar_reference
         self.setWindowTitle(f"History Log - {self.user_name}")
         self.resize(1024, 682)
 
@@ -184,6 +188,8 @@ class History_Window(QWidget):
     # -- Menu of options --
     def show_options(self, row, col): 
         menu = QMenu(self.table)
+        menu.addAction("Copy")
+        menu.addAction("View additional info")
         menu.addAction("White List")
         menu.addAction("Black List")
         menu.addAction("Delete")
@@ -192,15 +198,74 @@ class History_Window(QWidget):
         cursor_pos = self.mapToGlobal(self.table.viewport().mapFromGlobal(QCursor.pos()))
         selected = menu.exec_(cursor_pos)
         if selected is None:
-            return   
+            return
 
-        match selected.text(): 
-            case "White List": 
-                self.addWhiteList(row)
-                
-            case "Black List": 
-                self.addBlackList(row)
+        action = selected.text()
+        if action == "Copy":
+            self.copy_target(row)
+        elif action == "View additional info":
+            self.view_additional_info(row)
+        elif action == "White List":
+            self.addWhiteList(row)
+        elif action == "Black List":
+            self.addBlackList(row)
+        elif action == "Delete":
+            self.delete_item(row)
 
-            case "Delete": 
-                self.delete_item(row)
+    def copy_target(self, row: int):
+        target_item = self.table.item(row, 2)
+        if not target_item:
+            return
+        target = target_item.text()
+        if target:
+            clipboard = QGuiApplication.clipboard()
+            clipboard.setText(target)
+
+    def view_additional_info(self, row: int):
+        target_item = self.table.item(row, 2)
+        kind_item = self.table.item(row, 1)
+        if not target_item or not kind_item:
+            return
+
+        target = target_item.text()
+        kind = kind_item.text()
+        if not target or not kind:
+            return
+
+        # Try to load from scanner cache
+        cache_entry = self._lookup_scanner_cache(kind, target)
+        if cache_entry:
+            verdict = cache_entry.get("verdict", "UNKNOWN")
+            stats = cache_entry.get("stats", {}) or {
+                "risk_score": cache_entry.get("risk_score", 0),
+                "signal_count": len(cache_entry.get("signals", [])),
+            }
+            signals = cache_entry.get("signals", [])
+            show_scan_box(self, verdict, stats, signals, silent=True)
+            return
+
+    # --- Scanner cache helpers ---
+    def _scanner_cache_path(self) -> str:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, "..", "VT_Cache", "scanner_cache.json")
+
+    def _cache_key(self, kind: str, target: str) -> str:
+        kind = (kind or "").lower()
+        if kind == "url":
+            norm = target if target.lower().startswith(("http://", "https://")) else f"http://{target}"
+            return f"url:{norm}"
+        return f"{kind}:{target}"
+
+    def _lookup_scanner_cache(self, kind: str, target: str) -> dict | None:
+        path = self._scanner_cache_path()
+        try:
+            if not os.path.exists(path):
+                return None
+            with open(path, "r", encoding="utf-8") as f:
+                state = json.load(f)
+            cache = state.get("cache", {}) or {}
+            key = self._cache_key(kind, target)
+            return cache.get(key)
+        except Exception:
+            return None
         

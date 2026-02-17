@@ -97,7 +97,15 @@ def get_sorted_history(user_name: str) -> list[dict]:
     try:
         with open(HISTORY_FILE, "r", encoding="utf-8") as f:
             for line in f:
-                entry = json.loads(line)
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    # Skip corrupted / partial lines instead of failing the whole read
+                    continue
+
                 # Filter entries by username
                 if entry.get("user") == user_name:
                     entries.append(entry)
