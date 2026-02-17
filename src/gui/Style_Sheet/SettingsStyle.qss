@@ -277,7 +277,6 @@ QPushButton#TopButton {{
     font-weight: bold;
     font-size:20px;
     max-width: 370px;
-    border-bottom: 4px solid {30Color};
 }}
 
 QPushButton#TopButton:hover {{ background: {buttonHover}; }}

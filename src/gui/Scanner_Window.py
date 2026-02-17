@@ -12,6 +12,7 @@ from src.logic.scanner_service import ScannerScanThread
 
 # Connection with animations
 from src.animations.AnimatedToggle import AnimatedToggle
+from src.animations.CiruclarBar import CircularGraph
 
 # --- Qt Presentation Functions ---
 def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
@@ -126,22 +127,24 @@ class Scanner_Window(QWidget):
         self.setObjectName("SectionContent")
         
         mainLayout = QVBoxLayout(self)
-        mainLayout.setContentsMargins(40, 40, 40, 40)
-        mainLayout.setSpacing(24)
-
-        title = QLabel("Enter a URL / DOMAIN / IP")
-        title.setObjectName("TitleTables")
-        title.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        title.setMaximumHeight(60)
-        mainLayout.addWidget(title)
+        mainLayout.setContentsMargins(20, 20, 20, 20)
+        mainLayout.setSpacing(30)
         
         # Create frame
         card = QFrame()
         card.setObjectName("cardSettings")
+        card_layout = QVBoxLayout(card) 
         mainLayout.addWidget(card)
-
+ 
         # Create Input Layout
-        inputLayout = QVBoxLayout(card)
+        inputLayout = QVBoxLayout()
+        inputLayout.setSpacing(10)
+
+        title = QLabel("Enter a URL / DOMAIN / IP")
+        title.setObjectName("TitleTables")
+        title.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        # title.setMaximumHeight(60)
+        inputLayout.addWidget(title)
 
         subtitle = QLabel("Type a full URL, domain or an IP and click OK.")
         subtitle.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
@@ -190,20 +193,30 @@ class Scanner_Window(QWidget):
         self._progress_accum = 0.0
         inputLayout.addWidget(self.progress)
 
+        inputLayout.addSpacing(20) 
+        inputLayout.addLayout(row)
+        inputLayout.addWidget(self.progress)
+
         # Create Output Layout
-        outputLayout = QHBoxLayout(card)
-        placeholder1 = QLabel("Output")
+        outputLayout = QHBoxLayout()
+        outputLayout.setSpacing(20)
 
-        outputLayout.addWidget(placeholder1)
-        # Create Logo Layout
-        logoLayout = QHBoxLayout(card)
-        placeholder2 = QLabel("Logo")
+        # Score graphs
+        totalScoreGraph = CircularGraph()
+        dnsScoreGraph = CircularGraph()
+        ipScoreGraph = CircularGraph()
+        whoisScoreGraph = CircularGraph()
 
-        logoLayout.addWidget(placeholder2)
+        outputLayout.addWidget(totalScoreGraph)
+        outputLayout.addWidget(dnsScoreGraph)
+        outputLayout.addWidget(ipScoreGraph)
+        outputLayout.addWidget(whoisScoreGraph)
 
-        mainLayout.addLayout(inputLayout)
-        mainLayout.addLayout(outputLayout)
-        mainLayout.addLayout(logoLayout)
+        card_layout.addLayout(inputLayout)
+        card_layout.addSpacing(40)
+        card_layout.addLayout(outputLayout)
+        card_layout.addStretch()
+
 
     def paintEvent(self, event):
         """ This allows the widget to support custom QSS styling """
