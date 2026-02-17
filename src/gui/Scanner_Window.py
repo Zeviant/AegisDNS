@@ -9,6 +9,7 @@ import time
 # Connection with service layer
 from src.logic.vt_service import classify_kind, VTDeepScanThread
 from src.logic.scanner_service import ScannerScanThread
+from src.animations.CiruclarBar import CircularGraph
 
 # Connection with animations
 from src.animations.AnimatedToggle import AnimatedToggle
@@ -27,6 +28,9 @@ def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
         "BLOCK":     "#ef4444",
     }.get(verdict, "#94a3b8")
     risk_score = stats.get("risk_score", 0)
+    
+    myGraph = CircularGraph()
+    myGraph.getScore(risk_score)
     
     signals_html = ""
     if signals:

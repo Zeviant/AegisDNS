@@ -320,5 +320,7 @@ def scan_domain(indicator: str):
         "signals": signals
     }
 
+    
+
 if __name__ == "__main__":
     print(scan_domain("netflix.com"))

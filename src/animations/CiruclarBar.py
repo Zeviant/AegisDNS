@@ -9,7 +9,7 @@ class CPBar(QWidget):
         self.setMinimumSize(208, 208)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-    def setValue(self, value: int):
+    def setValue(self, value):
         value = max(0, min(100, value))
 
         if self.p == value:
@@ -67,16 +67,29 @@ class CircularGraph(QWidget):
         layout.addWidget(self.progress)
 
         self.value = 0
+        self.score = 11
+
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.increase)
-        self.timer.start(50)
+        self.timer.start(20)
 
-    def increase(self):
-        self.value += 1
-        if self.value > 40:
+    def getScore(self, scoreReceived): 
+        if scoreReceived is None:
             return
 
-        self.progress.setValue(self.value)
+        self.score = int(abs(scoreReceived))
+            
+
+    def increase(self):
+        if self.value < self.score:
+            self.value += 1
+            self.progress.setValue(self.value)
+
+        elif self.value > self.score:
+            self.value -= 1
+            self.progress.setValue(self.value)
+
+
 
 
 

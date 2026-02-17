@@ -179,3 +179,18 @@
 >>>>>>> 081185fb31db96fa9b420249195c71f4661fdb3d
 {"ts": "2026-02-17T14:10:27.102835", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-17T15:31:06.885773", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T16:43:09.087436", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T16:55:27.118934", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T16:56:36.954678", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T16:57:36.630236", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T16:57:59.821057", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:03:18.311548", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:03:42.391757", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:07:05.244200", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:10:16.007259", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:12:26.653838", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:14:54.240231", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:16:21.769278", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:20:16.692942", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:20:21.914128", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-17T17:25:11.618610", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
