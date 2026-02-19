@@ -15,125 +15,6 @@ from src.animations.CiruclarBar import CircularGraph
 from src.animations.AnimatedToggle import AnimatedToggle
 from src.animations.CiruclarBar import CircularGraph
 
-# --- Qt Presentation Functions ---
-def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
-    color = {
-        "MALICIOUS": "#dc2626",
-        "DANGEROUS": "#ef4444",
-        "SUSPICIOUS": "#f97316",
-        "CAUTION":   "#eab308",
-        "NEUTRAL":   "#94a3b8",
-        "SAFE":      "#22c55e",
-        "SECURE":    "#059669",
-        "BLOCK":     "#ef4444",
-    }.get(verdict, "#94a3b8")
-    risk_score = stats.get("risk_score", 0)
-    
-    myGraph = CircularGraph()
-    myGraph.getScore(risk_score)
-    
-    signals_html = ""
-    if signals:
-        signals_html = "<div style='margin-top:12px;'><div style='color:#9aa5b1; margin-bottom:8px;'>Signals Detected:</div><ul style='margin:0; padding-left:20px; color:#e5e7eb;'>"
-        for signal in signals:
-            signal_name = signal.get("name", "Unknown")
-            signal_score = signal.get("risk_score", 0)
-            signal_reason = signal.get("reason", "")
-            if signal_reason:
-                signals_html += f"<li style='margin-bottom:4px;'>{signal_name}: {signal_score} ({signal_reason})</li>"
-            else:
-                signals_html += f"<li style='margin-bottom:4px;'>{signal_name}: {signal_score}</li>"
-        signals_html += "</ul></div>"
-    
-    return f"""
-      <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
-        <h2 style="margin:0 0 12px; font-size:22px; color:{color};">Verdict: {verdict}</h2>
-        <table style="border-collapse:collapse; margin-top:6px;">
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Risk Score</td>
-              <td style="padding:4px 12px; font-weight:600;">{risk_score}</td></tr>
-        </table>
-        {signals_html}
-        <p style="margin-top:12px; color:#9aa5b1;">Source: Custom Scanner</p>
-      </div>
-    """
-
-def render_vt_deep_scan_html(verdict: str, stats: dict, engine_results: dict) -> str:
-    color = {
-        "MALICIOUS": "#dc2626",
-        "DANGEROUS": "#ef4444",
-        "SUSPICIOUS": "#f97316",
-        "CAUTION":   "#eab308",
-        "NEUTRAL":   "#94a3b8",
-        "SAFE":      "#22c55e",
-        "SECURE":    "#059669",
-        "BLOCK":     "#ef4444",
-    }.get(verdict, "#94a3b8")
-    malicious = stats.get("malicious", 0)
-    suspicious = stats.get("suspicious", 0)
-    harmless = stats.get("harmless", 0)
-    undetected = stats.get("undetected", 0)
-    
-    return f"""
-      <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
-        <h2 style="margin:0 0 12px; font-size:22px; color:{color};">Verdict: {verdict}</h2>
-        <table style="border-collapse:collapse; margin-top:6px;">
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Malicious</td>
-              <td style="padding:4px 12px; font-weight:600; color:#ef4444;">{malicious}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Suspicious</td>
-              <td style="padding:4px 12px; font-weight:600; color:#f59e0b;">{suspicious}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Harmless</td>
-              <td style="padding:4px 12px; font-weight:600; color:#10b981;">{harmless}</td></tr>
-          <tr><td style="padding:4px 12px; color:#9aa5b1;">Undetected</td>
-              <td style="padding:4px 12px; font-weight:600;">{undetected}</td></tr>
-        </table>
-        <p style="margin-top:12px; color:#9aa5b1;">Source: VirusTotal Deep Scan</p>
-      </div>
-    """
-
-def show_vt_deep_scan_box(parent, verdict: str, stats: dict, engine_results: dict):
-    if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
-        icon = QMessageBox.Critical
-    elif verdict in ("CAUTION", "NEUTRAL"):
-        icon = QMessageBox.Warning
-    else:
-        icon = QMessageBox.Information
-    box = QMessageBox(parent)
-    box.setIcon(icon)
-    box.setWindowTitle("Deep Scan Result")
-    box.setTextFormat(Qt.RichText)
-    box.setText(render_vt_deep_scan_html(verdict, stats, engine_results))
-    box.setStandardButtons(QMessageBox.Ok)
-
-    lbl = box.findChild(QLabel, "qt_msgbox_label")
-    if lbl:
-        lbl.setWordWrap(True)
-        lbl.setMinimumSize(400, 250)
-        lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
-
-    box.exec()
-
-def show_scan_box(parent, verdict: str, stats: dict, signals: list = None):
-    if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
-        icon = QMessageBox.Critical
-    elif verdict in ("CAUTION", "NEUTRAL"):
-        icon = QMessageBox.Warning
-    else:
-        icon = QMessageBox.Information
-    box = QMessageBox(parent)
-    box.setIcon(icon)
-    box.setWindowTitle("Scan Result")
-    box.setTextFormat(Qt.RichText)
-    box.setText(render_scan_html(verdict, stats, signals))
-    box.setStandardButtons(QMessageBox.Ok)
-
-    lbl = box.findChild(QLabel, "qt_msgbox_label")
-    if lbl:
-        lbl.setWordWrap(True)
-        lbl.setMinimumSize(500, 400)
-        lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
-
-    box.exec()
-
 class Scanner_Window(QWidget):
     def __init__(self, userName, password, notify_callback=None):
         super().__init__()
@@ -226,23 +107,34 @@ class Scanner_Window(QWidget):
         inputLayout.addWidget(self.progress)
 
         # Create Output Layout
-        outputLayout = QHBoxLayout()
-        outputLayout.setSpacing(20)
+        self.outputLayout = QHBoxLayout()
+        self.outputLayout.setSpacing(20)
 
         # Score graphs
-        totalScoreGraph = CircularGraph()
-        dnsScoreGraph = CircularGraph()
-        ipScoreGraph = CircularGraph()
-        whoisScoreGraph = CircularGraph()
+        self.totalScoreGraph = CircularGraph()
+        self.dnsScoreGraph = CircularGraph()
+        self.webScoreGraph = CircularGraph()
+        self.whoisScoreGraph = CircularGraph()
 
-        outputLayout.addWidget(totalScoreGraph)
-        outputLayout.addWidget(dnsScoreGraph)
-        outputLayout.addWidget(ipScoreGraph)
-        outputLayout.addWidget(whoisScoreGraph)
+        self.totalScoreGraph.setTitle("Total Score")
+        self.dnsScoreGraph.setTitle("DNS Score")
+        self.webScoreGraph.setTitle("Web Score")
+        self.whoisScoreGraph.setTitle("Whois Score")
+
+        self.totalScoreGraph.setSize(250)
+        self.dnsScoreGraph.setSize(200)
+        self.webScoreGraph.setSize(200)
+        self.whoisScoreGraph.setSize(200)
+
+
+        self.outputLayout.addWidget(self.totalScoreGraph)
+        self.outputLayout.addWidget(self.dnsScoreGraph)
+        self.outputLayout.addWidget(self.webScoreGraph)
+        self.outputLayout.addWidget(self.whoisScoreGraph)
 
         card_layout.addLayout(inputLayout)
         card_layout.addSpacing(40)
-        card_layout.addLayout(outputLayout)
+        card_layout.addLayout(self.outputLayout)
         card_layout.addStretch()
 
         self._progress_timer = QTimer(self)
@@ -257,7 +149,6 @@ class Scanner_Window(QWidget):
 
 
     def paintEvent(self, event):
-        """ This allows the widget to support custom QSS styling """
         opt = QStyleOption()
         opt.initFrom(self)
         p = QPainter(self)
@@ -354,9 +245,31 @@ class Scanner_Window(QWidget):
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
         signals = payload.get("signals", [])
+        scoreDNS = 0
+        scoreWhois = 0
+        scoreWeb = 0
+        for section in signals:
+            # Get if it is web, dns or whois
+            section_identifier = section["name"].split("_")[0]
 
-        # Small delay so user can see bar getting filled up (CAN REMOVE LATER MAYBE) @NicoVegaPortaluppi
-        QTimer.singleShot(200, lambda: show_scan_box(self, verdict, stats, signals))
+            # Sum the risk scores
+            match section_identifier:
+                case "dns": 
+                    scoreDNS = scoreDNS + 1
+                case "whois":
+                    scoreWhois = scoreWhois + 1
+                case "http": 
+                    scoreWeb = scoreWeb + 1
+            
+        # Connect the scores with the graphs
+        risk_score = stats.get("risk_score", 0)
+        self.totalScoreGraph.getScore(risk_score)
+        self.dnsScoreGraph.getScore(scoreDNS)
+        self.whoisScoreGraph.getScore(scoreWhois)
+        self.webScoreGraph.getScore(scoreWeb)
+
+        # # Small delay so user can see bar getting filled up (CAN REMOVE LATER MAYBE) @NicoVegaPortaluppi
+        # QTimer.singleShot(200, lambda: self.show_scan_box(self, verdict, stats, signals))
 
     def _deep_scan_cooldown_tick(self):
         self._deep_scan_cooldown_left -= 1
@@ -409,4 +322,123 @@ class Scanner_Window(QWidget):
         verdict = payload.get("verdict", "UNKNOWN")
         engine_results = payload.get("engine_results", {})
 
-        QTimer.singleShot(200, lambda: show_vt_deep_scan_box(self, verdict, stats, engine_results))
+        QTimer.singleShot(200, lambda: self.show_vt_deep_scan_box(self, verdict, stats, engine_results))
+
+    
+    # --- Qt Presentation Functions ---
+    def render_scan_html(self, verdict: str, stats: dict, signals: list = None) -> str:
+        color = {
+            "MALICIOUS": "#dc2626",
+            "DANGEROUS": "#ef4444",
+            "SUSPICIOUS": "#f97316",
+            "CAUTION":   "#eab308",
+            "NEUTRAL":   "#94a3b8",
+            "SAFE":      "#22c55e",
+            "SECURE":    "#059669",
+            "BLOCK":     "#ef4444",
+        }.get(verdict, "#94a3b8")
+        risk_score = stats.get("risk_score", 0)
+
+        signals_html = ""
+        if signals:
+            signals_html = "<div style='margin-top:12px;'><div style='color:#9aa5b1; margin-bottom:8px;'>Signals Detected:</div><ul style='margin:0; padding-left:20px; color:#e5e7eb;'>"
+            for signal in signals:
+                signal_name = signal.get("name", "Unknown")
+                signal_score = signal.get("risk_score", 0)
+                signal_reason = signal.get("reason", "")
+                if signal_reason:
+                    signals_html += f"<li style='margin-bottom:4px;'>{signal_name}: {signal_score} ({signal_reason})</li>"
+                else:
+                    signals_html += f"<li style='margin-bottom:4px;'>{signal_name}: {signal_score}</li>"
+            signals_html += "</ul></div>"
+        
+
+
+        return f"""
+        <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
+            <h2 style="margin:0 0 12px; font-size:22px; color:{color};">Verdict: {verdict}</h2>
+            <table style="border-collapse:collapse; margin-top:6px;">
+            <tr><td style="padding:4px 12px; color:#9aa5b1;">Risk Score</td>
+                <td style="padding:4px 12px; font-weight:600;">{risk_score}</td></tr>
+            </table>
+            {signals_html}
+            <p style="margin-top:12px; color:#9aa5b1;">Source: Custom Scanner</p>
+        </div>
+        """
+
+    def render_vt_deep_scan_html(self, verdict: str, stats: dict, engine_results: dict) -> str:
+        color = {
+            "MALICIOUS": "#dc2626",
+            "DANGEROUS": "#ef4444",
+            "SUSPICIOUS": "#f97316",
+            "CAUTION":   "#eab308",
+            "NEUTRAL":   "#94a3b8",
+            "SAFE":      "#22c55e",
+            "SECURE":    "#059669",
+            "BLOCK":     "#ef4444",
+        }.get(verdict, "#94a3b8")
+        malicious = stats.get("malicious", 0)
+        suspicious = stats.get("suspicious", 0)
+        harmless = stats.get("harmless", 0)
+        undetected = stats.get("undetected", 0)
+        
+        return f"""
+        <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
+            <h2 style="margin:0 0 12px; font-size:22px; color:{color};">Verdict: {verdict}</h2>
+            <table style="border-collapse:collapse; margin-top:6px;">
+            <tr><td style="padding:4px 12px; color:#9aa5b1;">Malicious</td>
+                <td style="padding:4px 12px; font-weight:600; color:#ef4444;">{malicious}</td></tr>
+            <tr><td style="padding:4px 12px; color:#9aa5b1;">Suspicious</td>
+                <td style="padding:4px 12px; font-weight:600; color:#f59e0b;">{suspicious}</td></tr>
+            <tr><td style="padding:4px 12px; color:#9aa5b1;">Harmless</td>
+                <td style="padding:4px 12px; font-weight:600; color:#10b981;">{harmless}</td></tr>
+            <tr><td style="padding:4px 12px; color:#9aa5b1;">Undetected</td>
+                <td style="padding:4px 12px; font-weight:600;">{undetected}</td></tr>
+            </table>
+            <p style="margin-top:12px; color:#9aa5b1;">Source: VirusTotal Deep Scan</p>
+        </div>
+        """
+
+    def show_vt_deep_scan_box(self, parent, verdict: str, stats: dict, engine_results: dict):
+        if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
+            icon = QMessageBox.Critical
+        elif verdict in ("CAUTION", "NEUTRAL"):
+            icon = QMessageBox.Warning
+        else:
+            icon = QMessageBox.Information
+        box = QMessageBox(parent)
+        box.setIcon(icon)
+        box.setWindowTitle("Deep Scan Result")
+        box.setTextFormat(Qt.RichText)
+        box.setText(self.render_vt_deep_scan_html(verdict, stats, engine_results))
+        box.setStandardButtons(QMessageBox.Ok)
+
+        lbl = box.findChild(QLabel, "qt_msgbox_label")
+        if lbl:
+            lbl.setWordWrap(True)
+            lbl.setMinimumSize(400, 250)
+            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+        box.exec()
+
+    def show_scan_box(self, parent, verdict: str, stats: dict, signals: list = None):
+        if verdict in ("MALICIOUS", "DANGEROUS", "SUSPICIOUS", "BLOCK"):
+            icon = QMessageBox.Critical
+        elif verdict in ("CAUTION", "NEUTRAL"):
+            icon = QMessageBox.Warning
+        else:
+            icon = QMessageBox.Information
+        box = QMessageBox(parent)
+        box.setIcon(icon)
+        box.setWindowTitle("Scan Result")
+        box.setTextFormat(Qt.RichText)
+        box.setText(self.render_scan_html(verdict, stats, signals))
+        box.setStandardButtons(QMessageBox.Ok)
+
+        lbl = box.findChild(QLabel, "qt_msgbox_label")
+        if lbl:
+            lbl.setWordWrap(True)
+            lbl.setMinimumSize(500, 400)
+            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+        box.exec()
