@@ -9,11 +9,10 @@ import time
 # Connection with service layer
 from src.logic.vt_service import classify_kind, VTDeepScanThread
 from src.logic.scanner_service import ScannerScanThread
-from src.animations.CiruclarBar import CircularGraph
 
 # Connection with animations
 from src.animations.AnimatedToggle import AnimatedToggle
-from src.animations.CiruclarBar import CircularGraph
+from src.animations.CircularBar import CircularGraph
 
 class Scanner_Window(QWidget):
     def __init__(self, userName, password, notify_callback=None):
@@ -256,9 +255,9 @@ class Scanner_Window(QWidget):
             match section_identifier:
                 case "dns": 
                     scoreDNS = scoreDNS + 1
-                case "whois":
+                case "domain" | "registrar" | "privacy":
                     scoreWhois = scoreWhois + 1
-                case "http": 
+                case "http" |"tls": 
                     scoreWeb = scoreWeb + 1
             
         # Connect the scores with the graphs

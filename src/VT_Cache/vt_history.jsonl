@@ -216,3 +216,7 @@
 {"ts": "2026-02-19T12:57:32.274397", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-19T13:23:55.348033", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-19T13:24:52.296074", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-19T16:58:55.898891", "kind": "domain", "target": "vegaportaluppi.com", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 6}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-19T17:18:31.183726", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-19T17:19:12.626036", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-19T17:21:33.342169", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
