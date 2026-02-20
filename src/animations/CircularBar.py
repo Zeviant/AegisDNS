@@ -12,8 +12,7 @@ class CPBar(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     def setValue(self, value):
-        value = max(0, min(100, value))
-
+        value = max(-60, min(60, value))
         if self.p == value:
             return
 
@@ -52,16 +51,25 @@ class CPBar(QWidget):
         painter.drawArc(rect, 0, 360 * 16)
 
         # ---- progress arc ----
-        if self.title == "Total Score": 
-            pen = QPen(QColor("#3b82f6"), 8)
-            pen.setCapStyle(Qt.RoundCap)
-            painter.setPen(pen)
-            painter.drawArc(rect, 90 * 16, -pd * 16)
+        if self.p >= 0:
+            pd = -abs(pd)
+            pde = -abs(pde)
+            penColor = "#3b82f6"
         else: 
-            pen = QPen(QColor("#3b82f6"), 8)
+            pd = abs(pd)
+            pde = abs(pde)
+            penColor = "#ceccca"
+
+        if self.title == "Total Score": 
+            pen = QPen(QColor(penColor), 8)
             pen.setCapStyle(Qt.RoundCap)
             painter.setPen(pen)
-            painter.drawArc(rect, 90 * 16, -pde * 16)
+            painter.drawArc(rect, 90 * 16, pd * 16)
+        else: 
+            pen = QPen(QColor(penColor), 8)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+            painter.drawArc(rect, 90 * 16, pde * 16)
 
         # ---- center text ----
         painter.setPen(QColor("#ffffff"))
@@ -70,7 +78,7 @@ class CPBar(QWidget):
         font.setBold(True)
         painter.setFont(font)
 
-        painter.drawText(self.rect(), Qt.AlignCenter, f"{self.title} \n{self.p}%")
+        painter.drawText(self.rect(), Qt.AlignCenter, f"{self.title} \n{self.p}")
         self.setMinimumSize(self.sizeReceived, self.sizeReceived)
         
         if self.title == "Total Score": 
@@ -114,13 +122,14 @@ class CircularGraph(QWidget):
 
         self.value = 0
         self.score = 0
+        self.negativeFlag = 0
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.increase)
         self.timer.start(20)
 
     def getScore(self, scoreReceived): 
-        self.score = int(abs(scoreReceived))
+        self.score = int(scoreReceived)
         
     def setTitle(self, titleReceived):
         self.progress.setTitle(titleReceived)

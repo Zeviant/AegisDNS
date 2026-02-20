@@ -31,6 +31,9 @@ class Scanner_Window(QWidget):
         self._cooldown_timer.setInterval(1000)
         self._cooldown_timer.timeout.connect(self._cooldown_tick)
 
+        # Flag for switch between scans
+        self.flagScanType = 0 # 0 Custom Scan, 1 Deep Scan
+        
         # Create Main Layout
         self.setObjectName("SectionContent")
         
@@ -51,7 +54,6 @@ class Scanner_Window(QWidget):
         title = QLabel("Enter a URL / DOMAIN / IP")
         title.setObjectName("TitleTables")
         title.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        # title.setMaximumHeight(60)
         inputLayout.addWidget(title)
 
         subtitle = QLabel("Type a full URL, domain or an IP and click OK.")
@@ -68,6 +70,9 @@ class Scanner_Window(QWidget):
 
         mainToggle = AnimatedToggle()
         mainToggle.setFixedSize(mainToggle.sizeHint())
+        mainToggle.setCheckable(True)
+        mainToggle.clicked.connect(self.deepScanOnOff)
+
 
         scanTypeLayout.addWidget(scanTypeLabel)
         scanTypeLayout.addWidget(mainToggle)
@@ -146,6 +151,8 @@ class Scanner_Window(QWidget):
         self._deep_scan_cooldown_timer.setInterval(1000)
         self._deep_scan_cooldown_timer.timeout.connect(self._deep_scan_cooldown_tick)  
 
+    def deepScanOnOff(self):
+        self.flagScanType = not (self.flagScanType) 
 
     def paintEvent(self, event):
         opt = QStyleOption()
@@ -155,7 +162,6 @@ class Scanner_Window(QWidget):
 
     def _advance_progress(self):
         value = self.progress.value()
-
         if value >= 95:
             return
 
@@ -192,35 +198,39 @@ class Scanner_Window(QWidget):
             self.ok_btn.setText(f"Cooldown: {self._cooldown_left}s")
 
     def on_ok(self):
-        raw = self.input_edit.text().strip()
+        if self.flagScanType: 
+            self.on_deep_scan()
 
-        if not raw:
-            QMessageBox.warning(self, "Empty input", "Please enter a URL, domain, or IP.")
-            return
+        else: 
+            raw = self.input_edit.text().strip()
 
-        # Remember last submitted text so we can reference it in notifications
-        self._last_submitted_text = raw
+            if not raw:
+                QMessageBox.warning(self, "Empty input", "Please enter a URL, domain, or IP.")
+                return
 
-        try:
-            # Logic function call: uses imported classify_kind
-            kind, target = classify_kind(raw)
-        except ValueError as e:
-            QMessageBox.warning(self, "Invalid input", str(e))
-            return
+            # Remember last submitted text so we can reference it in notifications
+            self._last_submitted_text = raw
 
-        self.ok_btn.setEnabled(False)
-        self.ok_btn.setText("Preparing...")
+            try:
+                # Logic function call: uses imported classify_kind
+                kind, target = classify_kind(raw)
+            except ValueError as e:
+                QMessageBox.warning(self, "Invalid input", str(e))
+                return
 
-        self.progress.setValue(0)
-        self.progress.setVisible(True)
-        self._progress_accum = 0.0
-        self._progress_timer.start()
+            self.ok_btn.setEnabled(False)
+            self.ok_btn.setText("Preparing...")
 
-        # Delegation of work to the imported service layer thread
-        self._worker = ScannerScanThread(kind, target, self.userName, self)
-        self._worker.tick.connect(self.on_cooldown_tick)
-        self._worker.result.connect(self.on_result)
-        self._worker.start()
+            self.progress.setValue(0)
+            self.progress.setVisible(True)
+            self._progress_accum = 0.0
+            self._progress_timer.start()
+
+            # Delegation of work to the imported service layer thread
+            self._worker = ScannerScanThread(kind, target, self.userName, self)
+            self._worker.tick.connect(self.on_cooldown_tick)
+            self._worker.result.connect(self.on_result)
+            self._worker.start()
 
     def on_cooldown_tick(self, secs_left: int):
         self.ok_btn.setText(f"Cooldown: {secs_left}s" if secs_left > 0 else "Scanning...")
@@ -256,7 +266,7 @@ class Scanner_Window(QWidget):
             match section_identifier:
                 case "dns": 
                     scoreDNS = scoreDNS + risk_score
-                case "domain" | "registrar" | "privacy":
+                case "domain" | "registrar" | "privacy" | "whois":
                     scoreWhois = scoreWhois + risk_score
                 case "http" |"tls": 
                     scoreWeb = scoreWeb + risk_score
@@ -275,15 +285,15 @@ class Scanner_Window(QWidget):
         self._deep_scan_cooldown_left -= 1
         if self._deep_scan_cooldown_left <= 0:
             self._deep_scan_cooldown_timer.stop()
-            self.deep_scan_btn.setEnabled(True)
-            self.deep_scan_btn.setText("DEEP SCAN")
+            self.ok_btn.setEnabled(True)
+            self.ok_btn.setText("Ok")
         else:
-            self.deep_scan_btn.setText(f"Cooldown: {self._deep_scan_cooldown_left}s")
+            self.ok_btn.setText(f"Cooldown: {self._deep_scan_cooldown_left}s")
 
     def start_deep_scan_cooldown(self, seconds: int):
         self._deep_scan_cooldown_left = max(1, int(seconds))
-        self.deep_scan_btn.setEnabled(False)
-        self.deep_scan_btn.setText(f"Cooldown: {self._deep_scan_cooldown_left}s")
+        self.ok_btn.setEnabled(False)
+        self.ok_btn.setText(f"Cooldown: {self._deep_scan_cooldown_left}s")
         self._deep_scan_cooldown_timer.start()
 
     def on_deep_scan(self):
@@ -299,8 +309,8 @@ class Scanner_Window(QWidget):
             QMessageBox.warning(self, "Invalid input", str(e))
             return
 
-        self.deep_scan_btn.setEnabled(False)
-        self.deep_scan_btn.setText("Scanning...")
+        self.ok_btn.setEnabled(False)
+        self.ok_btn.setText("Scanning...")
 
         self._deep_scan_worker = VTDeepScanThread(kind, target, self)
         self._deep_scan_worker.tick.connect(self.on_deep_scan_cooldown_tick)
@@ -308,11 +318,15 @@ class Scanner_Window(QWidget):
         self._deep_scan_worker.start()
 
     def on_deep_scan_cooldown_tick(self, secs_left: int):
-        self.deep_scan_btn.setText(f"Cooldown: {secs_left}s" if secs_left > 0 else "Scanning...")
+        if self.flagScanType: 
+            self.ok_btn.setText(f"Cooldown: {secs_left}s" if secs_left > 0 else "Scanning...")
+        else:
+            self.ok_btn.setText("Ok")
+            self.ok_btn.setCheckable(True)
 
     def on_deep_scan_result(self, payload: dict):
-        self.deep_scan_btn.setEnabled(True)
-        self.deep_scan_btn.setText("DEEP SCAN")
+        self.ok_btn.setEnabled(True)
+        self.ok_btn.setText("Ok")
 
         if not payload.get("ok"):
             QMessageBox.critical(self, "Deep Scan Error", payload.get("message", "Unknown error"))
