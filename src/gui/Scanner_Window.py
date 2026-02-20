@@ -33,6 +33,9 @@ class Scanner_Window(QWidget):
 
         # Flag for switch between scans
         self.flagScanType = 0 # 0 Custom Scan, 1 Deep Scan
+        self.stats = {}
+        self.verdict = "UNKNOWN"
+        self.signals = []
         
         # Create Main Layout
         self.setObjectName("SectionContent")
@@ -112,6 +115,8 @@ class Scanner_Window(QWidget):
 
         # Create Output Layout
         self.outputLayout = QHBoxLayout()
+        self.minorScoreGraphLayout = QHBoxLayout()
+        self.halfOutputLayout = QVBoxLayout()
         self.outputLayout.setSpacing(20)
 
         # Score graphs
@@ -126,15 +131,27 @@ class Scanner_Window(QWidget):
         self.webScoreGraph.setTitle("Web Score")
 
         self.totalScoreGraph.setSize(250)
-        self.dnsScoreGraph.setSize(200)
-        self.webScoreGraph.setSize(200)
-        self.whoisScoreGraph.setSize(200)
+        self.dnsScoreGraph.setSize(150)
+        self.webScoreGraph.setSize(150)
+        self.whoisScoreGraph.setSize(150)
 
 
         self.outputLayout.addWidget(self.totalScoreGraph)
-        self.outputLayout.addWidget(self.dnsScoreGraph)
-        self.outputLayout.addWidget(self.webScoreGraph)
-        self.outputLayout.addWidget(self.whoisScoreGraph)
+        self.minorScoreGraphLayout.addWidget(self.whoisScoreGraph)
+        self.minorScoreGraphLayout.addWidget(self.dnsScoreGraph)
+        self.minorScoreGraphLayout.addWidget(self.webScoreGraph)
+        self.halfOutputLayout.addLayout(self.minorScoreGraphLayout)
+
+        self.additionalDetailsButton = QPushButton()
+        self.additionalDetailsButton.setObjectName("ScannerButton")
+        self.additionalDetailsButton.setText("View Additional Details")
+        self.additionalDetailsButton.hide()
+        self.additionalDetailsButton.setCheckable(True)
+        self.additionalDetailsButton.clicked.connect(self.showAdditionalDetailsDefaultScanner)
+        self.halfOutputLayout.addWidget(self.additionalDetailsButton)    
+
+        self.outputLayout.addLayout(self.halfOutputLayout)
+
 
         card_layout.addLayout(inputLayout)
         card_layout.addSpacing(40)
@@ -231,6 +248,10 @@ class Scanner_Window(QWidget):
             self._worker.tick.connect(self.on_cooldown_tick)
             self._worker.result.connect(self.on_result)
             self._worker.start()
+            self.additionalDetailsButton.show()
+
+    def showAdditionalDetailsDefaultScanner(self):
+        QTimer.singleShot(200, lambda: self.show_scan_box(self, self.verdict, self.stats, self.signals))
 
     def on_cooldown_tick(self, secs_left: int):
         self.ok_btn.setText(f"Cooldown: {secs_left}s" if secs_left > 0 else "Scanning...")
@@ -251,13 +272,13 @@ class Scanner_Window(QWidget):
             QMessageBox.critical(self, "Scan Error", payload.get("message", "Unknown error"))
             return
 
-        stats = payload.get("stats", {}) or {}
-        verdict = payload.get("verdict", "UNKNOWN")
-        signals = payload.get("signals", [])
+        self.stats = payload.get("stats", {}) or {}
+        self.verdict = payload.get("verdict", "UNKNOWN")
+        self.signals = payload.get("signals", [])
         scoreDNS = 0
         scoreWhois = 0
         scoreWeb = 0
-        for section in signals:
+        for section in self.signals:
             # Get if it is web, dns or whois
             section_identifier = section["name"].split("_")[0]
             risk_score = section.get("risk_score", 0)
@@ -272,7 +293,7 @@ class Scanner_Window(QWidget):
                     scoreWeb = scoreWeb + risk_score
             
         # Connect the scores with the graphs
-        risk_score = stats.get("risk_score", 0)
+        risk_score = self.stats.get("risk_score", 0)
         self.totalScoreGraph.getScore(risk_score)
         self.dnsScoreGraph.getScore(scoreDNS)
         self.whoisScoreGraph.getScore(scoreWhois)
