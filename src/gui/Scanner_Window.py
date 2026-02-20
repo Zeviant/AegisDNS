@@ -250,15 +250,16 @@ class Scanner_Window(QWidget):
         for section in signals:
             # Get if it is web, dns or whois
             section_identifier = section["name"].split("_")[0]
+            risk_score = section.get("risk_score", 0)
 
             # Sum the risk scores
             match section_identifier:
                 case "dns": 
-                    scoreDNS = scoreDNS + 1
+                    scoreDNS = scoreDNS + risk_score
                 case "domain" | "registrar" | "privacy":
-                    scoreWhois = scoreWhois + 1
+                    scoreWhois = scoreWhois + risk_score
                 case "http" |"tls": 
-                    scoreWeb = scoreWeb + 1
+                    scoreWeb = scoreWeb + risk_score
             
         # Connect the scores with the graphs
         risk_score = stats.get("risk_score", 0)
