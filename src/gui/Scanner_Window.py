@@ -162,11 +162,6 @@ class Scanner_Window(QWidget):
         self._progress_timer.setInterval(80)
         self._progress_timer.timeout.connect(self._advance_progress)
         self._worker = None
-        self._deep_scan_worker = None
-        self._deep_scan_cooldown_left = 0
-        self._deep_scan_cooldown_timer = QTimer(self)
-        self._deep_scan_cooldown_timer.setInterval(1000)
-        self._deep_scan_cooldown_timer.timeout.connect(self._deep_scan_cooldown_tick)  
 
     def deepScanOnOff(self):
         self.flagScanType = not (self.flagScanType) 
@@ -302,21 +297,6 @@ class Scanner_Window(QWidget):
         # # Small delay so user can see bar getting filled up (CAN REMOVE LATER MAYBE) @NicoVegaPortaluppi
         # QTimer.singleShot(200, lambda: self.show_scan_box(self, verdict, stats, signals))
 
-    def _deep_scan_cooldown_tick(self):
-        self._deep_scan_cooldown_left -= 1
-        if self._deep_scan_cooldown_left <= 0:
-            self._deep_scan_cooldown_timer.stop()
-            self.ok_btn.setEnabled(True)
-            self.ok_btn.setText("Ok")
-        else:
-            self.ok_btn.setText(f"Cooldown: {self._deep_scan_cooldown_left}s")
-
-    def start_deep_scan_cooldown(self, seconds: int):
-        self._deep_scan_cooldown_left = max(1, int(seconds))
-        self.ok_btn.setEnabled(False)
-        self.ok_btn.setText(f"Cooldown: {self._deep_scan_cooldown_left}s")
-        self._deep_scan_cooldown_timer.start()
-
     def on_deep_scan(self):
         raw = self.input_edit.text().strip()
 
@@ -334,30 +314,54 @@ class Scanner_Window(QWidget):
         self.ok_btn.setText("Scanning...")
 
         self._deep_scan_worker = VTDeepScanThread(kind, target, self)
-        self._deep_scan_worker.tick.connect(self.on_deep_scan_cooldown_tick)
         self._deep_scan_worker.result.connect(self.on_deep_scan_result)
         self._deep_scan_worker.start()
-
-    def on_deep_scan_cooldown_tick(self, secs_left: int):
-        if self.flagScanType: 
-            self.ok_btn.setText(f"Cooldown: {secs_left}s" if secs_left > 0 else "Scanning...")
-        else:
-            self.ok_btn.setText("Ok")
-            self.ok_btn.setCheckable(True)
 
     def on_deep_scan_result(self, payload: dict):
         self.ok_btn.setEnabled(True)
         self.ok_btn.setText("Ok")
 
         if not payload.get("ok"):
-            QMessageBox.critical(self, "Deep Scan Error", payload.get("message", "Unknown error"))
+            QMessageBox.critical(
+                self,
+                "Deep Scan Error",
+                payload.get("message", "Unknown error")
+            )
             return
 
         stats = payload.get("stats", {}) or {}
         verdict = payload.get("verdict", "UNKNOWN")
         engine_results = payload.get("engine_results", {})
+        self.start_cooldown(15) 
 
-        QTimer.singleShot(200, lambda: self.show_vt_deep_scan_box(self, verdict, stats, engine_results))
+        QTimer.singleShot(
+            200,
+            lambda: self.show_vt_deep_scan_box(self, verdict, stats, engine_results)
+        )
+
+    def start_cooldown(self, seconds: int):
+        self.cooldown_seconds = seconds
+        self.ok_btn.setEnabled(False)
+
+        self.cooldown_timer = QTimer(self)
+        self.cooldown_timer.timeout.connect(self.update_cooldown)
+        self.cooldown_timer.start(1000)
+
+        self.update_cooldown()
+
+    def update_cooldown(self):
+        if self.flagScanType: 
+            if self.cooldown_seconds > 0:
+                self.ok_btn.setText(f"Cooldown: {self.cooldown_seconds}s")
+                self.cooldown_seconds -= 1
+            else:
+                self.cooldown_timer.stop()
+                self.ok_btn.setEnabled(True)
+                self.ok_btn.setText("Ok")
+        else: 
+            self.ok_btn.setText("Ok")
+            self.ok_btn.setEnabled(True)
+
 
     
     # --- Qt Presentation Functions ---
