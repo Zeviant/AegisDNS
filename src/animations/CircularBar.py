@@ -29,7 +29,8 @@ class CPBar(QWidget):
         self.update
 
     def paintEvent(self, e):
-        pd = (self.p / 100) * 360
+        pd = (self.p / 60) * 360
+        pde = (self.p / 30) * 360
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -51,10 +52,16 @@ class CPBar(QWidget):
         painter.drawArc(rect, 0, 360 * 16)
 
         # ---- progress arc ----
-        pen = QPen(QColor("#3b82f6"), 8)
-        pen.setCapStyle(Qt.RoundCap)
-        painter.setPen(pen)
-        painter.drawArc(rect, 90 * 16, -pd * 16)
+        if self.title == "Total Score": 
+            pen = QPen(QColor("#3b82f6"), 8)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+            painter.drawArc(rect, 90 * 16, -pd * 16)
+        else: 
+            pen = QPen(QColor("#3b82f6"), 8)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+            painter.drawArc(rect, 90 * 16, -pde * 16)
 
         # ---- center text ----
         painter.setPen(QColor("#ffffff"))

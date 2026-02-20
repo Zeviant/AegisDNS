@@ -220,3 +220,8 @@
 {"ts": "2026-02-19T17:18:31.183726", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-19T17:19:12.626036", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
 {"ts": "2026-02-19T17:21:33.342169", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-20T11:51:10.065719", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-20T11:51:18.397450", "kind": "domain", "target": "vegaportaluppi.com", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 6}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-20T11:53:03.730253", "kind": "domain", "target": "youtube.com", "verdict": "SAFE", "stats": {"risk_score": -11, "signal_count": 4}, "source": "cache", "user": "Nico"}
+{"ts": "2026-02-20T11:54:29.934453", "kind": "url", "target": "https://www3.animeflv.net/", "verdict": "SUSPICIOUS", "stats": {"risk_score": 40, "signal_count": 6}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-02-20T11:58:22.384519", "kind": "domain", "target": "animeflv.com", "verdict": "CAUTION", "stats": {"risk_score": 36, "signal_count": 6}, "source": "scanner", "user": "Nico"}

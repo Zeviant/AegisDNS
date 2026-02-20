@@ -111,14 +111,14 @@ class Scanner_Window(QWidget):
 
         # Score graphs
         self.totalScoreGraph = CircularGraph()
+        self.whoisScoreGraph = CircularGraph()
         self.dnsScoreGraph = CircularGraph()
         self.webScoreGraph = CircularGraph()
-        self.whoisScoreGraph = CircularGraph()
-
+        
         self.totalScoreGraph.setTitle("Total Score")
+        self.whoisScoreGraph.setTitle("Whois Score")
         self.dnsScoreGraph.setTitle("DNS Score")
         self.webScoreGraph.setTitle("Web Score")
-        self.whoisScoreGraph.setTitle("Whois Score")
 
         self.totalScoreGraph.setSize(250)
         self.dnsScoreGraph.setSize(200)
