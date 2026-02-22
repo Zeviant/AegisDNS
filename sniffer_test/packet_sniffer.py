@@ -1,4 +1,4 @@
-from scapy.all import sniff, IP, TCP, UDP, DNS
+from scapy.all import sniff, IP, TCP, UDP, DNS, conf
 from datetime import datetime, timezone
 
 def packet_handler(packet, aggregator):
@@ -59,8 +59,23 @@ def packet_handler(packet, aggregator):
 
 def start_sniffing(aggregator, interface=None):
     print("[*] Starting packet sniffer...")
+    selected_interface = interface
+    if not selected_interface:
+        try:
+            selected_interface = str(conf.route.route("0.0.0.0")[0])
+            if selected_interface == "0.0.0.0":
+                selected_interface = None
+        except Exception:
+            selected_interface = None
+    if not selected_interface:
+        selected_interface = getattr(getattr(conf, "iface", None), "name", None) or str(getattr(conf, "iface", "") or "") or None
+    if selected_interface:
+        print(f"[*] Sniffing interface: {selected_interface}")
+    else:
+        print("[*] Sniffing interface: <scapy default>")
+
     sniff(
-        iface=interface,
+        iface=selected_interface,
         prn=lambda pkt: packet_handler(pkt, aggregator),
         store=False
     )
