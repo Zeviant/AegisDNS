@@ -362,8 +362,6 @@ class Scanner_Window(QWidget):
             self.ok_btn.setText("Ok")
             self.ok_btn.setEnabled(True)
 
-
-    
     # --- Qt Presentation Functions ---
     def render_scan_html(self, verdict: str, stats: dict, signals: list = None) -> str:
         color = {
