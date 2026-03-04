@@ -1,16 +1,32 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView, QMenu
-from PySide6.QtCore import Qt, QTimer
-from PySide6 import QtGui
-from PySide6.QtGui import QCursor, QGuiApplication
-from datetime import datetime
-import os
 import json
-from src.logic.vt_service import get_sorted_history, delete_history_entry, add_entry_to_whitelist, delete_whiteList_entry, delete_blackList_entry, add_entry_to_blacklist   
-from src.gui.WhiteList_Window import WhiteList_Window
+import os
+from datetime import datetime
+
+from PySide6 import QtGui
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QCursor, QGuiApplication
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QLabel,
+    QMenu,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 from src.gui.BlackList_Window import BlackList_Window
 from src.gui.main_window import show_scan_box
+from src.gui.WhiteList_Window import WhiteList_Window
+from src.logic.vt_service import (
+    add_entry_to_blacklist,
+    add_entry_to_whitelist,
+    delete_blackList_entry,
+    delete_history_entry,
+    delete_whiteList_entry,
+    get_sorted_history,
+)
 
-''' 
+"""
 TO BE ADDED:
  * SORTING
  * COPY OPTION
@@ -18,7 +34,8 @@ TO BE ADDED:
  * AUTOMATIC CACHE DELETION (AFTER CERTAIN TIME)
  * MANUAL ENTRY DELETION
  * MAYBE BEING ABLE TO VIEW ADDITIONAL ENTRY INFO BY CLICKING ON AN ENTRY (e.g. detailed VT results)
-'''
+"""
+
 
 class History_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -36,7 +53,7 @@ class History_Window(QWidget):
         # Instace for whiteblacklist window
         self.white_list_window = WhiteList_Window(user_name)
         self.black_list_window = BlackList_Window(user_name)
-        
+
         layout = QVBoxLayout(self)
 
         # -- Title --
@@ -48,6 +65,7 @@ class History_Window(QWidget):
         # -- Table --
         self.table = QTableWidget()
         self.table.setColumnCount(4)
+        self.table.setSortingEnabled(True)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Kind", "Target", "Verdict"])
         layout.addWidget(self.table)
 
@@ -57,8 +75,6 @@ class History_Window(QWidget):
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(True)
-
-
 
         # -- Load Table --
         self.load_history()
@@ -74,6 +90,8 @@ class History_Window(QWidget):
         vbar = self.table.verticalScrollBar()
         previous_scroll = vbar.value()
 
+        self.table.setSortingEnabled(False)
+
         entries = get_sorted_history(self.user_name)
         self.table.setRowCount(0)
 
@@ -88,18 +106,23 @@ class History_Window(QWidget):
                 formatted_ts = dt.strftime("%b %d, %Y %H:%M:%S")
             except Exception:
                 formatted_ts = ts
-            
+
             # -- Other columns --
             kind = entry.get("kind", "")
             target = entry.get("target", "")
             verdict = entry.get("verdict", "").upper()
 
             color = {
-                "MALICIOUS": "#dc2626", "DANGEROUS": "#ef4444", "SUSPICIOUS": "#f97316",
-                "CAUTION": "#eab308", "NEUTRAL": "#94a3b8",
-                "SAFE": "#22c55e", "SECURE": "#059669",
+                "MALICIOUS": "#dc2626",
+                "DANGEROUS": "#ef4444",
+                "SUSPICIOUS": "#f97316",
+                "CAUTION": "#eab308",
+                "NEUTRAL": "#94a3b8",
+                "SAFE": "#22c55e",
+                "SECURE": "#059669",
                 "BLOCK": "#ef4444",
-                "WHITELISTED": "#3b82f6", "BLACKLISTED": "#991b1b",
+                "WHITELISTED": "#3b82f6",
+                "BLACKLISTED": "#991b1b",
                 "TEST": "#3667ab",
             }.get(verdict, "#64748b")
 
@@ -108,11 +131,15 @@ class History_Window(QWidget):
             self.table.setItem(row, 0, formatted_ts_item)
 
             kind_item = QTableWidgetItem(kind)
-            kind_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
-            self.table.setItem(row, 1, QTableWidgetItem(kind_item))
-            
+            kind_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop
+            )
+            self.table.setItem(row, 1, kind_item)
+
             target_item = QTableWidgetItem(target)
-            target_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+            target_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop
+            )
             self.table.setItem(row, 2, target_item)
 
             verdict_item = QTableWidgetItem(verdict)
@@ -121,9 +148,11 @@ class History_Window(QWidget):
             verdict_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(row, 3, verdict_item)
 
+        self.table.setSortingEnabled(True)
+
         # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
-        self.table.setColumnWidth(2, 400) # Target
+        self.table.setColumnWidth(2, 400)  # Target
         self.table.setColumnWidth(3, 80)
         self.table.resizeRowsToContents()
 
@@ -136,7 +165,7 @@ class History_Window(QWidget):
         ts_item = self.table.item(row, 0)
         raw_ts = ts_item.data(Qt.UserRole)
 
-        # Target column 
+        # Target column
         target = self.table.item(row, 2).text()
 
         # Remove entry from JSONL
@@ -159,34 +188,33 @@ class History_Window(QWidget):
             "kind": self.table.item(row, 1).text(),
             "target": self.table.item(row, 2).text(),
             "verdict": self.table.item(row, 3).text(),
-            "user": self.user_name
+            "user": self.user_name,
         }
 
-       
         return entry
-    
-    def addWhiteList(self, row): 
+
+    def addWhiteList(self, row):
         entry = self.get_entry_from_row(row)
-        
+
         # Check if entry is already in the json
         if self.white_list_window.check_entry(entry):
             print("Entry already in whitelist table, skipping.")
             return
-        
+
         add_entry_to_whitelist(entry)
 
-    def addBlackList(self, row): 
-            entry = self.get_entry_from_row(row)
-            
-            # Check if entry is already in the json
-            if self.black_list_window.check_entry(entry):
-                print("Entry already in whitelist table, skipping.")
-                return
-            
-            add_entry_to_blacklist(entry)
+    def addBlackList(self, row):
+        entry = self.get_entry_from_row(row)
+
+        # Check if entry is already in the json
+        if self.black_list_window.check_entry(entry):
+            print("Entry already in whitelist table, skipping.")
+            return
+
+        add_entry_to_blacklist(entry)
 
     # -- Menu of options --
-    def show_options(self, row, col): 
+    def show_options(self, row, col):
         menu = QMenu(self.table)
         menu.addAction("Copy")
         menu.addAction("View additional info")
@@ -195,7 +223,9 @@ class History_Window(QWidget):
         menu.addAction("Delete")
 
         # Get mouse position
-        cursor_pos = self.mapToGlobal(self.table.viewport().mapFromGlobal(QCursor.pos()))
+        cursor_pos = self.mapToGlobal(
+            self.table.viewport().mapFromGlobal(QCursor.pos())
+        )
         selected = menu.exec_(cursor_pos)
         if selected is None:
             return
@@ -244,7 +274,7 @@ class History_Window(QWidget):
             show_scan_box(self, verdict, stats, signals, silent=True)
             return
 
-    # --- Scanner cache helpers ---
+    # --- Scanner cache helpers ---automaticamente
     def _scanner_cache_path(self) -> str:
         base_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(base_dir, "..", "VT_Cache", "scanner_cache.json")
@@ -252,7 +282,11 @@ class History_Window(QWidget):
     def _cache_key(self, kind: str, target: str) -> str:
         kind = (kind or "").lower()
         if kind == "url":
-            norm = target if target.lower().startswith(("http://", "https://")) else f"http://{target}"
+            norm = (
+                target
+                if target.lower().startswith(("http://", "https://"))
+                else f"http://{target}"
+            )
             return f"url:{norm}"
         return f"{kind}:{target}"
 
@@ -268,4 +302,3 @@ class History_Window(QWidget):
             return cache.get(key)
         except Exception:
             return None
-        
