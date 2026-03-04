@@ -1,9 +1,19 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView, QMenu
-from PySide6.QtCore import Qt, QTimer
-from PySide6 import QtGui
-from PySide6.QtGui import QCursor
 from datetime import datetime
-from src.logic.vt_service import get_sorted_black_list, delete_blackList_entry
+
+from PySide6 import QtGui
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QCursor
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QLabel,
+    QMenu,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+from src.logic.vt_service import delete_blackList_entry, get_sorted_black_list
+
 
 class BlackList_Window(QWidget):
     def __init__(self, user_name: str):
@@ -28,6 +38,7 @@ class BlackList_Window(QWidget):
         # -- Table --
         self.table = QTableWidget()
         self.table.setColumnCount(4)
+        self.table.setSortingEnabled(True)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Kind", "Target", "Verdict"])
         layout.addWidget(self.table)
 
@@ -52,6 +63,8 @@ class BlackList_Window(QWidget):
         vbar = self.table.verticalScrollBar()
         previous_scroll = vbar.value()
 
+        self.table.setSortingEnabled(False)
+
         entries = get_sorted_black_list(self.user_name)
         self.table.setRowCount(0)
 
@@ -66,18 +79,23 @@ class BlackList_Window(QWidget):
                 formatted_ts = dt.strftime("%b %d, %Y %H:%M:%S")
             except Exception:
                 formatted_ts = ts
-            
+
             # -- Other columns --
             kind = entry.get("kind", "")
             target = entry.get("target", "")
             verdict = entry.get("verdict", "").upper()
 
             color = {
-                "MALICIOUS": "#dc2626", "DANGEROUS": "#ef4444", "SUSPICIOUS": "#f97316",
-                "CAUTION": "#eab308", "NEUTRAL": "#94a3b8",
-                "SAFE": "#22c55e", "SECURE": "#059669",
+                "MALICIOUS": "#dc2626",
+                "DANGEROUS": "#ef4444",
+                "SUSPICIOUS": "#f97316",
+                "CAUTION": "#eab308",
+                "NEUTRAL": "#94a3b8",
+                "SAFE": "#22c55e",
+                "SECURE": "#059669",
                 "BLOCK": "#ef4444",
-                "WHITELISTED": "#3b82f6", "BLACKLISTED": "#991b1b",
+                "WHITELISTED": "#3b82f6",
+                "BLACKLISTED": "#991b1b",
                 "TEST": "#3667ab",
             }.get(verdict, "#64748b")
 
@@ -86,11 +104,15 @@ class BlackList_Window(QWidget):
             self.table.setItem(row, 0, formatted_ts_item)
 
             kind_item = QTableWidgetItem(kind)
-            kind_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+            kind_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop
+            )
             self.table.setItem(row, 1, QTableWidgetItem(kind_item))
-            
+
             target_item = QTableWidgetItem(target)
-            target_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+            target_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop
+            )
             self.table.setItem(row, 2, target_item)
 
             verdict_item = QTableWidgetItem(verdict)
@@ -99,9 +121,10 @@ class BlackList_Window(QWidget):
             verdict_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(row, 3, verdict_item)
 
+        self.table.setSortingEnabled(True)
         # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
-        self.table.setColumnWidth(2, 400) # Target
+        self.table.setColumnWidth(2, 400)  # Target
         self.table.resizeRowsToContents()
 
         # Singleshot applies value afetr Qt finishes resizing/reloading table
@@ -121,31 +144,33 @@ class BlackList_Window(QWidget):
                 return True
 
         return False
-        
+
     # -- Delete Item of the Table --
     def delete_item(self, row):
         # Get RAW timestamp from data so it matches the entry in the jsonl
         ts_item = self.table.item(row, 0)
         raw_ts = ts_item.data(Qt.UserRole)
 
-        # Target column 
+        # Target column
         target = self.table.item(row, 2).text()
 
         # Remove entry from JSONL
         delete_blackList_entry(self.user_name, raw_ts, target)
-        
+
         # Remove entry form UI
         self.table.removeRow(row)
 
     # -- Menu of options --
-    def show_options(self, row): 
+    def show_options(self, row):
         menu = QMenu(self.table)
         menu.addAction("Delete")
 
         # Get mouse position
-        cursor_pos = self.mapToGlobal(self.table.viewport().mapFromGlobal(QCursor.pos()))
+        cursor_pos = self.mapToGlobal(
+            self.table.viewport().mapFromGlobal(QCursor.pos())
+        )
         selected = menu.exec_(cursor_pos)
-        
-        match selected.text(): 
-            case "Delete": 
+
+        match selected.text():
+            case "Delete":
                 self.delete_item(row)
