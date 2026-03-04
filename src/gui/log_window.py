@@ -1,9 +1,20 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QAbstractItemView, QPushButton, QHeaderView
-from PySide6.QtCore import Qt, QTimer
-from PySide6 import QtGui
-from datetime import datetime
-from src.logic.backend_server import get_sorted_logs
 import json
+from datetime import datetime
+
+from PySide6 import QtGui
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+from src.logic.backend_server import get_sorted_logs
 
 
 class Log_Window(QWidget):
@@ -31,6 +42,7 @@ class Log_Window(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(3)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Target", "Action"])
+        self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
 
         # -- Table Styling  --
@@ -50,6 +62,8 @@ class Log_Window(QWidget):
         vbar = self.table.verticalScrollBar()
         previous_scroll = vbar.value()
 
+        self.table.setSortingEnabled(False)
+
         entries = get_sorted_logs(self.user_name)
         self.table.setRowCount(0)
 
@@ -64,22 +78,26 @@ class Log_Window(QWidget):
                 formatted_ts = dt.strftime("%b %d, %Y %H:%M:%S")
             except Exception:
                 formatted_ts = str(timestamp) if timestamp else "N/A"
-            
+
             # -- Target column --
             target = entry.get("indicator", "")
-            
+
             timestamp_item = QTableWidgetItem(formatted_ts)
             self.table.setItem(row, 0, timestamp_item)
-            
+
             target_item = QTableWidgetItem(target)
-            target_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            target_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
+            )
             self.table.setItem(row, 1, target_item)
 
             # -- SCAN button  --
             scan_btn = QPushButton("SCAN")
             scan_btn.setObjectName("ScanButton")
-            scan_btn.clicked.connect(lambda checked, addr=target: self.scan_address(addr))
-            
+            scan_btn.clicked.connect(
+                lambda checked, addr=target: self.scan_address(addr)
+            )
+
             btn_container = QWidget()
             btn_layout = QHBoxLayout(btn_container)
             btn_layout.setContentsMargins(0, 0, 0, 0)
@@ -87,10 +105,11 @@ class Log_Window(QWidget):
             btn_layout.addWidget(scan_btn)
             btn_layout.addStretch()
             self.table.setCellWidget(row, 2, btn_container)
-            
+
+        self.table.setSortingEnabled(True)
         # -- Column & Row size adjustments  --
         self.table.resizeColumnsToContents()
-        self.table.setColumnWidth(1, 420)  
+        self.table.setColumnWidth(1, 420)
         self.table.resizeRowsToContents()
 
         QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))
@@ -99,14 +118,13 @@ class Log_Window(QWidget):
         # Update sidebar menu
         self.sidebar.sideMenu.setCurrentRow(0)
         self.sidebar.sideMenuIcon.setCurrentRow(0)
-        
+
         # Switch to main window
         self.sidebar.mainContent.setCurrentIndex(0)
-        
+
         # Get the main window widget
         main_window = self.sidebar.mainContent.widget(0)
-        if hasattr(main_window, 'input_edit'):
+        if hasattr(main_window, "input_edit"):
             # Set address & scan
             main_window.input_edit.setText(address)
             main_window.on_ok()
-
