@@ -39,6 +39,8 @@ class BlackList_Window(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setSortingEnabled(True)
+        self.table.setColumnWidth(0, 25)
+        self.table.verticalHeader().setMinimumWidth(30)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Kind", "Target", "Verdict"])
         layout.addWidget(self.table)
 

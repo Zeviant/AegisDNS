@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QLabel,
     QMenu,
+    QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -56,6 +57,10 @@ class History_Window(QWidget):
 
         layout = QVBoxLayout(self)
 
+        # Settings file path
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        self.SETTINGS_FILE = os.path.join(BASE_DIR, "..", "VT_Cache", "settings.json")
+
         # -- Title --
         title = QLabel(f"History Log")
         title.setObjectName("TitleTables")
@@ -66,8 +71,16 @@ class History_Window(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setSortingEnabled(True)
+        self.table.setColumnWidth(0, 25)
+        self.table.verticalHeader().setMinimumWidth(30)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Kind", "Target", "Verdict"])
         layout.addWidget(self.table)
+
+        # Create reset button
+        self.corner_btn = QPushButton("-", self.table)
+        self.corner_btn.setFixedSize(24, 30)
+        self.update_corner()
+        self.corner_btn.clicked.connect(self.reset_scan_history)
 
         # -- Table Styling  --
         self.table.setAlternatingRowColors(True)
@@ -84,6 +97,44 @@ class History_Window(QWidget):
 
         # Start periodic refresh
         self._refresh_timer.start()
+
+    def update_corner(self):
+        corner_w = self.table.verticalHeader().width()
+        corner_h = self.table.horizontalHeader().height()
+
+        btn_w = self.corner_btn.width()
+        btn_h = self.corner_btn.height()
+
+        x = (corner_w - btn_w) // 2
+        y = (corner_h - btn_h) // 2
+        print(y)
+        self.corner_btn.move(3, 3)
+        self.corner_btn.raise_()
+
+    def _vt_cache_dir(self) -> str:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, "..", "VT_Cache")
+
+    def reset_scan_history(self):
+        cache_dir = self._vt_cache_dir()
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            scanner_cache = os.path.join(cache_dir, "scanner_cache.json")
+            vt_history = os.path.join(cache_dir, "vt_history.jsonl")
+            scan_requests = os.path.join(cache_dir, "scan_requests.jsonl")
+
+            # Reset scanner cache
+            if os.path.exists(scanner_cache):
+                with open(scanner_cache, "w", encoding="utf-8") as f:
+                    json.dump({"last_call": 0, "cache": {}}, f)
+
+            # Clear history & request logs
+            for path in (vt_history, scan_requests):
+                if os.path.exists(path):
+                    with open(path, "w", encoding="utf-8"):
+                        pass
+        except Exception:
+            pass
 
     # -- Function to load rows in the table --
     def load_history(self):

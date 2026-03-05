@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 
 from PySide6 import QtGui
@@ -32,6 +33,10 @@ class Log_Window(QWidget):
 
         layout = QVBoxLayout(self)
 
+        # Settings file path
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        self.SETTINGS_FILE = os.path.join(BASE_DIR, "..", "VT_Cache", "settings.json")
+
         # -- Title --
         title = QLabel(f"Navigation Logs")
         title.setObjectName("TitleTables")
@@ -41,9 +46,17 @@ class Log_Window(QWidget):
         # -- Table --
         self.table = QTableWidget()
         self.table.setColumnCount(3)
+        self.table.setColumnWidth(0, 25)
+        self.table.verticalHeader().setMinimumWidth(30)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Target", "Action"])
         self.table.setSortingEnabled(True)
         layout.addWidget(self.table)
+
+        # Create reset button
+        self.corner_btn = QPushButton("-", self.table)
+        self.corner_btn.setFixedSize(24, 30)
+        self.update_corner()
+        self.corner_btn.clicked.connect(self.reset_navigation_history)
 
         # -- Table Styling  --
         self.table.setAlternatingRowColors(True)
@@ -57,6 +70,34 @@ class Log_Window(QWidget):
 
         # Start periodic refresh
         self._refresh_timer.start()
+
+    def update_corner(self):
+        corner_w = self.table.verticalHeader().width()
+        corner_h = self.table.horizontalHeader().height()
+
+        btn_w = self.corner_btn.width()
+        btn_h = self.corner_btn.height()
+
+        x = (corner_w - btn_w) // 2
+        y = (corner_h - btn_h) // 2
+        print(y)
+        self.corner_btn.move(3, 3)
+        self.corner_btn.raise_()
+
+    def _vt_cache_dir(self) -> str:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, "..", "VT_Cache")
+
+    def reset_navigation_history(self):
+        cache_dir = self._vt_cache_dir()
+        logging_file = os.path.join(cache_dir, "logging_mode_history.jsonl")
+        # Reset logging history
+        try:
+            if os.path.exists(logging_file):
+                with open(logging_file, "w", encoding="utf-8"):
+                    pass
+        except Exception:
+            pass
 
     def load_logs(self):
         vbar = self.table.verticalScrollBar()
