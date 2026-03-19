@@ -117,6 +117,9 @@ class SideBarMainWindow(QMainWindow):
         self._packet_log_timer.timeout.connect(self._log_packet_counts)
         self._packet_log_timer.start()
 
+        self._last_packet_alert_monotonic = 0.0
+        self._packet_alert_armed = True
+
     def whichProtocol(self, snapshot):
         if not snapshot:
             return
@@ -171,6 +174,8 @@ class SideBarMainWindow(QMainWindow):
         unique_count = len(unique_senders)
         print(f"[Sniffer] last 10s: TCP={tcp} UDP={udp} total={total} unique_senders={unique_count}")
 
+        self._maybe_notify_packet_threshold(total_packets_10s=total, unique_senders_10s=unique_count)
+
         # Update the protocol animation counters with real sniffer data
         if tcp > udp:
             dominant = "TCP"
@@ -192,6 +197,56 @@ class SideBarMainWindow(QMainWindow):
                 self.PacketsWindowPage.sent_dominant_animation(dominant, tcp, subservient, udp)
 
         self.whichProtocol(snapshot)
+
+    def _load_settings(self) -> dict:
+        try:
+            if os.path.exists(self.SETTINGS_FILE):
+                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data if isinstance(data, dict) else {}
+        except Exception:
+            pass
+        return {}
+
+    def _maybe_notify_packet_threshold(self, *, total_packets_10s: int, unique_senders_10s: int) -> None:
+        if self.is_notifications_muted():
+            return
+
+        settings = self._load_settings()
+        enabled = settings.get("packet_alert_enabled", True)
+        if enabled is False:
+            return
+
+        try:
+            threshold = int(settings.get("packet_alert_threshold_10s", 12_000))
+        except Exception:
+            threshold = 12_000
+
+        try:
+            cooldown_s = int(settings.get("packet_alert_cooldown_seconds", 60))
+        except Exception:
+            cooldown_s = 60
+
+        if total_packets_10s <= threshold:
+            self._packet_alert_armed = True
+            return
+
+        if not self._packet_alert_armed:
+            return
+
+        now_m = time.monotonic()
+        if cooldown_s > 0 and (now_m - self._last_packet_alert_monotonic) < cooldown_s:
+            self._packet_alert_armed = False
+            return
+        self._last_packet_alert_monotonic = now_m
+        self._packet_alert_armed = False
+
+        title = "High packet rate detected"
+        message = (
+            f"Last 10s: {total_packets_10s:,} packets "
+            f"(threshold {threshold:,}), unique senders: {unique_senders_10s}"
+        )
+        self.tray_icon.showMessage(title, message, QSystemTrayIcon.Warning, 7000)
 
     def closeEvent(self, event):
         if hasattr(self, "sniffer_worker"):

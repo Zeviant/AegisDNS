@@ -1,0 +1,6 @@
+{"ts": "2026-03-19T13:44:53.231129", "kind": "domain", "target": "pablolird.com", "verdict": "SUSPICIOUS", "stats": {"risk_score": 45, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-03-19T13:45:46.045104", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 58, "signal_count": 8}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-03-19T13:46:43.879113", "kind": "domain", "target": "vegaportaluppi.com", "verdict": "MALICIOUS", "stats": {"risk_score": 70, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-03-19T13:47:25.460245", "kind": "domain", "target": "generalinteresttopics.com", "verdict": "MALICIOUS", "stats": {"risk_score": 60, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-03-19T13:47:51.084717", "kind": "domain", "target": "instagram.com", "verdict": "SECURE", "stats": {"risk_score": 1, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-03-19T14:04:22.651922", "kind": "domain", "target": "youtube.com", "verdict": "SECURE", "stats": {"risk_score": 6, "signal_count": 9}, "source": "scanner", "user": "Ben"}
