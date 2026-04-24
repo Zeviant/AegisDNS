@@ -34,7 +34,7 @@ class SideBarMainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.username = user_name
         self.password = password
-        self.setWindowTitle("Capstone Application")
+        self.setWindowTitle("AeghisDNS")
         self.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
 
         # Create system tray icon

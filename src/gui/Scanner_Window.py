@@ -9,6 +9,8 @@ import time
 # Connection with service layer
 from src.logic.vt_service import classify_kind, VTDeepScanThread
 from src.logic.scanner_service import ScannerScanThread
+from src.logic.llm_service import LLMExplainThread, model_is_downloaded
+from src.gui.model_download_dialog import ModelDownloadDialog
 
 # Connection with animations
 from src.animations.AnimatedToggle import AnimatedToggle
@@ -148,7 +150,14 @@ class Scanner_Window(QWidget):
         self.additionalDetailsButton.hide()
         self.additionalDetailsButton.setCheckable(True)
         self.additionalDetailsButton.clicked.connect(self.showAdditionalDetailsDefaultScanner)
-        self.halfOutputLayout.addWidget(self.additionalDetailsButton)    
+        self.halfOutputLayout.addWidget(self.additionalDetailsButton)
+
+        self.aiExplainButton = QPushButton()
+        self.aiExplainButton.setObjectName("ScannerButton")
+        self.aiExplainButton.setText("AI Overview")
+        self.aiExplainButton.hide()
+        self.aiExplainButton.clicked.connect(self.on_ai_explain)
+        self.halfOutputLayout.addWidget(self.aiExplainButton)
 
         self.outputLayout.addLayout(self.halfOutputLayout)
 
@@ -239,11 +248,13 @@ class Scanner_Window(QWidget):
             self._progress_timer.start()
 
             # Delegation of work to the imported service layer thread
+            self.additionalDetailsButton.hide()
+            self.aiExplainButton.hide()
+
             self._worker = ScannerScanThread(kind, target, self.userName, self)
             self._worker.tick.connect(self.on_cooldown_tick)
             self._worker.result.connect(self.on_result)
             self._worker.start()
-            self.additionalDetailsButton.show()
 
     def showAdditionalDetailsDefaultScanner(self):
         QTimer.singleShot(200, lambda: self.show_scan_box(self, self.verdict, self.stats, self.signals))
@@ -293,6 +304,9 @@ class Scanner_Window(QWidget):
         self.dnsScoreGraph.getScore(scoreDNS)
         self.whoisScoreGraph.getScore(scoreWhois)
         self.webScoreGraph.getScore(scoreWeb)
+
+        self.additionalDetailsButton.show()
+        self.aiExplainButton.show()
 
         # # Small delay so user can see bar getting filled up (CAN REMOVE LATER MAYBE) @NicoVegaPortaluppi
         # QTimer.singleShot(200, lambda: self.show_scan_box(self, verdict, stats, signals))
@@ -479,3 +493,51 @@ class Scanner_Window(QWidget):
             lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         box.exec()
+
+    # --- AI Overview ---
+    def on_ai_explain(self):
+        if not model_is_downloaded():
+            dlg = ModelDownloadDialog(self)
+            if dlg.exec() != ModelDownloadDialog.Accepted:
+                return
+
+        self.aiExplainButton.setEnabled(False)
+        self.aiExplainButton.setText("Analyzing...")
+        self._llm_worker = LLMExplainThread(self.verdict, self.stats, self.signals, self)
+        self._llm_worker.result.connect(self.on_ai_result)
+        self._llm_worker.start()
+
+    def on_ai_result(self, payload: dict):
+        self.aiExplainButton.setEnabled(True)
+        self.aiExplainButton.setText("AI Overview")
+        if not payload.get("ok"):
+            QMessageBox.critical(self, "AI Error", payload.get("message", "Unknown error"))
+            return
+        self.show_ai_explain_box(
+            payload.get("explanation", ""),
+            payload.get("recommendation", ""),
+        )
+
+    def show_ai_explain_box(self, explanation: str, recommendation: str):
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Information)
+        box.setWindowTitle("AI Overview")
+        box.setTextFormat(Qt.RichText)
+        box.setText(self._render_ai_explain_html(explanation, recommendation))
+        box.setStandardButtons(QMessageBox.Ok)
+        lbl = box.findChild(QLabel, "qt_msgbox_label")
+        if lbl:
+            lbl.setWordWrap(True)
+            lbl.setMinimumSize(520, 300)
+            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        box.exec()
+
+    def _render_ai_explain_html(self, explanation: str, recommendation: str) -> str:
+        return f"""
+        <div style="font-family:'Segoe UI',Arial; font-size:14px; color:#e5e7eb;">
+            <h2 style="margin:0 0 12px; font-size:18px; color:#60a5fa;">AI Analysis</h2>
+            <p style="margin-bottom:16px;">{explanation}</p>
+            <h3 style="margin:0 0 8px; font-size:16px; color:#34d399;">Recommendation</h3>
+            <p style="margin:0;">{recommendation}</p>
+        </div>
+        """
