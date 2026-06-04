@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea, QSpinBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea, QSpinBox, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -10,6 +10,10 @@ from src.gui.log_window import Log_Window
 from PySide6.QtWidgets import QApplication
 from src.logic.settings_service import get_setting, set_setting
 from src.gui.main_window import apply_theme
+from src.logic.vt_service import get_sorted_history
+from src.logic.backend_server import get_sorted_logs
+import csv
+from datetime import datetime
 
 class Settings_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -228,6 +232,28 @@ class Settings_Window(QWidget):
         reset_nav_btn.clicked.connect(self.reset_navigation_history)
         history_layout.addWidget(reset_nav_btn)
 
+        # Export scan history to CSV
+        history_layout.addSpacing(16)
+        export_history_btn = QPushButton("Export scan history to CSV")
+        export_history_btn.setObjectName("exportHistoryBtn")
+        export_history_btn.setFont(QFont("Segoe UI", 11))
+        export_history_btn.setMinimumHeight(40)
+        export_history_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        export_history_btn.setFixedWidth(260)
+        export_history_btn.clicked.connect(self.export_history_to_csv)
+        history_layout.addWidget(export_history_btn)
+
+        # Export navigation log to CSV
+        history_layout.addSpacing(16)
+        export_nav_btn = QPushButton("Export navigation log to CSV")
+        export_nav_btn.setObjectName("exportNavigationBtn")
+        export_nav_btn.setFont(QFont("Segoe UI", 11))
+        export_nav_btn.setMinimumHeight(40)
+        export_nav_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        export_nav_btn.setFixedWidth(260)
+        export_nav_btn.clicked.connect(self.export_navigation_to_csv)
+        history_layout.addWidget(export_nav_btn)
+
     def changeTheme(self, theme_name):
         apply_theme(theme_name)
         set_setting(self.user_name, "theme", theme_name)
@@ -298,4 +324,79 @@ class Settings_Window(QWidget):
                     pass
         except Exception:
             pass
+
+    # --- CSV exports ---
+    def _format_log_timestamp(self, raw) -> str:
+        try:
+            ts = int(raw)
+            if ts > 1e12:  # milliseconds → seconds
+                ts = ts // 1000
+            return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return str(raw) if raw else ""
+
+    def _format_history_timestamp(self, raw: str) -> str:
+        try:
+            return datetime.fromisoformat(raw).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return raw or ""
+
+    def _ask_save_path(self, suggested_name: str) -> str | None:
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save CSV", suggested_name, "CSV files (*.csv)"
+        )
+        return path or None
+
+    def export_history_to_csv(self):
+        entries = get_sorted_history(self.user_name)
+        if not entries:
+            QMessageBox.information(self, "Export scan history", "No history entries to export.")
+            return
+
+        path = self._ask_save_path(f"scan_history_{self.user_name}.csv")
+        if not path:
+            return
+
+        try:
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["timestamp", "kind", "target", "verdict", "risk_score", "source"])
+                for e in entries:
+                    stats = e.get("stats", {}) or {}
+                    writer.writerow([
+                        self._format_history_timestamp(e.get("ts", "")),
+                        e.get("kind", ""),
+                        e.get("target", ""),
+                        e.get("verdict", ""),
+                        stats.get("risk_score", ""),
+                        e.get("source", ""),
+                    ])
+            QMessageBox.information(self, "Export scan history", f"Exported {len(entries)} entries to:\n{path}")
+        except Exception as ex:
+            QMessageBox.critical(self, "Export failed", str(ex))
+
+    def export_navigation_to_csv(self):
+        entries = get_sorted_logs(self.user_name)
+        if not entries:
+            QMessageBox.information(self, "Export navigation log", "No navigation entries to export.")
+            return
+
+        path = self._ask_save_path(f"navigation_log_{self.user_name}.csv")
+        if not path:
+            return
+
+        try:
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["timestamp", "mode", "url", "verdict"])
+                for e in entries:
+                    writer.writerow([
+                        self._format_log_timestamp(e.get("timestamp")),
+                        e.get("mode", ""),
+                        e.get("indicator", "") or e.get("url", ""),
+                        e.get("verdict", ""),
+                    ])
+            QMessageBox.information(self, "Export navigation log", f"Exported {len(entries)} entries to:\n{path}")
+        except Exception as ex:
+            QMessageBox.critical(self, "Export failed", str(ex))
 

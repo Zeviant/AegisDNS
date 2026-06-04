@@ -1,0 +1,2 @@
+{"ts": "2026-06-04T12:13:11.979156", "kind": "domain", "target": "hello.com", "verdict": "NEUTRAL", "stats": {"risk_score": 26, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T12:13:34.531538", "kind": "domain", "target": "yoyo.com", "verdict": "CAUTION", "stats": {"risk_score": 37, "signal_count": 9}, "source": "scanner", "user": "Ben"}
