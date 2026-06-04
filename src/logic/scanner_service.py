@@ -117,15 +117,15 @@ def prune_stale_cache_entries(max_age_days: int) -> int:
 def risk_score_to_verdict(risk_score: int) -> str:
     if risk_score >= 60:
         return "MALICIOUS"
-    elif risk_score >= 50:
+    elif risk_score >= 51:
         return "DANGEROUS"
-    elif risk_score >= 40:
+    elif risk_score >= 41:
         return "SUSPICIOUS"
-    elif risk_score >= 30:
+    elif risk_score >= 31:
         return "CAUTION"
-    elif risk_score >= 20:
+    elif risk_score >= 21:
         return "NEUTRAL"
-    elif risk_score >= 10:
+    elif risk_score >= 11:
         return "SAFE"
     else:
         return "SECURE"

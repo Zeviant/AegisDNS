@@ -2,3 +2,14 @@
 {"ts": "2026-06-04T12:58:59.117932", "kind": "domain", "target": "vegaportaluppi.com", "verdict": "MALICIOUS", "stats": {"risk_score": 60, "signal_count": 6}, "source": "scanner", "user": "Nico"}
 {"ts": "2026-06-04T13:29:22.538411", "kind": "domain", "target": "youtube.com", "verdict": "NEUTRAL", "stats": {"risk_score": 20, "signal_count": 6}, "source": "cache", "user": "Nico"}
 {"ts": "2026-06-04T13:29:35.852807", "kind": "domain", "target": "instagram.com", "verdict": "NEUTRAL", "stats": {"risk_score": 21, "signal_count": 6}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-06-04T20:31:05.417445", "kind": "domain", "target": "nicovegaportaluppi.com", "verdict": "DANGEROUS", "stats": {"risk_score": 58, "signal_count": 5}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:31:34.274900", "kind": "domain", "target": "vegaportaluppi.com", "verdict": "MALICIOUS", "stats": {"risk_score": 62, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T21:28:34.975165", "kind": "domain", "target": "instagram.com", "verdict": "SECURE", "stats": {"risk_score": 2, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T23:16:01.457324", "kind": "domain", "target": "facebook.com", "verdict": "SECURE", "stats": {"risk_score": 0, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-06-05T00:07:39.577941", "kind": "domain", "target": "reddit.com", "verdict": "SECURE", "stats": {"risk_score": 9, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-05T00:07:42.975559", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 22, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-06-05T00:07:47.730947", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-06-05T01:03:45.249417", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Main_Page", "verdict": "SAFE", "stats": {"risk_score": 15, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-05T01:05:10.883104", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Earth_2026", "verdict": "SAFE", "stats": {"risk_score": 14, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-05T01:05:29.951802", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Main_Page", "verdict": "SAFE", "stats": {"risk_score": 15, "signal_count": 9}, "source": "cache", "user": "Ben"}
+{"ts": "2026-06-05T01:05:40.834371", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Category:Nature", "verdict": "SAFE", "stats": {"risk_score": 14, "signal_count": 9}, "source": "scanner", "user": "Ben"}

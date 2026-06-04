@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Backstone Capend DNS monitor",
+    "name": "AegisDNS",
     "version": "1.0",
     "description": "Monitors connections for safety purposes.",
     "permissions": [
