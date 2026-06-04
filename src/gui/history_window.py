@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
+    QLineEdit,
+    QHBoxLayout,
 )
 from src.gui.BlackList_Window import BlackList_Window
 from src.gui.main_window import show_scan_box, show_ai_overview_box
@@ -74,6 +76,29 @@ class History_Window(QWidget):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
+        # To make the filters persirst
+        self._filters: list[QLineEdit] = []
+        self._filter_values: list[str] = ["", "", "", ""]  
+
+        filter_bar = QWidget()
+        self._filter_layout = QHBoxLayout(filter_bar)
+        self._filter_layout.setContentsMargins(0, 2, 0, 2)
+        self._filter_layout.setSpacing(4)
+
+        column_labels = ["Timestamp", "Kind", "Target", "Verdict"]
+        for col_idx, col_label in enumerate(column_labels):
+            edit = QLineEdit()
+            edit.setPlaceholderText(f"{col_label}...")
+            edit.setClearButtonEnabled(True)
+            edit.setVisible(False)  # hidden until activated
+            edit.textChanged.connect(self._apply_filters)
+            edit.returnPressed.connect(lambda idx=col_idx: self._commit_filter(idx))
+            self._filters.append(edit)
+            self._filter_layout.addWidget(edit)
+
+        layout.addWidget(filter_bar)
+        self._filter_bar = filter_bar
+
         # -- Table --
         self.table = QTableWidget()
         self.table.setColumnCount(4)
@@ -81,6 +106,9 @@ class History_Window(QWidget):
         self.table.setColumnWidth(0, 25)
         self.table.verticalHeader().setMinimumWidth(30)
         self.table.setHorizontalHeaderLabels(["Timestamp", "Kind", "Target", "Verdict"])
+
+        self.table.horizontalHeader().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.horizontalHeader().customContextMenuRequested.connect(self._header_context_menu)
         layout.addWidget(self.table)
 
         # Create reset button
@@ -96,6 +124,9 @@ class History_Window(QWidget):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setWordWrap(True)
 
+        # Keep filter bar widths in sync with column widths
+        self.table.horizontalHeader().sectionResized.connect(self._sync_filter_widths)
+
         # -- Load Table --
         self.load_history()
 
@@ -104,6 +135,72 @@ class History_Window(QWidget):
 
         # Start periodic refresh
         self._refresh_timer.start()
+
+    def _header_context_menu(self, pos):
+        col = self.table.horizontalHeader().logicalIndexAt(pos)
+        if col < 0:
+            return
+
+        menu = QMenu(self)
+
+        search_action = menu.addAction("Search")
+        asc_action = menu.addAction("Sort Ascending")
+        desc_action = menu.addAction("Sort Descending")
+        if self._filter_values[col]:
+            font = search_action.font()
+            font.setBold(True)
+            search_action.setFont(font)
+
+        selected = menu.exec_(self.table.horizontalHeader().mapToGlobal(pos))
+        if selected is None:
+            return
+
+        if selected == search_action:
+            self._toggle_search(col)
+        elif selected == asc_action:
+            self.table.sortItems(col, Qt.SortOrder.AscendingOrder)
+        elif selected == desc_action:
+            self.table.sortItems(col, Qt.SortOrder.DescendingOrder)
+
+    def _toggle_search(self, col: int):
+        edit = self._filters[col]
+        edit.blockSignals(True)
+        edit.setText(self._filter_values[col])
+        edit.blockSignals(False)
+        edit.setVisible(True)
+        self._sync_filter_widths()
+        edit.setFocus()
+        edit.selectAll()
+
+    def _commit_filter(self, col: int):
+        edit = self._filters[col]
+
+        # This keeps the text that was written when hide
+        self._filter_values[col] = edit.text()
+        edit.setVisible(False)
+        self._apply_filters()
+
+    def _apply_filters(self):
+        terms = []
+        for col, edit in enumerate(self._filters):
+            if edit.isVisible():
+                self._filter_values[col] = edit.text()
+            terms.append(self._filter_values[col].strip().lower())
+
+        for row in range(self.table.rowCount()):
+            visible = True
+            for col, term in enumerate(terms):
+                if not term:
+                    continue
+                item = self.table.item(row, col)
+                if term not in (item.text() if item else "").lower():
+                    visible = False
+                    break
+            self.table.setRowHidden(row, not visible)
+
+    def _sync_filter_widths(self):
+        for col, edit in enumerate(self._filters):
+            edit.setFixedWidth(self.table.columnWidth(col))
 
     def update_corner(self):
         corner_w = self.table.verticalHeader().width()
@@ -212,7 +309,9 @@ class History_Window(QWidget):
         self.table.resizeColumnsToContents()
         self.table.setColumnWidth(2, 400)  # Target
         self.table.setColumnWidth(3, 80)
-        self.table.resizeRowsToContents()
+        # self.table.resizeRowsToContents()
+        self._apply_filters()
+        self._sync_filter_widths()
 
         # Singleshot applies value afetr Qt finishes resizing/reloading table
         QTimer.singleShot(0, lambda: vbar.setValue(previous_scroll))

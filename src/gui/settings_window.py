@@ -12,6 +12,7 @@ from src.logic.settings_service import get_setting, set_setting
 from src.gui.main_window import apply_theme
 from src.logic.vt_service import get_sorted_history
 from src.logic.backend_server import get_sorted_logs
+
 import csv
 from datetime import datetime
 
