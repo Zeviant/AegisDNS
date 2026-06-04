@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea, QSpinBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -8,6 +8,8 @@ from src.gui.change_username_window import ChangeUsernameWindow
 from src.gui.delete_account_window import DeleteAccountWindow
 from src.gui.log_window import Log_Window
 from PySide6.QtWidgets import QApplication
+from src.logic.settings_service import get_setting, set_setting
+from src.gui.main_window import apply_theme
 
 class Settings_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -152,6 +154,9 @@ class Settings_Window(QWidget):
         theme_selector = QComboBox()
         theme_selector.addItems(["Default", "Dark", "Light", "Dracula", "Cyberpunk"])
         theme_selector.setObjectName("themeDropDown")
+        saved_theme = get_setting(self.user_name, "theme", "Default")
+        if saved_theme in ["Default", "Dark", "Light", "Dracula", "Cyberpunk"]:
+            theme_selector.setCurrentText(saved_theme)
         theme_selector.currentTextChanged.connect(self.changeTheme)
         theme_layout.addWidget(theme_selector)
 
@@ -170,6 +175,36 @@ class Settings_Window(QWidget):
         history_section.setText("History & Cache")
         history_section.setObjectName("SectionDivider")
         history_layout.addWidget(history_section)
+
+        # Cache invalidation: enable + day threshold
+        history_layout.addSpacing(16)
+        cache_row = QHBoxLayout()
+        cache_row.setSpacing(8)
+
+        self.cache_invalidation_checkbox = CheckBoxWithCheckmark(
+            "On login, delete cached entries older than"
+        )
+        self.cache_invalidation_checkbox.setFont(QFont("Segoe UI", 11))
+        self.cache_invalidation_checkbox.setChecked(
+            bool(get_setting(self.user_name, "cache_invalidation_enabled", True))
+        )
+        self.cache_invalidation_checkbox.toggled.connect(self.on_cache_invalidation_toggled)
+        cache_row.addWidget(self.cache_invalidation_checkbox)
+
+        self.cache_days_spinbox = QSpinBox()
+        self.cache_days_spinbox.setRange(1, 365)
+        self.cache_days_spinbox.setValue(int(get_setting(self.user_name, "cache_max_age_days", 30)))
+        self.cache_days_spinbox.setFixedWidth(70)
+        self.cache_days_spinbox.setEnabled(self.cache_invalidation_checkbox.isChecked())
+        self.cache_days_spinbox.valueChanged.connect(self.on_cache_days_changed)
+        cache_row.addWidget(self.cache_days_spinbox)
+
+        days_label = QLabel("days")
+        days_label.setFont(QFont("Segoe UI", 11))
+        cache_row.addWidget(days_label)
+        cache_row.addStretch()
+
+        history_layout.addLayout(cache_row)
 
         # Reset scan history button
         history_layout.addSpacing(16)
@@ -194,47 +229,22 @@ class Settings_Window(QWidget):
         history_layout.addWidget(reset_nav_btn)
 
     def changeTheme(self, theme_name):
-        print(theme_name)
-        with open("src/gui/Style_Sheet/themes.json", "r") as f:
-            themes = json.load(f)
-            current_theme_data = themes.get(theme_name)
-
-        with open("src/gui/Style_Sheet/SettingsStyle.qss", "r") as f:
-            template_content = f.read()
-
-        final_style = template_content.format(**current_theme_data)
-
-        QApplication.instance().setStyleSheet(final_style)
+        apply_theme(theme_name)
+        set_setting(self.user_name, "theme", theme_name)
 
     def load_mute_setting(self) -> bool:
-        try:
-            if os.path.exists(self.SETTINGS_FILE):
-                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    settings = json.load(f)
-                    return settings.get("mute_notifications", False)
-        except Exception:
-            pass
-        return False
-
-    def save_mute_setting(self, muted: bool):
-        try:
-            settings = {}
-            if os.path.exists(self.SETTINGS_FILE):
-                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    settings = json.load(f)
-            
-            settings["mute_notifications"] = muted
-            
-            os.makedirs(os.path.dirname(self.SETTINGS_FILE), exist_ok=True)
-            
-            with open(self.SETTINGS_FILE, "w", encoding="utf-8") as f:
-                json.dump(settings, f, indent=2)
-        except Exception:
-            pass
+        return get_setting(self.user_name, "mute_notifications", False)
 
     # Checkbox toggle
     def on_mute_toggled(self, checked: bool):
-        self.save_mute_setting(checked)
+        set_setting(self.user_name, "mute_notifications", checked)
+
+    def on_cache_invalidation_toggled(self, checked: bool):
+        set_setting(self.user_name, "cache_invalidation_enabled", checked)
+        self.cache_days_spinbox.setEnabled(checked)
+
+    def on_cache_days_changed(self, value: int):
+        set_setting(self.user_name, "cache_max_age_days", int(value))
 
     # Mute state
     def is_notifications_muted(self) -> bool:

@@ -10,6 +10,23 @@ import time
 from src.logic.vt_service import classify_kind, VTDeepScanThread
 from src.logic.scanner_service import ScannerScanThread
 
+# --- Theme application ---
+def apply_theme(theme_name: str) -> None:
+    """Load themes.json + the QSS template and apply the result to the running QApplication."""
+    import json
+    try:
+        with open("src/gui/Style_Sheet/themes.json", "r") as f:
+            themes = json.load(f)
+        theme_data = themes.get(theme_name) or themes.get("Default")
+        if not theme_data:
+            return
+        with open("src/gui/Style_Sheet/SettingsStyle.qss", "r") as f:
+            template = f.read()
+        QApplication.instance().setStyleSheet(template.format(**theme_data))
+    except Exception:
+        pass
+
+
 # --- Qt Presentation Functions ---
 def render_scan_html(verdict: str, stats: dict, signals: list = None) -> str:
     color = {

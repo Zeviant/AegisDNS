@@ -1,5 +1,5 @@
 import os, json
-from datetime import datetime
+from datetime import datetime, timedelta
 from PySide6.QtCore import QThread, Signal
 import sys
 
@@ -86,6 +86,33 @@ def _save_scanner_state(state: dict) -> None:
         json.dump(state_to_save, f)
     os.replace(tmp, CACHE_FILE)
     _STATE_MEMO = state
+
+def prune_stale_cache_entries(max_age_days: int) -> int:
+    """Remove cache entries older than max_age_days. Returns count removed."""
+    if max_age_days <= 0:
+        return 0
+
+    state = _load_scanner_state()
+    cache = state.get("cache", {})
+    if not cache:
+        return 0
+
+    cutoff = datetime.now() - timedelta(days=max_age_days)
+    removed = 0
+    for key in list(cache.keys()):
+        ts_str = (cache[key] or {}).get("ts", "")
+        try:
+            entry_ts = datetime.fromisoformat(ts_str)
+        except Exception:
+            continue
+        if entry_ts < cutoff:
+            del cache[key]
+            removed += 1
+
+    if removed > 0:
+        _save_scanner_state(state)
+    return removed
+
 
 def risk_score_to_verdict(risk_score: int) -> str:
     if risk_score >= 60:

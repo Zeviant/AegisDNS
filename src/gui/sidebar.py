@@ -3,6 +3,9 @@ from PySide6.QtCore import Qt, QSize, QTimer, QThread
 from PySide6.QtGui import QPixmap, QIcon, QFont 
 from src.gui.uiFiles.sidebar_ui import Ui_MainWindow
 from src.logic.vt_service import get_sorted_history
+from src.logic.settings_service import get_user_settings, get_setting
+from src.logic.scanner_service import prune_stale_cache_entries
+from src.gui.main_window import apply_theme
 
 # Import pages 
 from src.gui.history_window import History_Window
@@ -36,6 +39,17 @@ class SideBarMainWindow(QMainWindow):
         self.password = password
         self.setWindowTitle("AeghisDNS")
         self.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
+
+        # Apply this user's saved theme and run cache invalidation if enabled.
+        user_settings = get_user_settings(self.username)
+        apply_theme(user_settings.get("theme", "Default"))
+        if user_settings.get("cache_invalidation_enabled", True):
+            try:
+                removed = prune_stale_cache_entries(int(user_settings.get("cache_max_age_days", 30)))
+                if removed:
+                    print(f"[Cache] Pruned {removed} stale entries")
+            except Exception:
+                pass
 
         # Create system tray icon
         self.tray_icon = QSystemTrayIcon(QIcon("src\\images\\SideBar_icons\\logo.png"), self)
@@ -199,14 +213,7 @@ class SideBarMainWindow(QMainWindow):
         self.whichProtocol(snapshot)
 
     def _load_settings(self) -> dict:
-        try:
-            if os.path.exists(self.SETTINGS_FILE):
-                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    return data if isinstance(data, dict) else {}
-        except Exception:
-            pass
-        return {}
+        return get_user_settings(self.username)
 
     def _maybe_notify_packet_threshold(self, *, total_packets_10s: int, unique_senders_10s: int) -> None:
         if self.is_notifications_muted():
@@ -304,14 +311,7 @@ class SideBarMainWindow(QMainWindow):
         self._last_notified_ts = newest_ts
 
     def is_notifications_muted(self) -> bool:
-        try:
-            if os.path.exists(self.SETTINGS_FILE):
-                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    settings = json.load(f)
-                    return settings.get("mute_notifications", False)
-        except Exception:
-            pass
-        return False
+        return bool(get_setting(self.username, "mute_notifications", False))
 
     def show_verdict_notification(self, verdict: str, target: str = ""):
         if self.is_notifications_muted():

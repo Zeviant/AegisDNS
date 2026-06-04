@@ -32,7 +32,7 @@ from src.logic.llm_service import (
     get_cached_ai_overview,
     model_is_downloaded,
 )
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox, QPushButton, QVBoxLayout
 
 """
 TO BE ADDED:
@@ -347,11 +347,24 @@ class History_Window(QWidget):
         stats = scan.get("stats", {}) or {"risk_score": scan.get("risk_score", 0)}
         signals = scan.get("signals", [])
 
-        self._ai_loading_box = QMessageBox(self)
-        self._ai_loading_box.setIcon(QMessageBox.Information)
+        self._ai_loading_box = QDialog(self)
         self._ai_loading_box.setWindowTitle("AI Overview")
-        self._ai_loading_box.setText("Generating AI overview... this may take a moment.")
-        self._ai_loading_box.setStandardButtons(QMessageBox.NoButton)
+        self._ai_loading_box.setModal(True)
+        self._ai_loading_box.setFixedWidth(360)
+
+        layout = QVBoxLayout(self._ai_loading_box)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
+
+        loading_label = QLabel("Generating AI overview...\nthis may take a moment.")
+        loading_label.setWordWrap(True)
+        loading_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(loading_label)
+
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(self._cancel_ai_overview)
+        layout.addWidget(cancel_btn)
+
         self._ai_loading_box.show()
 
         self._llm_worker = LLMExplainThread(
@@ -360,10 +373,34 @@ class History_Window(QWidget):
         self._llm_worker.result.connect(self._on_ai_overview_result)
         self._llm_worker.start()
 
-    def _on_ai_overview_result(self, payload: dict):
+    def _cancel_ai_overview(self):
+        # Detach the result handler so a late completion can't pop up after cancel.
+        if getattr(self, "_llm_worker", None):
+            try:
+                self._llm_worker.result.disconnect(self._on_ai_overview_result)
+            except Exception:
+                pass
         if getattr(self, "_ai_loading_box", None):
-            self._ai_loading_box.close()
+            self._ai_loading_box.reject()
+            self._ai_loading_box.deleteLater()
             self._ai_loading_box = None
+
+    def _on_ai_overview_result(self, payload: dict):
+        # Close the loading dialog before doing anything else.
+        loading_box = self._ai_loading_box
+        self._ai_loading_box = None
+        if loading_box is not None:
+            loading_box.accept()
+            loading_box.deleteLater()
+
+        # Properly retire the worker thread. run() has already returned by now,
+        # so quit/wait return immediately; this just lets Qt clean up the QObject.
+        worker = getattr(self, "_llm_worker", None)
+        self._llm_worker = None
+        if worker is not None:
+            worker.quit()
+            worker.wait(1000)
+            worker.deleteLater()
 
         if not payload.get("ok"):
             QMessageBox.critical(self, "AI Error", payload.get("message", "Unknown error"))
