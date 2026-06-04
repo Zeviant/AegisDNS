@@ -34,7 +34,7 @@ class Start_Window(QWidget):
         userIcon_label.setAlignment(Qt.AlignCenter)
 
         # --- Name and Password labels and line edits ---
-        name_label = QLabel("Name")
+        name_label = QLabel("Username")
         name_label.setObjectName("AutenticationLabel")
 
         password_label = QLabel("Password")

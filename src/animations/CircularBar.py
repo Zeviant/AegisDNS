@@ -6,9 +6,10 @@ from src.logic.scanner_service import risk_score_to_verdict
 class CPBar(QWidget):
     def __init__(self):
         super().__init__()
-        self.p = 0  
+        self.p = 0
         self.title = ""
         self.sizeReceived = 200
+        self.scanned = False
         self.setMinimumSize(200, 200)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
@@ -90,7 +91,7 @@ class CPBar(QWidget):
             painter.setFont(font)
             verdictRect = self.rect().adjusted(0, 0, 0, -50)
 
-            verdict = risk_score_to_verdict(int(self.p))
+            verdict = risk_score_to_verdict(int(self.p)) if self.scanned else "None"
             painter.drawText(verdictRect, Qt.AlignHCenter|Qt.AlignBottom, f"Verdict: {verdict}")
         
 
@@ -111,8 +112,9 @@ class CircularGraph(QWidget):
         self.timer.timeout.connect(self.increase)
         self.timer.start(20)
 
-    def getScore(self, scoreReceived): 
+    def getScore(self, scoreReceived):
         self.score = int(scoreReceived)
+        self.progress.scanned = True
         
     def setTitle(self, titleReceived):
         self.progress.setTitle(titleReceived)

@@ -1,2 +1,9 @@
 {"ts": "2026-06-04T12:13:11.979156", "kind": "domain", "target": "hello.com", "verdict": "NEUTRAL", "stats": {"risk_score": 26, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-06-04T12:13:34.531538", "kind": "domain", "target": "yoyo.com", "verdict": "CAUTION", "stats": {"risk_score": 37, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:02:09.236932", "kind": "domain", "target": "facebook.com", "verdict": "SECURE", "stats": {"risk_score": 0, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:02:46.937297", "kind": "domain", "target": "globaltechengineers.org", "verdict": "DANGEROUS", "stats": {"risk_score": 55, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:02:58.290992", "kind": "domain", "target": "generalinteresttopics.com", "verdict": "DANGEROUS", "stats": {"risk_score": 51, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:03:09.194019", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 22, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:03:36.894387", "kind": "domain", "target": "friv.com", "verdict": "NEUTRAL", "stats": {"risk_score": 23, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:03:45.474127", "kind": "domain", "target": "kongregate.com", "verdict": "SAFE", "stats": {"risk_score": 17, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-04T20:07:37.667571", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 22, "signal_count": 9}, "source": "cache", "user": "Ben"}
