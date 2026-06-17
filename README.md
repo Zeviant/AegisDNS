@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="dns-protect/images/icon-128.png" width="96" alt="AegisDNS Logo"/>
+<img src="images_rep/AegisDNS_Logo.png" width="200" alt="AegisDNS Logo"/>
 
 # AegisDNS
 
@@ -39,12 +39,20 @@ AegisDNS is a full-stack security monitoring tool that watches your browser acti
     <td><img src="images_rep/scan_AI_overview.png"/></td>
   </tr>
   <tr>
+    <td align="center"><b>Additional Scan Details</b></td>
+    <td align="center"><b>Blacklist Window</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/scan_additional_details.png"/></td>
+    <td><img src="images_rep/blacklist_window.png"/></td>
+  </tr>
+  <tr>
     <td align="center"><b>Navigation Logs</b></td>
     <td align="center"><b>Scan History</b></td>
   </tr>
   <tr>
     <td><img src="images_rep/navigationLogs.png"/></td>
-    <td><img src="images_rep/historycache.png"/></td>
+    <td><img src="images_rep/history_file.png"/></td>
   </tr>
   <tr>
     <td align="center"><b>Packet Sniffer</b></td>
