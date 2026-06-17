@@ -95,30 +95,9 @@ AegisDNS is a full-stack security monitoring tool that watches your browser acti
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Chrome Extension (dns-protect)                                      │
-│  • Popup: mode selector (None / Logging / Silent / Safe)             │
-│  • Background: navigation interception, blacklist enforcement        │
-│  • Interstitials: Safe-mode review page, blacklist block page        │
-└───────────────────────────────┬─────────────────────────────────────┘
-                                │ HTTP REST (127.0.0.1:5005)
-                                ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  Flask Backend (backend_server.py)                                   │
-│  • /health, /log, /scan, /is_whitelisted, /is_blacklisted            │
-│  • /add_to_whitelist, /add_to_blacklist                              │
-│  • Started on app login, bound to current user                       │
-└───────────────────────────────┬─────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  Desktop App (PySide6)                                               │
-│  • Authentication → Scanner, History, Logs, Packets, Lists, Settings │
-│  • VirusTotal integration, local scanner (WHOIS/DNS/Web), DB         │
-│  • Packet sniffer (Scapy) → rolling stats, tray notifications        │
-└─────────────────────────────────────────────────────────────────────┘
-```
+<div align="center">
+  <img src="images_rep/system_arch.png" width="600" alt="AegisDNS Architecture Diagram"/>
+</div>
 
 ---
 
@@ -290,6 +269,8 @@ pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython
 ```
 
 ### 2. VirusTotal API key
+
+Deep Scan requires a free VirusTotal API key. Register at [virustotal.com](https://www.virustotal.com) → sign in → go to your profile → **API Key**. The free tier is sufficient.
 
 Create a `.env` file in the project root:
 
