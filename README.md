@@ -307,4 +307,4 @@ AegisDNS includes a locally-hosted AI assistant that translates scan results int
 
 ## Disclaimer
 
-This project is intended for defensive security monitoring and educational purposes. Only capture and analyze traffic on networks and systems you own or are authorized to test.
+This project is intended for defensive security monitoring and educational purposes. 
