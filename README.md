@@ -15,7 +15,8 @@
 
 ---
 
-AegisDNS is a full-stack security monitoring tool that watches your browser activity in the background, scores the domains you visit using a heuristic engine, and explains the results in plain language — no technical knowledge required. It consists of three tightly coupled components: a desktop application, a Chrome browser extension, and a local Flask server that bridges the two.
+AegisDNS is a security monitoring tool which consists of a browser extension, a desktop application, and a local Flask server that bridges the two. This system is combined to provide many functionalities, such as unlimited address scans with a heuristic engine, blacklisting/whitelisting, AI overviews to explain scan results in plain language, background browser activity monitoring, and more.
+
 
 ---
 
