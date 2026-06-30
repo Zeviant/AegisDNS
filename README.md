@@ -77,7 +77,7 @@ AegisDNS is a security monitoring tool which consists of a browser extension, a 
   </tr>
   <tr>
     <td align="center"><b>Blacklist Interstitial</b></td>
-    <td align="center"><b>Silent Mode Notification</b></td>
+    <td align="center"><b>Scan Complete Notification</b></td>
   </tr>
   <tr>
     <td><img src="images_rep/blacklist_interstitial.png"/></td>
