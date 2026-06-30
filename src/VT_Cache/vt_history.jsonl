@@ -13,3 +13,4 @@
 {"ts": "2026-06-05T01:05:10.883104", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Earth_2026", "verdict": "SAFE", "stats": {"risk_score": 14, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-06-05T01:05:29.951802", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Main_Page", "verdict": "SAFE", "stats": {"risk_score": 15, "signal_count": 9}, "source": "cache", "user": "Ben"}
 {"ts": "2026-06-05T01:05:40.834371", "kind": "url", "target": "https://commons.wikimedia.org/wiki/Category:Nature", "verdict": "SAFE", "stats": {"risk_score": 14, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-06-30T16:00:42.416723", "kind": "domain", "target": "instagram.com", "verdict": "SECURE", "stats": {"risk_score": 2, "signal_count": 9}, "source": "scanner", "user": "Ben"}

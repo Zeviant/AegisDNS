@@ -32,20 +32,24 @@ AegisDNS is a security monitoring tool which consists of a browser extension, a 
     <td><img src="images_rep/user_create_acc.png"/></td>
   </tr>
   <tr>
-    <td align="center"><b>Scanner</b></td>
-    <td align="center"><b>AI Overview</b></td>
+    <td colspan="2" align="center"><b>Scanner Results</b></td>
   </tr>
   <tr>
-    <td><img src="images_rep/scan_window_fixed.png"/></td>
-    <td><img src="images_rep/scan_AI_overview.png"/></td>
+    <td colspan="2" align="center"><img src="images_rep/scanner_results.png" alt="Scanner Results"/></td>
   </tr>
   <tr>
     <td align="center"><b>Additional Scan Details</b></td>
-    <td align="center"><b>Blacklist Window</b></td>
+    <td align="center"><b>AI Overview</b></td>
   </tr>
   <tr>
     <td><img src="images_rep/scan_additional_details.png"/></td>
-    <td><img src="images_rep/blacklist_window.png"/></td>
+    <td><img src="images_rep/scan_AI_overview.png"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Blacklist Window</b></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="images_rep/blacklist_window.png"/></td>
   </tr>
   <tr>
     <td align="center"><b>Navigation Logs</b></td>
