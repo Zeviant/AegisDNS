@@ -95,10 +95,12 @@ AegisDNS is a security monitoring tool which consists of a browser extension, a 
 
 <table>
   <tr>
-    <td align="center"><img src="images_rep/themeDefault.png"/><br/><b>Default</b></td>
-    <td align="center"><img src="images_rep/themeDark.png"/><br/><b>Dark</b></td>
-    <td align="center"><img src="images_rep/themeDracula.png"/><br/><b>Dracula</b></td>
-    <td align="center"><img src="images_rep/themeCyberpunk.png"/><br/><b>Cyberpunk</b></td>
+    <td align="center"><b>Default</b><br/><img src="images_rep/themeDefault.png" width="420" alt="Default Theme"/></td>
+    <td align="center"><b>Dark</b><br/><img src="images_rep/themeDark.png" width="420" alt="Dark Theme"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Dracula</b><br/><img src="images_rep/themeDracula.png" width="420" alt="Dracula Theme"/></td>
+    <td align="center"><b>Cyberpunk</b><br/><img src="images_rep/themeCyberpunk.png" width="420" alt="Cyberpunk Theme"/></td>
   </tr>
 </table>
 
