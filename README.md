@@ -46,18 +46,24 @@ AegisDNS is a security monitoring tool which consists of a browser extension, a 
     <td><img src="images_rep/scan_AI_overview.png"/></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><b>Blacklist Window</b></td>
+    <td align="center"><b>Whitelist Window</b></td>
+    <td align="center"><b>Blacklist Window</b></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><img src="images_rep/blacklist_window.png"/></td>
+    <td><img src="images_rep/whitelist_fix.png" alt="Whitelist Window"/></td>
+    <td><img src="images_rep/blacklist_window.png" alt="Blacklist Window"/></td>
   </tr>
   <tr>
-    <td align="center"><b>Navigation Logs</b></td>
-    <td align="center"><b>Scan History</b></td>
+    <td colspan="2" align="center"><b>Navigation Logs</b></td>
   </tr>
   <tr>
-    <td><img src="images_rep/navigationLogs.png"/></td>
-    <td><img src="images_rep/history_file.png"/></td>
+    <td colspan="2" align="center"><img src="images_rep/navigationLogs.png" alt="Navigation Logs"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Scan History</b></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="images_rep/history_file.png" alt="Scan History"/></td>
   </tr>
   <tr>
     <td align="center"><b>Packet Sniffer</b></td>
