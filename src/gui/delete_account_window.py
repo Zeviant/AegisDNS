@@ -1,12 +1,10 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QSizePolicy, QApplication
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
-from src.SQL_Alchemy.database_manager import DatabaseManager
+from src.logic import api_client
 import sys
 import subprocess
 import os
-import json
-from pathlib import Path
 
 class DeleteAccountWindow(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -129,16 +127,19 @@ class DeleteAccountWindow(QWidget):
         if reply != QMessageBox.StandardButton.Yes:
             return
         
-        # First, delete all user data from JSON files
+        # Delete the account via the backend (it also purges the user's history/
+        # whitelist/blacklist/log entries and the Addresses table).
         try:
-            self.delete_user_json_data(self.user_name)
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to delete user data files: {e}")
+            response = api_client.delete_account(self.user_name, password)
+        except api_client.BackendUnavailable:
+            QMessageBox.critical(
+                self, "Backend Unavailable",
+                f"Could not reach the AegisDNS backend at {api_client.BACKEND_URL}.\n\n"
+                "Make sure it's running and try again."
+            )
             return
-        
-        # Then delete user from database
-        result = DatabaseManager.delete_user(self.user_name, password)
-        
+        result = response.get("reason")
+
         if result == "success":
             QMessageBox.information(
                 self,
@@ -154,70 +155,6 @@ class DeleteAccountWindow(QWidget):
             QMessageBox.warning(self, "Error", "Password is incorrect!")
         else:
             QMessageBox.critical(self, "Error", "An error occurred while deleting the account.")
-    
-    def delete_user_json_data(self, username: str):
-        """Delete all user data from JSON/JSONL files."""
-        BASE_DIR = Path(__file__).resolve().parent
-        CACHE_DIR = (BASE_DIR / ".." / "VT_Cache").resolve()
-        
-        # This is ur fault nico (user/username)
-        # Files that use "user" field
-        files_with_user_field = [
-            CACHE_DIR / "vt_history.jsonl",
-            CACHE_DIR / "vt_whiteList.jsonl",
-            CACHE_DIR / "vt_blackList.jsonl",
-        ]
-        
-        # Files that use "username" field
-        files_with_username_field = [
-            CACHE_DIR / "logging_mode_history.jsonl",
-            CACHE_DIR / "scan_requests.jsonl",
-        ]
-        
-        # Delete entries from files with "user" field
-        for file_path in files_with_user_field:
-            if not file_path.exists():
-                continue
-            
-            kept_lines = []
-            with open(file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        entry = json.loads(line)
-                        # Keep entries that don't belong to this user
-                        if entry.get("user") != username:
-                            kept_lines.append(line + "\n")
-                    except json.JSONDecodeError:
-                        # Keep corrupted lines as-is
-                        kept_lines.append(line + "\n")
-            
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.writelines(kept_lines)
-        
-        # Delete entries from files with "username" field
-        for file_path in files_with_username_field:
-            if not file_path.exists():
-                continue
-            
-            kept_lines = []
-            with open(file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        entry = json.loads(line)
-                        # Keep entries that don't belong to this user
-                        if entry.get("username") != username:
-                            kept_lines.append(line + "\n")
-                    except json.JSONDecodeError:
-                        kept_lines.append(line + "\n")
-            
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.writelines(kept_lines)
     
     def restart_application(self):
         app = QApplication.instance()

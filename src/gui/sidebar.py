@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QListWidgetItem, QWidget, QGridLayout, QSystemTrayIcon
+from PySide6.QtWidgets import QMainWindow, QLabel, QListWidgetItem, QWidget, QGridLayout, QSystemTrayIcon, QMessageBox
 from PySide6.QtCore import Qt, QSize, QTimer, QThread
 from PySide6.QtGui import QPixmap, QIcon, QFont 
 from src.gui.uiFiles.sidebar_ui import Ui_MainWindow
@@ -38,7 +38,7 @@ class SideBarMainWindow(QMainWindow):
         self.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
 
         # Create system tray icon
-        self.tray_icon = QSystemTrayIcon(QIcon("src\\images\\SideBar_icons\\logo.png"), self)
+        self.tray_icon = QSystemTrayIcon(QIcon("src/images/SideBar_icons/logo.png"), self)
         self.tray_icon.setToolTip("DNS Monitor")
         self.tray_icon.show()
 
@@ -52,7 +52,7 @@ class SideBarMainWindow(QMainWindow):
         
         self.title_icon = self.ui.title_icon
         self.title_icon.setText("")
-        self.title_icon.setPixmap(QPixmap("src\images\SideBar_icons\logo.png"))
+        self.title_icon.setPixmap(QPixmap("src/images/SideBar_icons/logo.png"))
         self.title_icon.setScaledContents(True)
 
         self.sideMenu = self.ui.listWidget
@@ -64,7 +64,7 @@ class SideBarMainWindow(QMainWindow):
         self.sideMenuButton = self.ui.pushButton
         self.sideMenuButton.setObjectName("SideMenuButton")
         self.sideMenuButton.setText("")
-        self.sideMenuButton.setIcon(QIcon("src\images\SideBar_icons\menu-bar.png"))
+        self.sideMenuButton.setIcon(QIcon("src/images/SideBar_icons/menu-bar.png"))
         self.sideMenuButton.setIconSize(QSize(30, 30))
         self.sideMenuButton.setCheckable(True)
         self.sideMenuButton.setChecked(False)
@@ -72,12 +72,6 @@ class SideBarMainWindow(QMainWindow):
 
         # Start ps
         self.aggregator = RollingAggregator(window_seconds=30)
-        self.sniffer_thread_native = Thread(
-            target=start_sniffing,
-            args=(self.aggregator,),
-            daemon=True
-        )
-        self.sniffer_thread_native.start()
 
         self.sniffer_thread = QThread()
         self.sniffer_worker = SnifferWorker(self.aggregator)
@@ -86,6 +80,19 @@ class SideBarMainWindow(QMainWindow):
 
         self.sniffer_thread.started.connect(self.sniffer_worker.start)
         self.sniffer_worker.data_ready.connect(self.handle_sniffer_data)
+        # SnifferWorker.error is emitted from the raw capture thread below
+        # (not self.sniffer_thread), but Qt signals are safe to emit from any
+        # thread — the connection still queues onto this (GUI) thread since
+        # that's where self.sniffer_worker and this slot's receiver live.
+        self.sniffer_worker.error.connect(self.handle_sniffer_permission_error)
+
+        self.sniffer_thread_native = Thread(
+            target=start_sniffing,
+            args=(self.aggregator,),
+            kwargs={"on_error": self.sniffer_worker.error.emit},
+            daemon=True
+        )
+        self.sniffer_thread_native.start()
 
         self.sniffer_thread.start()
 
@@ -93,12 +100,12 @@ class SideBarMainWindow(QMainWindow):
 
         # List of menu items
         self.menuList = [
-            {"name": "Analyze Address", "icon": "src\\images\\SideBar_icons\\analyze_icon.png", "widget": Scanner_Window(self.username, self.password, notify_callback=self.show_verdict_notification),}, 
-            {"name": "History File", "icon": "src\\images\\SideBar_icons\\history_icon.png", "widget": History_Window(self.username, sidebar_reference=self)},
-            {"name": "Navigation Logs", "icon": "src\\images\\SideBar_icons\\navigation_white_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
-            {"name": "Packets", "icon": "src\\images\\SideBar_icons\\packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
-            {"name": "White/Black List", "icon": "src\\images\\SideBar_icons\\list_icon.png", "widget": SnifferContainer_Window()},
-            {"name": "Settings", "icon": "src\\images\\SideBar_icons\\settings_icon.png", "widget": Settings_Window(self.username, sidebar_reference=self)},
+            {"name": "Analyze Address", "icon": "src/images/SideBar_icons/analyze_icon.png", "widget": Scanner_Window(self.username, self.password, notify_callback=self.show_verdict_notification),}, 
+            {"name": "History File", "icon": "src/images/SideBar_icons/history_icon.png", "widget": History_Window(self.username, sidebar_reference=self)},
+            {"name": "Navigation Logs", "icon": "src/images/SideBar_icons/navigation_white_icon.png", "widget": Log_Window(self.username, sidebar_reference=self)},
+            {"name": "Packets", "icon": "src/images/SideBar_icons/packets_icon.png", "widget": WhiteBlackList_Window(self.username)},
+            {"name": "White/Black List", "icon": "src/images/SideBar_icons/list_icon.png", "widget": SnifferContainer_Window()},
+            {"name": "Settings", "icon": "src/images/SideBar_icons/settings_icon.png", "widget": Settings_Window(self.username, sidebar_reference=self)},
         ]
 
         # Call the functions
@@ -265,6 +272,35 @@ class SideBarMainWindow(QMainWindow):
         if hasattr(self, "PacketsWindowPage"):
             self.PacketsWindowPage.update_sniffer_data(snapshot)
 
+    def handle_sniffer_permission_error(self, raw_error: str):
+        """Packet capture failed to start (most commonly: Linux denying raw
+        sockets to an unprivileged process). Surface it instead of leaving
+        the sniffer widget/animation silently empty forever."""
+        from src.logic import sniffer_permissions
+
+        message, can_auto_fix = sniffer_permissions.build_permission_message(raw_error)
+
+        box = QMessageBox(self)
+        box.setWindowTitle("Packet Capture Unavailable")
+        box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setText(message)
+
+        grant_btn = None
+        if can_auto_fix:
+            grant_btn = box.addButton("Grant permission", QMessageBox.ButtonRole.AcceptRole)
+        box.addButton(QMessageBox.StandardButton.Close)
+        box.exec()
+
+        if grant_btn is not None and box.clickedButton() == grant_btn:
+            ok, result_message = sniffer_permissions.grant_linux_capture_permission()
+            result_box = QMessageBox(self)
+            result_box.setWindowTitle("Grant Permission")
+            result_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
+            result_box.setIcon(QMessageBox.Icon.Information if ok else QMessageBox.Icon.Critical)
+            result_box.setText(result_message)
+            result_box.exec()
+
 
     def _check_new_scans_for_notifications(self):
         entries = get_sorted_history(self.username)
@@ -350,9 +386,9 @@ class SideBarMainWindow(QMainWindow):
     # This is to change the buttons Icon, but idk, maybe we just keep the three lines
     def buttonIconChange(self, status): 
         if status: 
-            self.sideMenuButton.setIcon(QIcon("src\images\SideBar_icons\menu-bar.png"))
+            self.sideMenuButton.setIcon(QIcon("src/images/SideBar_icons/menu-bar.png"))
         else: 
-            self.sideMenuButton.setIcon(QIcon("src\images\SideBar_icons\menu-bar.png"))
+            self.sideMenuButton.setIcon(QIcon("src/images/SideBar_icons/menu-bar.png"))
 
     def listWidget(self): 
         self.sideMenu.clear()

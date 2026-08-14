@@ -39,6 +39,11 @@ scripts/
 # Local sqlite DB (do not commit user DB)
 src/SQL_Alchemy/UserInformation.db
 
+# Backend runtime data when run natively (outside Docker) for development —
+# inside the container this lives in named volumes instead, never on the host.
+backend/VT_Cache/
+backend/db/*.db
+
 # IDE
 .vscode/
 .idea/

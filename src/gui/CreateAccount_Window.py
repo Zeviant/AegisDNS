@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayo
 from PySide6.QtGui import QIcon
 
 # --- Connection to other modules ---
-from src.SQL_Alchemy.database_manager import DatabaseManager
+from src.logic import api_client
 
 
 # --- Class Creation ---
@@ -113,11 +113,22 @@ class CreateAccount_Window(QWidget):
         else: 
             self.addNewUserToDatabase(userName, password, firstName, lastName)
 
-    def addNewUserToDatabase(self, userName, password, firstName, lastName): 
-        # Logic is now delegated to DatabaseManager
-        result = DatabaseManager.create_new_user(userName, password, firstName, lastName)
-        
-        if result == "taken": 
+    def addNewUserToDatabase(self, userName, password, firstName, lastName):
+        # Logic is now delegated to the backend, over HTTP
+        try:
+            response = api_client.register(userName, password, firstName, lastName)
+        except api_client.BackendUnavailable:
+            QMessageBox.critical(
+                self, "Backend Unavailable",
+                f"Could not reach the AegisDNS backend at {api_client.BACKEND_URL}.\n\n"
+                "Make sure it's running (e.g. \"docker compose up -d\" in the "
+                "project directory) and try again."
+            )
+            return
+
+        result = response.get("reason")
+
+        if result == "taken":
             # Display Warning Message
             userNameAlreadyExists_box = QMessageBox()
             userNameAlreadyExists_box.setWindowTitle("Taken Username")

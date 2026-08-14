@@ -57,7 +57,16 @@ def packet_handler(packet, aggregator):
         print("[Sniffer error]", e)
 
 
-def start_sniffing(aggregator, interface=None):
+def start_sniffing(aggregator, interface=None, on_error=None):
+    """Runs Scapy's sniff() loop. Meant to be launched on its own background
+    thread (see sidebar.py) — it blocks until the capture ends or fails.
+
+    If the raw socket can't be opened (most commonly: missing permissions),
+    that failure used to propagate out of this function and silently kill
+    the background thread, leaving the sniffer widget/animation showing
+    nothing with no indication why. Report it via on_error instead, so the
+    caller can surface something actionable to the user.
+    """
     print("[*] Starting packet sniffer...")
     selected_interface = interface
     if not selected_interface:
@@ -74,8 +83,13 @@ def start_sniffing(aggregator, interface=None):
     else:
         print("[*] Sniffing interface: <scapy default>")
 
-    sniff(
-        iface=selected_interface,
-        prn=lambda pkt: packet_handler(pkt, aggregator),
-        store=False
-    )
+    try:
+        sniff(
+            iface=selected_interface,
+            prn=lambda pkt: packet_handler(pkt, aggregator),
+            store=False
+        )
+    except Exception as e:
+        print("[Sniffer error] failed to start capture:", e)
+        if on_error:
+            on_error(str(e))

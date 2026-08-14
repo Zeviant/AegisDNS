@@ -5,11 +5,10 @@ from PySide6.QtGui import QPixmap, QIcon, QFont, QPixmap
 from PySide6.QtCore import Qt
 # Connection with other Windows
 from src.gui.CreateAccount_Window import CreateAccount_Window
-from src.SQL_Alchemy.database_manager import DatabaseManager
 from src.gui.sidebar import SideBarMainWindow
 
-# Server connection
-from src.logic.backend_server import set_current_user, start_server_if_needed
+# Backend connection (Dockerized Flask service, see docker-compose.yml)
+from src.logic import api_client
 
 class Start_Window(QWidget):
     def __init__(self):
@@ -119,20 +118,35 @@ class Start_Window(QWidget):
             fieldsEmpty_box.setText("Please, make sure to not \nleave any field in blank.")
             fieldsEmpty_box.exec()
         
-        else: 
-            
-            if DatabaseManager.authenticate_user(username, passwordH): 
+        else:
+
+            try:
+                login_result = api_client.login(username, passwordH)
+            except api_client.BackendUnavailable:
+                backendDown_box = QMessageBox()
+                backendDown_box.setWindowTitle("Backend Unavailable")
+                backendDown_box.setWindowIcon(QIcon("src/images/SideBar_icons/logo.png"))
+                backendDown_box.setIcon(QMessageBox.Critical)
+                backendDown_box.setText(
+                    "Could not reach the AegisDNS backend at "
+                    f"{api_client.BACKEND_URL}.\n\n"
+                    "Make sure it's running (e.g. \"docker compose up -d\" in the "
+                    "project directory) and try again."
+                )
+                backendDown_box.exec()
+                return
+
+            if login_result.get("ok"):
                 # Username and password are passed to the mainwindow
                 self.MainMenu = SideBarMainWindow(username, passwordH)
                 self.MainMenu.show()
 
-                # Start local extension server
-                start_server_if_needed()
-                set_current_user(username)
-                
+                # Tell the backend who's active now (extension-facing routes use this)
+                api_client.set_current_user(username)
+
                 # Close current window
                 self.close()
-            
+
             else:
                 loginFail_box = QMessageBox()
                 loginFail_box.setWindowTitle("Login Fail")

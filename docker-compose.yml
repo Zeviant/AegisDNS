@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: aegisdns-backend:latest
+    container_name: aegisdns-backend
+    restart: unless-stopped
+    ports:
+      # Same port the native app and browser extension have always used.
+      - "5005:5005"
+    environment:
+      VIRUSTOTAL_API_KEY: "${VIRUSTOTAL_API_KEY:-}"
+      SQL_ECHO: "${SQL_ECHO:-false}"
+    volumes:
+      - aegisdns_db:/data/db
+      - aegisdns_vt_cache:/data/vt_cache
+      - aegisdns_models:/data/models
+
+volumes:
+  aegisdns_db:
+  aegisdns_vt_cache:
+  aegisdns_models:

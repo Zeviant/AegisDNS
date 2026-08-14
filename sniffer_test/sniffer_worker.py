@@ -3,6 +3,7 @@ import time
 
 class SnifferWorker(QObject):
     data_ready = Signal(list)  # emits aggregated snapshot
+    error = Signal(str)  # emits a raw capture-start error (e.g. permission denied)
 
     def __init__(self, aggregator):
         super().__init__()

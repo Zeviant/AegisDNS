@@ -19,6 +19,7 @@ from src.gui.BlackList_Window import BlackList_Window
 from src.gui.main_window import show_scan_box, show_ai_overview_box
 from src.gui.WhiteList_Window import WhiteList_Window
 from src.gui.model_download_dialog import ModelDownloadDialog
+from src.logic import api_client
 from src.logic.vt_service import (
     add_entry_to_blacklist,
     add_entry_to_whitelist,
@@ -118,29 +119,10 @@ class History_Window(QWidget):
         self.corner_btn.move(3, 3)
         self.corner_btn.raise_()
 
-    def _vt_cache_dir(self) -> str:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(base_dir, "..", "VT_Cache")
-
     def reset_scan_history(self):
-        cache_dir = self._vt_cache_dir()
         try:
-            os.makedirs(cache_dir, exist_ok=True)
-            scanner_cache = os.path.join(cache_dir, "scanner_cache.json")
-            vt_history = os.path.join(cache_dir, "vt_history.jsonl")
-            scan_requests = os.path.join(cache_dir, "scan_requests.jsonl")
-
-            # Reset scanner cache
-            if os.path.exists(scanner_cache):
-                with open(scanner_cache, "w", encoding="utf-8") as f:
-                    json.dump({"last_call": 0, "cache": {}}, f)
-
-            # Clear history & request logs
-            for path in (vt_history, scan_requests):
-                if os.path.exists(path):
-                    with open(path, "w", encoding="utf-8"):
-                        pass
-        except Exception:
+            api_client.reset_history()
+        except api_client.BackendUnavailable:
             pass
 
     # -- Function to load rows in the table --
@@ -330,7 +312,7 @@ class History_Window(QWidget):
             return
 
         # Otherwise we need the underlying scan data to feed the model.
-        scan = self._lookup_scanner_cache(kind, target)
+        scan = api_client.get_cached_scan(kind, target)
         if not scan:
             QMessageBox.warning(
                 self, "AI Overview",
@@ -387,7 +369,7 @@ class History_Window(QWidget):
             return
 
         # Try to load from scanner cache
-        cache_entry = self._lookup_scanner_cache(kind, target)
+        cache_entry = api_client.get_cached_scan(kind, target)
         if cache_entry:
             verdict = cache_entry.get("verdict", "UNKNOWN")
             stats = cache_entry.get("stats", {}) or {
@@ -398,31 +380,3 @@ class History_Window(QWidget):
             show_scan_box(self, verdict, stats, signals, silent=True)
             return
 
-    # --- Scanner cache helpers ---automaticamente
-    def _scanner_cache_path(self) -> str:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(base_dir, "..", "VT_Cache", "scanner_cache.json")
-
-    def _cache_key(self, kind: str, target: str) -> str:
-        kind = (kind or "").lower()
-        if kind == "url":
-            norm = (
-                target
-                if target.lower().startswith(("http://", "https://"))
-                else f"http://{target}"
-            )
-            return f"url:{norm}"
-        return f"{kind}:{target}"
-
-    def _lookup_scanner_cache(self, kind: str, target: str) -> dict | None:
-        path = self._scanner_cache_path()
-        try:
-            if not os.path.exists(path):
-                return None
-            with open(path, "r", encoding="utf-8") as f:
-                state = json.load(f)
-            cache = state.get("cache", {}) or {}
-            key = self._cache_key(kind, target)
-            return cache.get(key)
-        except Exception:
-            return None

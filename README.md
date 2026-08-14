@@ -181,16 +181,20 @@ Capstone/
 │   │   ├── settings_window.py
 │   │   └── ...
 │   ├── logic/
-│   │   ├── vt_service.py       # VirusTotal API, cache, history
-│   │   ├── scanner_service.py  # Local scanner thread, cache
-│   │   └── backend_server.py   # Flask API for extension
-│   ├── SQL_Alchemy/            # User and Addresses tables
-│   └── VT_Cache/               # JSONL logs, caches, settings
-├── scanner/                    # Domain/URL scoring engine
+│   │   ├── api_client.py       # HTTP client the GUI uses to talk to backend/
+│   │   ├── vt_service.py       # Thin QThread wrappers around api_client (VT deep scan, lists)
+│   │   └── scanner_service.py  # Thin QThread wrapper around api_client (local scan)
+│   └── SQL_Alchemy/            # Unused now — kept for reference; superseded by backend/db/
+├── backend/                     # Dockerized Flask backend (see "Backend (Docker)" below)
+│   ├── app.py                   # All REST endpoints (extension + GUI)
+│   ├── services/                # scanner_service, vt_service, llm_service (plain functions)
+│   └── db/                      # database.py, database_manager.py (SQLite, env-configurable path)
+├── docker-compose.yml
+├── scanner/                    # Domain/URL scoring engine (reused as-is by backend/)
 │   ├── scanner.py
 │   ├── features/               # whois, dns, web, ip
 │   └── scoring/                # rules_*
-├── sniffer_test/
+├── sniffer_test/                # Native-only — stays with the GUI process, see below
 │   ├── packet_sniffer.py       # Scapy capture, metadata extraction
 │   ├── aggregator.py           # Rolling per-second buckets
 │   └── sniffer_worker.py       # Emits snapshots to UI
@@ -203,14 +207,54 @@ Capstone/
 
 ---
 
+## Backend (Docker)
+
+All backend logic — the DB, the local scanner engine, VirusTotal deep scan, the
+local LLM (AI Overview), and history/whitelist/blacklist storage — runs inside a
+single Dockerized Flask service (`backend/`), so it behaves identically on every
+host OS. The desktop GUI stays a native, non-containerized install exactly as
+before (download/install/open) and talks to the backend over HTTP at
+`http://127.0.0.1:5005` — the same address and port the browser extension has
+always used, so the extension needs zero changes.
+
+**One deliberate exception:** the Scapy packet sniffer (`sniffer_test/`) stays
+native, running inside the GUI process. Docker Desktop on Windows/macOS runs
+containers inside a hidden Linux VM, so a containerized sniffer there would only
+ever see that VM's virtual network, never your actual Wi-Fi/Ethernet traffic —
+containerizing it would silently break the feature outside Linux.
+
+### Running it
+
+```bash
+cp .env.example .env
+# edit .env and set VIRUSTOTAL_API_KEY if you want Deep Scan to work
+docker compose up -d --build
+```
+
+This builds and starts the `backend` container, publishing port 5005 and
+persisting the SQLite DB, scan/history cache, and the downloaded AI model in
+named Docker volumes (`aegisdns_db`, `aegisdns_vt_cache`, `aegisdns_models`) so
+none of it is lost when the container is rebuilt or recreated.
+
+Check it's up:
+
+```bash
+curl http://127.0.0.1:5005/health
+```
+
+To stop it: `docker compose down` (add `-v` to also delete the volumes / reset all data).
+
+---
+
 ## Requirements
 
-- Python 3.10+
+- Docker + Docker Compose (for the backend)
+- Python 3.10+ and PySide6 (for the native desktop GUI)
 - Chrome or Chromium (for the extension)
 - VirusTotal API key (for Deep Scan)
 - Network capture permissions for sniffing (may require admin/elevated rights on some systems)
 
-### Python packages
+### Python packages (GUI only — the backend's dependencies live in `backend/requirements.txt` and are installed inside the container)
 
 ```bash
 pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython python-whois flask flask-cors
@@ -220,7 +264,13 @@ pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython
 
 ## Setup
 
-### 1. Clone and install
+### 1. Start the backend
+
+See [Backend (Docker)](#backend-docker) above — `docker compose up -d --build`.
+This also covers the VirusTotal API key (`.env` in the project root, read by the
+container).
+
+### 2. Install the GUI's Python environment
 
 ```bash
 git clone https://github.com/Zeviant/Capstone.git
@@ -231,20 +281,6 @@ python -m venv .venv
 # Linux/macOS
 source .venv/bin/activate
 pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython python-whois flask flask-cors
-```
-
-### 2. VirusTotal API key
-
-Set `VIRUSTOTAL_API_KEY` in your environment or a `.env` file in the project root.
-
-```powershell
-# Windows PowerShell
-$env:VIRUSTOTAL_API_KEY="your_api_key_here"
-```
-
-```bash
-# Linux/macOS
-export VIRUSTOTAL_API_KEY="your_api_key_here"
 ```
 
 ### 3. Load the browser extension
@@ -259,6 +295,8 @@ The extension expects icon files at `dns-protect/images/` (icon-16.png, icon-32.
 ---
 
 ## Run
+
+Backend must already be running (`docker compose up -d`), then:
 
 ```bash
 python -m src.main

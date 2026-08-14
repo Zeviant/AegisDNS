@@ -15,7 +15,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from src.logic.backend_server import get_sorted_logs
+from src.logic import api_client
+from src.logic.api_client import get_logs as get_sorted_logs
 
 
 class Log_Window(QWidget):
@@ -84,19 +85,10 @@ class Log_Window(QWidget):
         self.corner_btn.move(3, 3)
         self.corner_btn.raise_()
 
-    def _vt_cache_dir(self) -> str:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(base_dir, "..", "VT_Cache")
-
     def reset_navigation_history(self):
-        cache_dir = self._vt_cache_dir()
-        logging_file = os.path.join(cache_dir, "logging_mode_history.jsonl")
-        # Reset logging history
         try:
-            if os.path.exists(logging_file):
-                with open(logging_file, "w", encoding="utf-8"):
-                    pass
-        except Exception:
+            api_client.reset_logs()
+        except api_client.BackendUnavailable:
             pass
 
     def load_logs(self):

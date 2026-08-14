@@ -2,3 +2,9 @@
 {"ts": "2026-05-08T10:49:11.845459", "kind": "domain", "target": "google.com", "verdict": "SAFE", "stats": {"risk_score": 11, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-05-08T10:50:03.265648", "kind": "domain", "target": "netflix.com", "verdict": "SECURE", "stats": {"risk_score": 9, "signal_count": 9}, "source": "scanner", "user": "Ben"}
 {"ts": "2026-05-08T10:56:43.211350", "kind": "domain", "target": "example.com", "verdict": "NEUTRAL", "stats": {"risk_score": 20, "signal_count": 9}, "source": "scanner", "user": "Ben"}
+{"ts": "2026-05-08T13:20:16.695851", "kind": "domain", "target": "youtube.com", "verdict": "SECURE", "stats": {"risk_score": 6, "signal_count": 9}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-05-08T13:21:29.785033", "kind": "domain", "target": "reddit.com", "verdict": "SECURE", "stats": {"risk_score": 9, "signal_count": 9}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-05-08T13:23:20.123531", "kind": "domain", "target": "youtube.com", "verdict": "SECURE", "stats": {"risk_score": 6, "signal_count": 9}, "source": "cache", "user": "Nico"}
+{"ts": "2026-05-08T13:41:53.515142", "kind": "domain", "target": "youtube.com", "verdict": "SECURE", "stats": {"risk_score": 6, "signal_count": 9}, "source": "cache", "user": "Nico"}
+{"ts": "2026-05-08T13:49:37.200667", "kind": "url", "target": "https://nicovegaportaluppi.com/", "verdict": "DANGEROUS", "stats": {"risk_score": 58, "signal_count": 5}, "source": "scanner", "user": "Nico"}
+{"ts": "2026-05-08T14:22:41.830884", "kind": "url", "target": "https://www.youtube.com/", "verdict": "SECURE", "stats": {"risk_score": 7, "signal_count": 9}, "source": "scanner", "user": "Nico"}

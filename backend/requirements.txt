@@ -1,0 +1,15 @@
+# Backend-only dependencies — deliberately excludes PySide6/PyQt6/pyqtgraph/scapy,
+# which stay with the native GUI install. Versions pinned to match the original
+# requirements.txt where the same package is used there.
+Flask==3.1.2
+flask-cors==6.0.1
+SQLAlchemy==2.0.43
+requests==2.32.5
+python-dotenv==1.1.1
+python-whois==0.9.6
+dnspython==2.8.0
+tldextract==5.3.1
+urllib3==2.5.0
+idna==3.10
+certifi==2025.8.3
+llama-cpp-python==0.3.9

@@ -1,388 +1,83 @@
-# --- Logic/Data Libraries ---
-import os, time, base64, requests, json, ipaddress, re
-from datetime import datetime
+"""
+GUI-side VirusTotal / history / whitelist / blacklist service.
+
+All actual I/O (VirusTotal API calls, JSONL reads/writes) now happens in the
+backend container (see backend/services/vt_service.py) — this module keeps the
+same public names the GUI already imports so history_window.py, WhiteList_Window.py,
+BlackList_Window.py, Scanner_Window.py and main_window.py need no changes to their
+imports, only what happens inside these functions changed (HTTP call instead of
+local file access).
+"""
+import time
+
 from PySide6.QtCore import QThread, Signal
 
-# Import the Database Manager for logging
-from src.SQL_Alchemy.database_manager import DatabaseManager
+from src.logic import api_client
+from src.logic.api_client import classify_kind, normalize_target  # re-exported, unchanged
 
-# --- Importing load_dotenv, it read the .env ---
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except Exception:
-    pass
-
-# --- Cache / Rate Limit Configuration ---
-
-# Defining the variables
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CACHE_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_cache.json")
-HISTORY_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_history.jsonl")
-WHITELIST_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_whiteList.jsonl")
-BLACKLIST_FILE = os.path.join(BASE_DIR, "..", "VT_Cache/vt_blackList.jsonl")
-VIRUSTOTAL_RATELIMIT = 15
-_STATE_MEMO = {"last_call": 0, "cache": {}}
-_HISTORY_FILE_NOT_FOUND_WARNED = False
-_WHITELIST_FILE_NOT_FOUND_WARNED = False
-_BLACKLIST_FILE_NOT_FOUND_WARNED = False
-
-# Saving the data in the chache
-def _load_state() -> dict:
-    global _STATE_MEMO
-    try:
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            state = json.load(f)
-            if isinstance(state, dict):
-                state.setdefault("last_call", 0)
-                _STATE_MEMO = state
-                return state
-    except Exception:
-        pass
-    return dict(_STATE_MEMO)
-
-def _save_state(state: dict) -> None:
-    global _STATE_MEMO
-    state_to_save = dict(state) 
-    state_to_save.setdefault("cache", {})
-    
-    for key, cached_entry in state_to_save["cache"].items():
-        if isinstance(cached_entry.get("ts"), datetime):
-            cached_entry["ts"] = cached_entry["ts"].isoformat()
-            
-    tmp = CACHE_FILE + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(state_to_save, f)
-    os.replace(tmp, CACHE_FILE)
-    _STATE_MEMO = state
-
-# --- Inputs (if URL, IP or Domain) ---
-DOMAIN_RE = re.compile(
-    r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)"
-    r"(?:\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,63}\.?$"
-)
-
-def normalize_target(s: str) -> str:
-    return s.strip().lower().rstrip(".")
-
-def classify_kind(raw_text: str) -> tuple[str, str]:
-    """
-    Returns (kind, target):
-      kind ∈ {'url','domain','ip'}
-      target is the normalized value to query
-    """
-    text = raw_text.strip()
-    if text.lower().startswith(("http://", "https://")):
-        return "url", text
-    try:
-        ipaddress.ip_address(text)
-        return "ip", text
-    except ValueError:
-        pass
-    if DOMAIN_RE.match(normalize_target(text)):
-        return "domain", normalize_target(text)
-    raise ValueError("Input is not a valid URL, domain, or IP.")
-
-def url_to_vt_id(url: str) -> str:
-    """VirusTotal URL ID is base64url of the URL without '=' padding."""
-    b64 = base64.urlsafe_b64encode(url.encode("utf-8")).decode("ascii")
-    return b64.strip("=")
 
 def get_sorted_history(user_name: str) -> list[dict]:
-    """ Used to filter and sort the JSON history log """
-    global _HISTORY_FILE_NOT_FOUND_WARNED
+    return api_client.get_history(user_name)
 
-    entries: list[dict] = []
-    count = 0
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    entry = json.loads(line)
-                except json.JSONDecodeError:
-                    # Skip corrupted / partial lines instead of failing the whole read
-                    continue
 
-                # Filter entries by username
-                if entry.get("user") == user_name:
-                    entries.append(entry)
-                    count = count + 1
-    except FileNotFoundError:
-        if not _HISTORY_FILE_NOT_FOUND_WARNED:
-            print("HISTORY_FILE_NOT_FOUND")
-            _HISTORY_FILE_NOT_FOUND_WARNED = True
-    except Exception:
-        print("HISTORY_FILE_ERROR")
+def add_entry_to_whitelist(entry: dict) -> None:
+    api_client.add_whitelist_entry(entry)
 
-    # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key=lambda x: x.get("ts", ""), reverse=True)
-    return entries
 
-def add_entry_to_whitelist(entry):
-    """Append an entry to vt_whiteList.jsonl."""
-    file_path = WHITELIST_FILE
-    entry = dict(entry)
-    entry["verdict"] = "whitelisted"
-    with open(file_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry) + "\n")
+def add_entry_to_blacklist(entry: dict) -> None:
+    api_client.add_blacklist_entry(entry)
 
-def add_entry_to_blacklist(entry):
-    """Append an entry to vt_whiteList.jsonl."""
-    file_path = BLACKLIST_FILE
-    entry = dict(entry)
-    entry["verdict"] = "blacklisted"
-    with open(file_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry) + "\n")
 
 def get_sorted_white_list(user_name: str) -> list[dict]:
-    """ Used to filter and sort the JSON whitelist log """
-    global _WHITELIST_FILE_NOT_FOUND_WARNED
+    return api_client.get_whitelist(user_name)
 
-    entries: list[dict] = []
-    count = 0
-    try:
-        with open(WHITELIST_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                entry = json.loads(line)
-                # Filter entries by username
-                if entry.get("user") == user_name:
-                    entries.append(entry)
-                    count = count + 1
-    except FileNotFoundError:
-        if not _WHITELIST_FILE_NOT_FOUND_WARNED:
-            print("WHITELIST_FILE_NOT_FOUND")
-            _WHITELIST_FILE_NOT_FOUND_WARNED = True
-    except Exception:
-        print("WHITELIST_FILE_ERROR")
-
-    # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key=lambda x: x.get("ts", ""), reverse=True)
-    return entries
 
 def get_sorted_black_list(user_name: str) -> list[dict]:
-    """ Used to filter and sort the JSON blacklist log """
-    global _BLACKLIST_FILE_NOT_FOUND_WARNED
+    return api_client.get_blacklist(user_name)
 
-    entries: list[dict] = []
-    count = 0
-    try:
-        with open(BLACKLIST_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                entry = json.loads(line)
-                # Filter entries by username
-                if entry.get("user") == user_name:
-                    entries.append(entry)
-                    count = count + 1
-    except FileNotFoundError:
-        if not _BLACKLIST_FILE_NOT_FOUND_WARNED:
-            print("BLACKLIST_FILE_NOT_FOUND")
-            _BLACKLIST_FILE_NOT_FOUND_WARNED = True
-    except Exception:
-        print("BLACKLIST_FILE_ERROR")
 
-    # Reverse sorting because we want newest --> oldest :)
-    entries.sort(key=lambda x: x.get("ts", ""), reverse=True)
-    return entries
+def delete_history_entry(user_name: str, ts: str, target: str) -> None:
+    api_client.delete_history_entry(user_name, ts, target)
 
-def delete_history_entry(user_name: str, ts: str, target: str):
-    """Delete a single history entry that matches timestamp + target."""
 
-    file_path = HISTORY_FILE
+def delete_whiteList_entry(user_name: str, ts: str, target: str) -> None:
+    api_client.delete_whitelist_entry(user_name, ts, target)
 
-    kept_lines = []
 
-    # Read all lines and keep only the ones we DON'T delete
-    with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue  # skip corrupted lines
+def delete_blackList_entry(user_name: str, ts: str, target: str) -> None:
+    api_client.delete_blacklist_entry(user_name, ts, target)
 
-            if entry.get("ts") == ts and entry.get("target") == target:
-                # Skip this entry (deleting)
-                continue
 
-            kept_lines.append(line)
-
-    # Rewrite JSONL file without the deleted entry
-    with open(file_path, "w", encoding="utf-8") as f:
-        for line in kept_lines:
-            f.write(line)
-
-def delete_whiteList_entry(user_name: str, ts: str, target: str):
-    """Delete a single history entry that matches timestamp + target."""
-
-    file_path = WHITELIST_FILE
-
-    kept_lines = []
-
-    # Read all lines and keep only the ones we DON'T delete
-    with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue  # skip corrupted lines
-
-            if entry.get("ts") == ts and entry.get("target") == target:
-                # Skip this entry (deleting)
-                continue
-
-            kept_lines.append(line)
-
-    # Rewrite JSONL file without the deleted entry
-    with open(file_path, "w", encoding="utf-8") as f:
-        for line in kept_lines:
-            f.write(line)
-
-def delete_blackList_entry(user_name: str, ts: str, target: str):
-    """Delete a single history entry that matches timestamp + target."""
-
-    file_path = BLACKLIST_FILE
-
-    kept_lines = []
-
-    # Read all lines and keep only the ones we DON'T delete
-    with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            try:
-                entry = json.loads(line)
-            except json.JSONDecodeError:
-                continue  # skip corrupted lines
-
-            if entry.get("ts") == ts and entry.get("target") == target:
-                # Skip this entry (deleting)
-                continue
-
-            kept_lines.append(line)
-
-    # Rewrite JSONL file without the deleted entry
-    with open(file_path, "w", encoding="utf-8") as f:
-        for line in kept_lines:
-            f.write(line)
-
-# --- Deep Scan Thread  ---
+# --- Deep Scan Thread ---
 class VTDeepScanThread(QThread):
     result = Signal(dict)
     tick = Signal(int)
-    
+
     def __init__(self, kind: str, target: str, parent=None):
         super().__init__(parent)
         self.kind = kind
         self.target = target
-        
-        self.api_key = os.environ.get("VIRUSTOTAL_API_KEY")
-        self.base = "https://www.virustotal.com/api/v3"
-        self.headers = {"x-apikey": self.api_key} if self.api_key else {}
-
-    def _verdict_from_stats(self, stats: dict) -> str:
-        mal = int(stats.get("malicious", 0))
-        susp = int(stats.get("suspicious", 0))
-        if mal > 3:
-            return "BLOCK"
-        elif mal > 0 or susp > 0:
-            return "CAUTION"
-        else:
-            return "SAFE"
-
-    def _enforce_cooldown(self) -> float:
-        state = _load_state()
-        last = float(state.get("last_call", 0) or 0)
-        wait = int(max(0, VIRUSTOTAL_RATELIMIT - (time.time() - last)))
-        while wait > 0:
-            self.tick.emit(wait)
-            time.sleep(1)
-            wait -= 1
-            
-        start_ts = time.time()
-        state["last_call"] = start_ts
-        _save_state(state)
-        self.tick.emit(0)
-        return start_ts
 
     def run(self):
         try:
-            if not self.api_key:
-                self.result.emit({"ok": False, "message": "Missing API key. Set VIRUSTOTAL_API_KEY in your environment or .env file."})
+            # The backend enforces the rate limit and, if still cooling down,
+            # replies immediately with {"reason": "cooldown", "wait_seconds": N}
+            # instead of blocking a request thread — count the wait down locally
+            # (same tick-per-second UX as before) and retry.
+            for _ in range(30):  # safety cap; cooldown is normally <=15s
+                response = api_client.scan_deep(self.kind, self.target)
+                if response.get("reason") == "cooldown":
+                    wait = int(response.get("wait_seconds", 0))
+                    while wait > 0:
+                        self.tick.emit(wait)
+                        time.sleep(1)
+                        wait -= 1
+                    self.tick.emit(0)
+                    continue
+                self.result.emit(response)
                 return
-
-            # Enforce cooldown
-            _ = self._enforce_cooldown()
-
-            # Live API call
-            if self.kind == "url":
-                submit = requests.post(
-                    f"{self.base}/urls",
-                    headers=self.headers,
-                    data={"url": self.target},
-                    timeout=20,
-                )
-                if submit.status_code not in (200, 201):
-                    self.result.emit({"ok": False, "message": f"Submit failed: {submit.status_code} {submit.text}"})
-                    return
-                analysis_id = submit.json()["data"]["id"]
-
-                for _ in range(40):
-                    ra = requests.get(f"{self.base}/analyses/{analysis_id}", headers=self.headers, timeout=20)
-                    if ra.status_code == 200 and ra.json().get("data", {}).get("attributes", {}).get("status") == "completed":
-                        break
-                    time.sleep(1)
-                else:
-                    self.result.emit({"ok": False, "message": "Timed out waiting for VirusTotal analysis to complete."})
-                    return
-
-                normalized = self.target if self.target.lower().startswith(("http://", "https://")) else f"http://{self.target}"
-                url_id = url_to_vt_id(normalized)
-                ru = requests.get(f"{self.base}/urls/{url_id}", headers=self.headers, timeout=20)
-                if ru.status_code != 200:
-                    self.result.emit({"ok": False, "message": f"Fetch stats failed: {ru.status_code} {ru.text}"})
-                    return
-                attrs = ru.json().get("data", {}).get("attributes", {}) or {}
-                stats = attrs.get("last_analysis_stats", {}) or {}
-                engine_results = attrs.get("last_analysis_results", {}) or {}
-                verdict = self._verdict_from_stats(stats)
-
-            elif self.kind == "domain":
-                rd = requests.get(f"{self.base}/domains/{self.target}", headers=self.headers, timeout=20)
-                if rd.status_code != 200:
-                    self.result.emit({"ok": False, "message": f"Domain lookup failed: {rd.status_code} {rd.text}"})
-                    return
-                attrs = rd.json().get("data", {}).get("attributes", {}) or {}
-                stats = attrs.get("last_analysis_stats", {}) or {}
-                engine_results = attrs.get("last_analysis_results", {}) or {}
-                verdict = self._verdict_from_stats(stats)
-
-            elif self.kind == "ip":
-                ri = requests.get(f"{self.base}/ip_addresses/{self.target}", headers=self.headers, timeout=20)
-                if ri.status_code != 200:
-                    self.result.emit({"ok": False, "message": f"IP lookup failed: {ri.status_code} {ri.text}"})
-                    return
-                attrs = ri.json().get("data", {}).get("attributes", {}) or {}
-                stats = attrs.get("last_analysis_stats", {}) or {}
-                engine_results = attrs.get("last_analysis_results", {}) or {}
-                verdict = self._verdict_from_stats(stats)
-            else:
-                self.result.emit({"ok": False, "message": f"Unknown kind: {self.kind}"})
-                return
-
-            # Return results without saving to cache/history
-            self.result.emit(
-                {
-                    "ok": True,
-                    "message": "OK",
-                    "stats": stats,
-                    "verdict": verdict,
-                    "kind": self.kind,
-                    "target": self.target,
-                    "engine_results": engine_results,
-                }
-            )
-
-        except requests.RequestException as e:
-            self.result.emit({"ok": False, "message": f"Network error: {e}"})
+            self.result.emit({"ok": False, "message": "Still on cooldown, please try again shortly."})
+        except api_client.BackendUnavailable as e:
+            self.result.emit({"ok": False, "message": f"Backend unavailable: {e}"})
         except Exception as e:
             self.result.emit({"ok": False, "message": f"Unexpected error: {e}"})

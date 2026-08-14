@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QSizePolicy
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
-from src.SQL_Alchemy.database_manager import DatabaseManager
+from src.logic import api_client
 
 class ChangePasswordWindow(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -122,9 +122,18 @@ class ChangePasswordWindow(QWidget):
             QMessageBox.warning(self, "Error", "New password must be different from current password!")
             return
         
-        # Update password in database
-        result = DatabaseManager.update_password(self.user_name, current_pass, new_pass)
-        
+        # Update password via the backend
+        try:
+            response = api_client.change_password(self.user_name, current_pass, new_pass)
+        except api_client.BackendUnavailable:
+            QMessageBox.critical(
+                self, "Backend Unavailable",
+                f"Could not reach the AegisDNS backend at {api_client.BACKEND_URL}.\n\n"
+                "Make sure it's running and try again."
+            )
+            return
+        result = response.get("reason")
+
         if result == "success":
             QMessageBox.information(self, "Success", "Password changed successfully!")
             self.current_password_edit.clear()

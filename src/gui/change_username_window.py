@@ -1,12 +1,10 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QFrame, QSizePolicy, QApplication
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
-from src.SQL_Alchemy.database_manager import DatabaseManager
+from src.logic import api_client
 import sys
 import subprocess
 import os
-import json
-from pathlib import Path
 
 class ChangeUsernameWindow(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -125,16 +123,19 @@ class ChangeUsernameWindow(QWidget):
             QMessageBox.warning(self, "Error", "New username must be different from current username!")
             return
         
-        # First, update all JSON files with the new username
+        # Update username via the backend (it also renames the user's history/
+        # whitelist/blacklist/log entries and updates the Addresses table).
         try:
-            self.update_json_files(self.user_name, new_username)
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to update data files: {e}")
+            response = api_client.change_username(self.user_name, current_pass, new_username)
+        except api_client.BackendUnavailable:
+            QMessageBox.critical(
+                self, "Backend Unavailable",
+                f"Could not reach the AegisDNS backend at {api_client.BACKEND_URL}.\n\n"
+                "Make sure it's running and try again."
+            )
             return
-        
-        # Then update username in database (this also updates Addresses table)
-        result = DatabaseManager.update_username(self.user_name, current_pass, new_username)
-        
+        result = response.get("reason")
+
         if result == "success":
             QMessageBox.information(self, "Success", "Username changed successfully! The application will restart now.")
             self.current_password_edit.clear()
@@ -149,70 +150,6 @@ class ChangeUsernameWindow(QWidget):
             QMessageBox.warning(self, "Error", "Username is already taken!")
         else:
             QMessageBox.critical(self, "Error", "An error occurred while changing the username.")
-    
-    def update_json_files(self, old_username: str, new_username: str):
-        """Update all JSON/JSONL files to change username from old to new."""
-        BASE_DIR = Path(__file__).resolve().parent
-        CACHE_DIR = (BASE_DIR / ".." / "VT_Cache").resolve()
-        
-        # Files that use "user" field
-        files_with_user_field = [
-            CACHE_DIR / "vt_history.jsonl",
-            CACHE_DIR / "vt_whiteList.jsonl",
-            CACHE_DIR / "vt_blackList.jsonl",
-        ]
-        
-        # Files that use "username" field
-        files_with_username_field = [
-            CACHE_DIR / "logging_mode_history.jsonl",
-            CACHE_DIR / "scan_requests.jsonl",
-        ]
-        
-        # Update files with "user" field
-        for file_path in files_with_user_field:
-            if not file_path.exists():
-                continue
-            
-            lines = []
-            with open(file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        entry = json.loads(line)
-                        if entry.get("user") == old_username:
-                            entry["user"] = new_username
-                        lines.append(json.dumps(entry) + "\n")
-                    except json.JSONDecodeError:
-                        # Keep corrupted lines as-is
-                        lines.append(line + "\n")
-            
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-        
-        # Update files with "username" field
-        for file_path in files_with_username_field:
-            if not file_path.exists():
-                continue
-            
-            lines = []
-            with open(file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        entry = json.loads(line)
-                        if entry.get("username") == old_username:
-                            entry["username"] = new_username
-                        lines.append(json.dumps(entry) + "\n")
-                    except json.JSONDecodeError:
-                        # Keep corrupted lines as-is
-                        lines.append(line + "\n")
-            
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.writelines(lines)
     
     def restart_application(self):
         """Restart the application by quitting and launching a new instance."""

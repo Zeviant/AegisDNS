@@ -7,6 +7,7 @@ from src.gui.change_password_window import ChangePasswordWindow
 from src.gui.change_username_window import ChangeUsernameWindow
 from src.gui.delete_account_window import DeleteAccountWindow
 from src.gui.log_window import Log_Window
+from src.logic import api_client
 from PySide6.QtWidgets import QApplication
 
 class Settings_Window(QWidget):
@@ -253,39 +254,15 @@ class Settings_Window(QWidget):
         self.delete_account_window.show()
 
     # --- History & Cache reset ---
-    def _vt_cache_dir(self) -> str:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(base_dir, "..", "VT_Cache")
-
     def reset_scan_history(self):
-        cache_dir = self._vt_cache_dir()
         try:
-            os.makedirs(cache_dir, exist_ok=True)
-            scanner_cache = os.path.join(cache_dir, "scanner_cache.json")
-            vt_history = os.path.join(cache_dir, "vt_history.jsonl")
-            scan_requests = os.path.join(cache_dir, "scan_requests.jsonl")
-
-            # Reset scanner cache
-            if os.path.exists(scanner_cache):
-                with open(scanner_cache, "w", encoding="utf-8") as f:
-                    json.dump({"last_call": 0, "cache": {}}, f)
-
-            # Clear history & request logs
-            for path in (vt_history, scan_requests):
-                if os.path.exists(path):
-                    with open(path, "w", encoding="utf-8"):
-                        pass
-        except Exception:
+            api_client.reset_history()
+        except api_client.BackendUnavailable:
             pass
 
     def reset_navigation_history(self):
-        cache_dir = self._vt_cache_dir()
-        logging_file = os.path.join(cache_dir, "logging_mode_history.jsonl")
-        # Reset logging history
         try:
-            if os.path.exists(logging_file):
-                with open(logging_file, "w", encoding="utf-8"):
-                    pass
-        except Exception:
+            api_client.reset_logs()
+        except api_client.BackendUnavailable:
             pass
 
