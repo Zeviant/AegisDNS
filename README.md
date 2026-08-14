@@ -1,170 +1,214 @@
-# Capstone
+<div align="center">
 
-**DNS-level connection interception, analysis, and maliciousness scoring system.**
+<img src="images_rep/AegisDNS_Logo.png" width="200" alt="AegisDNS Logo"/>
 
-A full-stack security monitoring solution consisting of:
+# AegisDNS
 
-- **Desktop app** (Python + PySide6) — manual scans, history, whitelist/blacklist, packet monitoring, and notifications
-- **Browser extension** (Chrome/Chromium) — navigates together with the app and can log, scan, or intercept browsing
-- **Local backend** (Flask) — bridges the extension and the desktop app
+**DNS-level connection interception, analysis, and maliciousness scoring.**
 
----
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
+![PySide6](https://img.shields.io/badge/GUI-PySide6-41CD52?style=flat&logo=qt&logoColor=white)
+![Flask](https://img.shields.io/badge/Backend-Flask-000000?style=flat&logo=flask&logoColor=white)
+![Chrome](https://img.shields.io/badge/Extension-Chrome%2FChromium-4285F4?style=flat&logo=googlechrome&logoColor=white)
 
-## Architecture overview
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Chrome Extension (dns-protect)                                      │
-│  • Popup: mode selector (None / Logging / Silent / Safe)             │
-│  • Background: navigation interception, blacklist enforcement        │
-│  • Interstitials: Safe-mode review page, blacklist block page        │
-└───────────────────────────────┬─────────────────────────────────────┘
-                                │ HTTP (127.0.0.1:5005)
-                                ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  Flask Backend (backend_server.py)                                   │
-│  • /health, /log, /scan, /is_whitelisted, /is_blacklisted            │
-│  • /add_to_whitelist, /add_to_blacklist                              │
-│  • Started on app login, bound to current user                       │
-└───────────────────────────────┬─────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  Desktop App (PySide6)                                               │
-│  • Authentication → Scanner, History, Logs, Packets, Lists, Settings │
-│  • VirusTotal integration, local scanner (WHOIS/DNS/Web), DB         │
-│  • Packet sniffer (Scapy) → rolling stats, tray notifications        │
-└─────────────────────────────────────────────────────────────────────┘
-```
+</div>
 
 ---
 
-## Desktop application
+AegisDNS is a security monitoring tool which consists of a browser extension, a desktop application, and a local Flask server that bridges the two. This system is combined to provide many functionalities, such as unlimited address scans with a heuristic engine, blacklisting/whitelisting, AI overviews to explain scan results in plain language, background browser activity monitoring, and more.
 
-### Authentication
-- Login / Create account
-- SQLite database (`UserInformation.db`) for users and scan history
-- On successful login, the Flask backend starts and the current username is set
 
-### Analyze Address (Scanner)
-- Enter a URL, domain, or IP address
-- **Custom Scan**: local scoring engine (WHOIS, DNS, Web/TLS, IP rules)
-- **Deep Scan**: VirusTotal API + local scanner (toggle)
-- Results: total risk score, WHOIS/DNS/Web sub-scores, verdict (SECURE → MALICIOUS)
-- Scan history saved to JSONL and database; system tray notification for new scan results
+---
 
-### History File
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Login</b></td>
+    <td align="center"><b>Create Account</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/user_log_in_fixed.png"/></td>
+    <td><img src="images_rep/user_create_acc.png"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Scanner Results</b></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="images_rep/scanner_results.png" alt="Scanner Results"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Additional Scan Details</b></td>
+    <td align="center"><b>AI Overview</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/scan_additional_details.png"/></td>
+    <td><img src="images_rep/scan_AI_overview.png"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Whitelist Window</b></td>
+    <td align="center"><b>Blacklist Window</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/whitelist_fix.png" alt="Whitelist Window"/></td>
+    <td><img src="images_rep/blacklist_window.png" alt="Blacklist Window"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Navigation Logs</b></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="images_rep/navigationLogs.png" alt="Navigation Logs"/></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><b>Scan History</b></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="images_rep/history_file.png" alt="Scan History"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Packet Sniffer</b></td>
+    <td align="center"><b>Protocol Animation</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/snifferGraph.png"/></td>
+    <td><img src="images_rep/protocolAnimation.png"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Browser Extension</b></td>
+    <td align="center"><b>Safe Mode Interstitial</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/browser_ext.png"/></td>
+    <td><img src="images_rep/default_inter.png"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Blacklist Interstitial</b></td>
+    <td align="center"><b>Scan Complete Notification</b></td>
+  </tr>
+  <tr>
+    <td><img src="images_rep/blacklist_interstitial.png"/></td>
+    <td><img src="images_rep/silent_notif.png"/></td>
+  </tr>
+</table>
+
+### Themes
+
+<table>
+  <tr>
+    <td align="center"><b>Default</b><br/><img src="images_rep/themeDefault.png" width="420" alt="Default Theme"/></td>
+    <td align="center"><b>Dark</b><br/><img src="images_rep/themeDark.png" width="420" alt="Dark Theme"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Dracula</b><br/><img src="images_rep/themeDracula.png" width="420" alt="Dracula Theme"/></td>
+    <td align="center"><b>Cyberpunk</b><br/><img src="images_rep/themeCyberpunk.png" width="420" alt="Cyberpunk Theme"/></td>
+  </tr>
+</table>
+
+---
+
+## Architecture
+
+<div align="center">
+  <img src="images_rep/system_arch.png" width="600" alt="AegisDNS Architecture Diagram"/>
+</div>
+
+---
+
+## Features
+
+### Desktop Application
+
+#### Authentication
+- Login and account creation with bcrypt password hashing
+- SQLite database via SQLAlchemy for users and scan history
+- Flask backend starts automatically on login and binds to the current user
+
+#### Scanner
+- Accepts URLs, domains, or raw IP addresses
+- **Custom Scan** — local heuristic scoring engine (WHOIS, DNS, Web/TLS, IP rules)
+- **Deep Scan** — VirusTotal API combined with the local scanner
+- **AI Overview** — locally-run Llama 3.2 3B explains results in plain language
+- Results include total risk score, per-category signals, and a verdict (SECURE → MALICIOUS)
+- Scan history saved to JSONL and database; system tray notification on completion
+
+#### Navigation Logs
+- Table of navigations recorded by the extension (timestamp, target, mode)
+- Populated by Logging, Silent, and Safe modes
+- Live refresh every 3 seconds
+
+#### Scan History
 - Table of past scans (timestamp, kind, target, verdict)
 - Context menu: add to whitelist or blacklist, delete entry
-- Reset scan history button
-- Live refresh every 3 seconds
 
-### Navigation Logs
-- Table of navigations recorded by the extension (timestamp, target, action)
-- Entries come from Logging, Silent, and Safe modes
-- Reset navigation history button
-- Live refresh every 3 seconds
-
-### Packets
+#### Packet Monitor
 Two views:
+- **Sniffer Graph** — rolling chart of bytes in/out over the last 60 seconds
+- **Protocol Animation** — TCP vs UDP packet counts with animated indicators
 
-1. **Sniffer Graph** — rolling chart of network activity (bytes in/out) over the last 60 seconds
-2. **Protocol Animation** — TCP vs UDP packet counts (last 10s) with animated indicators
+Packet capture runs in the background via Scapy; data is aggregated per second in a rolling window. Tray notifications trigger on high packet rates or DNS anomalies.
 
-Packet capture runs in the background via Scapy; data is aggregated per second in a rolling window.
+#### White / Black List
+- Per-user lists used by the extension at runtime
+- Whitelist: domains allowed through without review in Safe mode
+- Blacklist: domains always blocked with a red interstitial
 
-### White/Black List
-- **White List**: domains/URLs allowed without blocking (e.g. in Safe mode)
-- **Black List**: domains/URLs always blocked by the extension (interstitial)
-- Lists are per-user and used by the extension when the backend is reachable
-
-### Settings
-- Themes: Default, Dark, Light, Dracula, Cyberpunk
-- Mute notifications (tray popups)
-- Reset scan history / Reset navigation history
-- User account: change username, change password, delete account
-
----
-
-## Browser extension (dns-protect)
-
-A Chrome/Chromium extension that connects to the local Flask backend. It requires the desktop app to be running and the user to be logged in.
-
-### Extension modes
-
-| Mode   | Behavior                                                                 |
-|--------|---------------------------------------------------------------------------|
-| **None**   | Extension effectively disabled; no logging or blocking                   |
-| **Logging**| Logs each main-frame navigation to the app (no blocking, no auto-scan)   |
-| **Silent** | Logs navigations and triggers background scans for each visited URL     |
-| **Safe**   | Intercepts every navigation; user must approve or deny before continuing |
-
-### Safe mode flow
-1. User navigates to a URL
-2. Extension redirects to an interstitial page (“Check this site before proceeding”)
-3. User can:
-   - **Continue** — visit the site once
-   - **Send scan** — request a VirusTotal + local scan (queued by the app)
-   - **Go back** — cancel navigation
-   - **Whitelist** — add to whitelist and proceed
-   - **Blacklist** — add to blacklist and show block page
-
-### Blacklist enforcement
-- In **Logging** and **Silent** modes, blacklisted URLs are blocked with a red interstitial (“Blocked Website”)
-- User can “Go Back” or “Continue Anyway” (one-time bypass)
-- In **Safe** mode, blacklist is checked before showing the review interstitial
-
-### Popup
-- Connection status (Connected / Disconnected to backend)
-- Mode selector: None, Logging, Silent, Safe
-- Short hint for each mode
-
-### Backend dependency
-- Extension polls `/health` to check if the app is running
-- All list checks, logging, and scan requests go through the backend
+#### Settings
+- Themes: Default, Dark, Dracula, Cyberpunk
+- Mute system tray notifications
+- Reset scan history / navigation history
+- User account management: change username, change password, delete account
 
 ---
 
-## Scanner module (local scoring)
+### Browser Extension
 
-The `scanner/` package evaluates domains and URLs using:
+Connects to the local Flask backend. Requires the desktop app to be running and the user logged in.
+
+#### Modes
+
+| Mode | Behaviour |
+|------|-----------|
+| **None** | Extension disabled — no logging or blocking |
+| **Logging** | Logs each navigation to the app silently |
+| **Silent** | Logs navigations and triggers background scans automatically |
+| **Safe** | Intercepts every navigation; user reviews before the page loads |
+
+#### Safe Mode Flow
+1. User navigates to any URL
+2. Extension redirects to a review interstitial
+3. User can **Continue**, **Send scan**, **Go back**, **Whitelist**, or **Blacklist**
+
+#### Blacklist Enforcement
+Blacklisted URLs are blocked with a red interstitial in all active modes. The user can go back or bypass once.
+
+---
+
+### Scanner / Scoring Engine
+
+The `scanner/` package evaluates domains and URLs across four signal categories:
 
 | Category | Signals |
 |----------|---------|
-| **WHOIS** | Domain age, registrar reputation, privacy status, expiration |
-| **DNS**   | A/AAAA records, TTL, nameservers, MX/SPF/DMARC |
-| **Web**   | TLS certificate validity, HTTP security headers |
-| **IP**    | IP-based risk indicators (if input is an IP) |
+| **WHOIS** | Domain age, registrar reputation, privacy protection, expiration date |
+| **DNS** | A/AAAA records, TTL, nameserver provider, MX/SPF/DMARC configuration |
+| **Web** | TLS certificate validity, issuer, HTTP security headers |
+| **IP** | IP-based risk indicators (when input is a raw IP address) |
 
-Risk score (0–100) is mapped to verdicts: SECURE, SAFE, NEUTRAL, CAUTION, SUSPICIOUS, DANGEROUS, MALICIOUS.
+Risk scores (0–100) map to verdicts:
 
----
-
-## Packet monitoring and notifications
-
-### Rolling aggregator
-- Per-second buckets: bytes in/out, TCP/UDP/DNS counts, unique source/destination IPs
-- DNS metadata: qnames, qtypes, rcode (for NXDOMAIN), TXT queries
-
-### Notifications (system tray)
-
-1. **High packet rate**
-   - Triggers when packets in the last 10s exceed threshold (default 12,000)
-   - Edge-triggered: no repeat while traffic stays above threshold
-   - Re-arms when traffic drops below, then can alert again (subject to cooldown)
-
-2. **DNS anomaly (heuristic)**
-   - Evaluates last 60 seconds
-   - Signals: unique DNS names, NXDOMAIN rate, TXT bursts, high-entropy long labels, destination-IP spikes
-   - Requires multiple strong signals to reduce false positives
-   - Edge-triggered with cooldown
-
-### Configuration
-Settings live in `src/VT_Cache/settings.json` (e.g. `packet_alert_threshold_10s`, `dns_alert_enabled`, `dns_unique_qnames_threshold_60s`).
+| Score | Verdict |
+|-------|---------|
+| 0–10 | SECURE |
+| 11–20 | SAFE |
+| 21–30 | NEUTRAL |
+| 31–40 | CAUTION |
+| 41–50 | SUSPICIOUS |
+| 51–59 | DANGEROUS |
+| 60+ | MALICIOUS |
 
 ---
 
-## Repository structure
+## Repository Structure
 
 ```
 Capstone/
@@ -176,8 +220,8 @@ Capstone/
 │   │   ├── Scanner_Window.py
 │   │   ├── history_window.py
 │   │   ├── log_window.py
-│   │   ├── WhiteBlackList_Window.py, WhiteList_Window.py, BlackList_Window.py
-│   │   ├── SnifferContainer_Window.py, packet_sniffer_widget.py, ProtocolAnimation_Window.py
+│   │   ├── WhiteBlackList_Window.py
+│   │   ├── SnifferContainer_Window.py
 │   │   ├── settings_window.py
 │   │   └── ...
 │   ├── logic/
@@ -196,9 +240,21 @@ Capstone/
 │   └── scoring/                # rules_*
 ├── sniffer_test/                # Native-only — stays with the GUI process, see below
 │   ├── packet_sniffer.py       # Scapy capture, metadata extraction
+│   │   ├── vt_service.py       # VirusTotal API, cache, history
+│   │   ├── scanner_service.py  # Local scanner thread, cache
+│   │   ├── llm_service.py      # Llama 3.2 inference, prompt construction
+│   │   └── backend_server.py   # Flask REST API for extension
+│   ├── SQL_Alchemy/            # User and address tables (SQLAlchemy)
+│   └── VT_Cache/               # JSONL logs, caches, settings
+├── scanner/                    # Heuristic scoring engine
+│   ├── scanner.py
+│   ├── features/               # whois, dns, web, ip
+│   └── scoring/                # rules_whois, rules_dns, rules_web, rules_ip
+├── sniffer_test/
+│   ├── packet_sniffer.py       # Scapy capture and metadata extraction
 │   ├── aggregator.py           # Rolling per-second buckets
-│   └── sniffer_worker.py       # Emits snapshots to UI
-└── dns-protect/                # Browser extension
+│   └── sniffer_worker.py       # Emits snapshots to the UI
+└── dns-protect/                # Chrome browser extension
     ├── manifest.json
     ├── html/                   # popup, safe_interstitial, blacklist_interstitial
     ├── scripts_/               # background, popup, interstitials
@@ -259,6 +315,10 @@ To stop it: `docker compose down` (add `-v` to also delete the volumes / reset a
 ```bash
 pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython python-whois flask flask-cors
 ```
+- Python 3.10+
+- Chrome or Chromium
+- VirusTotal API key (for Deep Scan)
+- Admin / elevated permissions for packet capture (Scapy)
 
 ---
 
@@ -276,25 +336,40 @@ container).
 git clone https://github.com/Zeviant/Capstone.git
 cd Capstone
 python -m venv .venv
-# Windows PowerShell
+```
+
+```powershell
+# Windows
 .\.venv\Scripts\Activate.ps1
-# Linux/macOS
+```
+
+```bash
+# Linux / macOS
 source .venv/bin/activate
-pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython python-whois flask flask-cors
+```
+
+```bash
+pip install PySide6 scapy requests python-dotenv sqlalchemy tldextract dnspython python-whois flask flask-cors llama-cpp-python
+```
+
+### 2. VirusTotal API key
+
+Deep Scan requires a free VirusTotal API key. Register at [virustotal.com](https://www.virustotal.com) → sign in → go to your profile → **API Key**. The free tier is sufficient.
+
+Create a `.env` file in the project root:
+
+```
+VIRUSTOTAL_API_KEY=your_api_key_here
 ```
 
 ### 3. Load the browser extension
 
-1. Open Chrome → `chrome://extensions`
-2. Enable **Developer mode**
+1. Open Chrome and navigate to `chrome://extensions`
+2. Enable **Developer mode** (top right)
 3. Click **Load unpacked**
-4. Select the `dns-protect` folder
+4. Select the `dns-protect/` folder
 
-The extension expects icon files at `dns-protect/images/` (icon-16.png, icon-32.png, icon-48.png, icon-128.png). Add placeholders if missing.
-
----
-
-## Run
+### 4. Run
 
 Backend must already be running (`docker compose up -d`), then:
 
@@ -302,32 +377,19 @@ Backend must already be running (`docker compose up -d`), then:
 python -m src.main
 ```
 
-1. Log in (or create an account)
-2. The Flask backend starts automatically
-3. The extension will show “Connected” when it can reach the backend
-4. Packet sniffer starts in the background; use the Packets page to view stats and notifications
+- Log in or create an account
+- The Flask backend starts automatically
+- The extension will show **Connected** once it reaches the backend
+- The packet sniffer starts in the background
 
 ---
 
-## Testing alerts
+## AI Model
 
-- **Packet rate**: Generate heavy traffic (e.g. large download, streaming) and adjust `packet_alert_threshold_10s` if needed.
-- **DNS anomaly**: In PowerShell, run many NXDOMAIN lookups to trigger the heuristic:
-  ```powershell
-  1..400 | ForEach-Object { Resolve-DnsName ("nope-$_.invalid") -ErrorAction SilentlyContinue | Out-Null }
-  ```
-
----
-
-## Notes and limitations
-
-- Most web traffic is TLS-encrypted; detection uses metadata and behavioral patterns.
-- Heuristic alerts are indicators, not proof of compromise.
-- Packet capture depends on interface and permissions.
-- The extension requires the desktop app to be running and the user logged in.
+AegisDNS includes a locally-hosted AI assistant that translates scan results into plain-language explanations. The model (Llama 3.2 3B Instruct, Q4\_K\_M) is downloaded automatically from Hugging Face on first use (~2 GB). All inference runs entirely on your machine — no data is sent externally.
 
 ---
 
 ## Disclaimer
 
-This project is for defensive security monitoring and educational use. Only capture and analyze traffic on networks and systems you own or are authorized to test.
+This project is intended for defensive security monitoring and educational purposes.

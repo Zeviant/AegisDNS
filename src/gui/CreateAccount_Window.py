@@ -28,7 +28,7 @@ class CreateAccount_Window(QWidget):
         self.lastName_line_edit = QLineEdit()
 
         # Name and Password labels and line edits 
-        userName_label = QLabel("User Name")
+        userName_label = QLabel("Username")
         password_label = QLabel("Password")
         confirmPass_label = QLabel("Confirm Password")
 

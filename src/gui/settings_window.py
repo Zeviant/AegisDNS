@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QPushButton, QSizePolicy, QStyle, QStyleOption, QStyleOptionButton, QListWidget, QComboBox, QScrollArea, QSpinBox, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPainter, QColor
 import os
@@ -9,6 +9,13 @@ from src.gui.delete_account_window import DeleteAccountWindow
 from src.gui.log_window import Log_Window
 from src.logic import api_client
 from PySide6.QtWidgets import QApplication
+from src.logic.settings_service import get_setting, set_setting
+from src.gui.main_window import apply_theme
+from src.logic.vt_service import get_sorted_history
+from src.logic.backend_server import get_sorted_logs
+
+import csv
+from datetime import datetime
 
 class Settings_Window(QWidget):
     def __init__(self, user_name: str, sidebar_reference=None):
@@ -153,6 +160,9 @@ class Settings_Window(QWidget):
         theme_selector = QComboBox()
         theme_selector.addItems(["Default", "Dark", "Light", "Dracula", "Cyberpunk"])
         theme_selector.setObjectName("themeDropDown")
+        saved_theme = get_setting(self.user_name, "theme", "Default")
+        if saved_theme in ["Default", "Dark", "Light", "Dracula", "Cyberpunk"]:
+            theme_selector.setCurrentText(saved_theme)
         theme_selector.currentTextChanged.connect(self.changeTheme)
         theme_layout.addWidget(theme_selector)
 
@@ -171,6 +181,36 @@ class Settings_Window(QWidget):
         history_section.setText("History & Cache")
         history_section.setObjectName("SectionDivider")
         history_layout.addWidget(history_section)
+
+        # Cache invalidation: enable + day threshold
+        history_layout.addSpacing(16)
+        cache_row = QHBoxLayout()
+        cache_row.setSpacing(8)
+
+        self.cache_invalidation_checkbox = CheckBoxWithCheckmark(
+            "On login, delete cached entries older than"
+        )
+        self.cache_invalidation_checkbox.setFont(QFont("Segoe UI", 11))
+        self.cache_invalidation_checkbox.setChecked(
+            bool(get_setting(self.user_name, "cache_invalidation_enabled", True))
+        )
+        self.cache_invalidation_checkbox.toggled.connect(self.on_cache_invalidation_toggled)
+        cache_row.addWidget(self.cache_invalidation_checkbox)
+
+        self.cache_days_spinbox = QSpinBox()
+        self.cache_days_spinbox.setRange(1, 365)
+        self.cache_days_spinbox.setValue(int(get_setting(self.user_name, "cache_max_age_days", 30)))
+        self.cache_days_spinbox.setFixedWidth(70)
+        self.cache_days_spinbox.setEnabled(self.cache_invalidation_checkbox.isChecked())
+        self.cache_days_spinbox.valueChanged.connect(self.on_cache_days_changed)
+        cache_row.addWidget(self.cache_days_spinbox)
+
+        days_label = QLabel("days")
+        days_label.setFont(QFont("Segoe UI", 11))
+        cache_row.addWidget(days_label)
+        cache_row.addStretch()
+
+        history_layout.addLayout(cache_row)
 
         # Reset scan history button
         history_layout.addSpacing(16)
@@ -194,48 +234,45 @@ class Settings_Window(QWidget):
         reset_nav_btn.clicked.connect(self.reset_navigation_history)
         history_layout.addWidget(reset_nav_btn)
 
+        # Export scan history to CSV
+        history_layout.addSpacing(16)
+        export_history_btn = QPushButton("Export scan history to CSV")
+        export_history_btn.setObjectName("exportHistoryBtn")
+        export_history_btn.setFont(QFont("Segoe UI", 11))
+        export_history_btn.setMinimumHeight(40)
+        export_history_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        export_history_btn.setFixedWidth(260)
+        export_history_btn.clicked.connect(self.export_history_to_csv)
+        history_layout.addWidget(export_history_btn)
+
+        # Export navigation log to CSV
+        history_layout.addSpacing(16)
+        export_nav_btn = QPushButton("Export navigation log to CSV")
+        export_nav_btn.setObjectName("exportNavigationBtn")
+        export_nav_btn.setFont(QFont("Segoe UI", 11))
+        export_nav_btn.setMinimumHeight(40)
+        export_nav_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        export_nav_btn.setFixedWidth(260)
+        export_nav_btn.clicked.connect(self.export_navigation_to_csv)
+        history_layout.addWidget(export_nav_btn)
+
     def changeTheme(self, theme_name):
-        print(theme_name)
-        with open("src/gui/Style_Sheet/themes.json", "r") as f:
-            themes = json.load(f)
-            current_theme_data = themes.get(theme_name)
-
-        with open("src/gui/Style_Sheet/SettingsStyle.qss", "r") as f:
-            template_content = f.read()
-
-        final_style = template_content.format(**current_theme_data)
-
-        QApplication.instance().setStyleSheet(final_style)
+        apply_theme(theme_name)
+        set_setting(self.user_name, "theme", theme_name)
 
     def load_mute_setting(self) -> bool:
-        try:
-            if os.path.exists(self.SETTINGS_FILE):
-                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    settings = json.load(f)
-                    return settings.get("mute_notifications", False)
-        except Exception:
-            pass
-        return False
-
-    def save_mute_setting(self, muted: bool):
-        try:
-            settings = {}
-            if os.path.exists(self.SETTINGS_FILE):
-                with open(self.SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    settings = json.load(f)
-            
-            settings["mute_notifications"] = muted
-            
-            os.makedirs(os.path.dirname(self.SETTINGS_FILE), exist_ok=True)
-            
-            with open(self.SETTINGS_FILE, "w", encoding="utf-8") as f:
-                json.dump(settings, f, indent=2)
-        except Exception:
-            pass
+        return get_setting(self.user_name, "mute_notifications", False)
 
     # Checkbox toggle
     def on_mute_toggled(self, checked: bool):
-        self.save_mute_setting(checked)
+        set_setting(self.user_name, "mute_notifications", checked)
+
+    def on_cache_invalidation_toggled(self, checked: bool):
+        set_setting(self.user_name, "cache_invalidation_enabled", checked)
+        self.cache_days_spinbox.setEnabled(checked)
+
+    def on_cache_days_changed(self, value: int):
+        set_setting(self.user_name, "cache_max_age_days", int(value))
 
     # Mute state
     def is_notifications_muted(self) -> bool:
@@ -265,4 +302,79 @@ class Settings_Window(QWidget):
             api_client.reset_logs()
         except api_client.BackendUnavailable:
             pass
+
+    # --- CSV exports ---
+    def _format_log_timestamp(self, raw) -> str:
+        try:
+            ts = int(raw)
+            if ts > 1e12:  # milliseconds → seconds
+                ts = ts // 1000
+            return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return str(raw) if raw else ""
+
+    def _format_history_timestamp(self, raw: str) -> str:
+        try:
+            return datetime.fromisoformat(raw).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return raw or ""
+
+    def _ask_save_path(self, suggested_name: str) -> str | None:
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save CSV", suggested_name, "CSV files (*.csv)"
+        )
+        return path or None
+
+    def export_history_to_csv(self):
+        entries = get_sorted_history(self.user_name)
+        if not entries:
+            QMessageBox.information(self, "Export scan history", "No history entries to export.")
+            return
+
+        path = self._ask_save_path(f"scan_history_{self.user_name}.csv")
+        if not path:
+            return
+
+        try:
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["timestamp", "kind", "target", "verdict", "risk_score", "source"])
+                for e in entries:
+                    stats = e.get("stats", {}) or {}
+                    writer.writerow([
+                        self._format_history_timestamp(e.get("ts", "")),
+                        e.get("kind", ""),
+                        e.get("target", ""),
+                        e.get("verdict", ""),
+                        stats.get("risk_score", ""),
+                        e.get("source", ""),
+                    ])
+            QMessageBox.information(self, "Export scan history", f"Exported {len(entries)} entries to:\n{path}")
+        except Exception as ex:
+            QMessageBox.critical(self, "Export failed", str(ex))
+
+    def export_navigation_to_csv(self):
+        entries = get_sorted_logs(self.user_name)
+        if not entries:
+            QMessageBox.information(self, "Export navigation log", "No navigation entries to export.")
+            return
+
+        path = self._ask_save_path(f"navigation_log_{self.user_name}.csv")
+        if not path:
+            return
+
+        try:
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["timestamp", "mode", "url", "verdict"])
+                for e in entries:
+                    writer.writerow([
+                        self._format_log_timestamp(e.get("timestamp")),
+                        e.get("mode", ""),
+                        e.get("indicator", "") or e.get("url", ""),
+                        e.get("verdict", ""),
+                    ])
+            QMessageBox.information(self, "Export navigation log", f"Exported {len(entries)} entries to:\n{path}")
+        except Exception as ex:
+            QMessageBox.critical(self, "Export failed", str(ex))
 

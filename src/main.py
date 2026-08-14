@@ -2,10 +2,9 @@ import json
 import os
 import sys
 
-from PySide6.QtCore import QEventLoop, QThread, Qt, Signal
+from PySide6.QtCore import QEventLoop, Qt, QThread, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QMessageBox, QSplashScreen
-
 from src.gui.Autentication_Window import Start_Window
 from src.logic import backend_launcher
 
@@ -34,7 +33,9 @@ class _BackendStartupThread(QThread):
     finished_with_result = Signal(bool, str)
 
     def run(self):
-        ok, message = backend_launcher.ensure_backend_running(on_status=self.status.emit)
+        ok, message = backend_launcher.ensure_backend_running(
+            on_status=self.status.emit
+        )
         self.finished_with_result.emit(ok, message)
 
 
@@ -52,7 +53,9 @@ def _start_backend_with_splash(app: QApplication) -> None:
 
     splash = QSplashScreen(pixmap)
     splash.showMessage(
-        "Starting AegisDNS...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.GlobalColor.white
+        "Starting AegisDNS...",
+        Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter,
+        Qt.GlobalColor.white,
     )
     splash.show()
     app.processEvents()
@@ -63,7 +66,9 @@ def _start_backend_with_splash(app: QApplication) -> None:
     thread = _BackendStartupThread()
     thread.status.connect(
         lambda msg: splash.showMessage(
-            msg, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.GlobalColor.white
+            msg,
+            Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter,
+            Qt.GlobalColor.white,
         )
     )
 
@@ -109,6 +114,50 @@ def main():
         template_content = f.read()
 
     final_style = template_content.format(**current_theme_data)
+
+    # --- 1. Read the JSON and dynamically look up the Current Theme ---
+    try:
+        with open("src/gui/Style_Sheet/themes.json", "r") as f:
+            themes = json.load(f)
+
+        # Get the "Current theme" dictionary block
+        current_theme_block = themes.get("Current theme", {})
+
+        # Extract the key name (e.g., "Dark", "Dracula", "Light")
+        # list(...)[0] grabs the first key name found inside that block
+        if current_theme_block:
+            theme_name = list(current_theme_block.keys())[0]
+        else:
+            theme_name = "Default"  # Fallback if "Current theme" block is empty
+
+        # Extract the actual color variables for that theme
+        current_theme_data = themes.get(theme_name) or themes.get("Default")
+
+    except Exception as e:
+        print(f"Error loading theme configuration: {e}")
+        # Absolute safety fallback constants if the JSON file is missing or broken
+        theme_name = "Default"
+        current_theme_data = {
+            "60Color": "#0f172a",
+            "30Color": "#131f3a",
+            "10Color": "#3b82f6",
+            "buttonHover": "#2563eb",
+            "buttonPressed": "#1e40af",
+            "textPrimary": "#ffffff",
+        }
+
+    # --- 2. Read the QSS template and inject the theme color data ---
+    try:
+        with open("src/gui/Style_Sheet/SettingsStyle.qss", "r") as f:
+            template_content = f.read()
+        final_style = template_content.format(**current_theme_data)
+        app.setStyleSheet(final_style)
+    except Exception as e:
+        print(f"Error reading or formatting QSS stylesheet: {e}")
+
+    # --- 3. Run the application ---
+    window = Start_Window()
+    window.show()
 
     window = Start_Window()
     app.setStyleSheet(final_style)
