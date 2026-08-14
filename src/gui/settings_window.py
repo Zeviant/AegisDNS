@@ -12,7 +12,6 @@ from PySide6.QtWidgets import QApplication
 from src.logic.settings_service import get_setting, set_setting
 from src.gui.main_window import apply_theme
 from src.logic.vt_service import get_sorted_history
-from src.logic.backend_server import get_sorted_logs
 
 import csv
 from datetime import datetime
@@ -354,7 +353,7 @@ class Settings_Window(QWidget):
             QMessageBox.critical(self, "Export failed", str(ex))
 
     def export_navigation_to_csv(self):
-        entries = get_sorted_logs(self.user_name)
+        entries = api_client.get_logs(self.user_name)
         if not entries:
             QMessageBox.information(self, "Export navigation log", "No navigation entries to export.")
             return

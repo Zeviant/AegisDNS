@@ -15,16 +15,9 @@ from datetime import datetime, timedelta
 
 from PySide6.QtCore import QThread, Signal
 from src.logic import api_client
-
-if SCANNER_DIR not in sys.path:
-    sys.path.insert(0, SCANNER_DIR)
-
-if SCANNER_PARENT not in sys.path:
-    sys.path.insert(0, SCANNER_PARENT)
-
-from scanner import scan_domain
 from src.SQL_Alchemy.database_manager import DatabaseManager
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_DIR = os.path.join(BASE_DIR, "..", "VT_Cache")
 CACHE_FILE = os.path.join(CACHE_DIR, "scanner_cache.json")
 HISTORY_FILE = os.path.join(CACHE_DIR, "vt_history.jsonl")
